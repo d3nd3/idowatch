@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>IDO Watch Sync</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body style="overflow-wrap: break-word;">
+    <h1>IDO / VeryFit / Ryze based smartwatch activity downloader</h1>
+    <p>
+        This makes a bluetooth connection to IDO based smart watches and creates a TCX file from the activity data. This specifically doesn't mark the activity as sync'd to allow VeryFit/Ryze to continue operating
+    </p>
+    <h2>Requirements</h2>
+    <p>
+        <ul>
+            <li>Browser with bluetooth support : Currently only Chrome.</li>
+            <li>Activity hasn't be sync'd with VeryFit / Ryze app already</li>
+        </ul>
+    </p>
+    <h2>Limitations</h2>
+    <p>
+        <ul>
+            <li>Doesn't mark activities as sync'd, so you need to sync each activity with the app</li>
+            <li>Only supports running</li>
+            <li>Only supports a very limit protocol subset - will likely break</li>
+            <li>Doesn't support getting GPS path</li>
+            <li>May do unexpected things</li>
+        </ul>
+    </p>
+    <h2>Lets go!</h2>
+    <button id="button">Pair + Get Activity</button>
+    <!-- <button id="GetDeviceInfo" onclick="sendGetInfo()">GetDeviceInfo</button>
+    <button id="GetActivity" onclick="sendGetActivity()">GetActivity</button> -->
+    <button id="Simulate" onclick="simulateRx()">Simulate activity without a device</button>
+    <br><br>
+    <b>Events:</b><br>
+    <p id="events">
+    </p>
+    <b>Debug log:</b>
+    <hr>
+    <script>
+        var send_char;
+        var rx_written;
+        var rx_buffer;
+
+        function event_log(message){
+            var evt_msg = document.createElement("div")
+            evt_msg.appendChild(document.createTextNode(message))
+            document.getElementById("events").appendChild(evt_msg)
+        }
+        button.addEventListener('pointerup', function (event) {
+            navigator.bluetooth.requestDevice({
+                filters: [{
+                    services: [0x0AF0]
+                }]
+            })
+                .then(device => {
+                    event_log("Device Selected")
+                    return device.gatt.connect()
+                })
+                .then(server => {
+                    event_log("Device Connected")
+                    return server.getPrimaryService(0x0AF0)
+                })
+                .then(service => {
+                    service.getCharacteristic(0x0AF6).then(tx_char => { send_char = tx_char });
+                    return service.getCharacteristic(0x0AF7)
+                })
+                .then(characteristic => characteristic.startNotifications())
+                .then(characteristic => {
+                    characteristic.addEventListener('characteristicvaluechanged',
+                        handleCharacteristicValueChanged);
+                    event_log("Receiving Notifications")
+                    console.log('Notifications have been started.');
+                    sendGetInfo()
+                    document.body.appendChild(document.createTextNode("Probably connected to a device."))
+                })
+                .catch(error => { console.error(error); event_log("BT Connection error occurred: " + error)});
+        });
+
+        function handleCharacteristicValueChanged(event) {
+            const value = event.target.value;
+            console.log(new Uint8Array(value.buffer))
+            document.body.appendChild(document.createTextNode(JSON.stringify(new Uint8Array(value.buffer))))
+
+            const info_layout = {
+                "device_id": [2, 2], // offset, length
+                "firmware_version": [4, 1],
+                "mode": [5, 1],
+                "batt_status": [6, 1],
+                "energe": [7, 1],
+                "pair": [8, 1],
+                "reboot": [9, 1],
+                "bind_confirm_flag": [11, 1],
+                "platform": [12, 1],
+                "shape": [13, 1],
+                "dev_type": [14, 1],
+                "user_defined_dial": [15, 1],
+                "cloud_clock_dial": [16, 1],
+                "show_bind_choice": [17, 1],
+                "bootload_version": [18, 1],
+                "gps_platform": [19, 1]
+            }
+
+            const data_offset = 25
+            const data_activity = {
+                "version": [1, 0,],
+                "year": [2, 1,],
+                "month": [1, 3,],
+                "day": [1, 4,],
+                "hour": [1, 5,],
+                "minute": [1, 6,],
+                "second": [1, 7,],
+                "connect_app": [1, 10,],
+                "type": [1, 0xc,],
+                "sport_start_type": [1, 0xb,],
+                "hr_data_interval_minute": [2, 8,],
+                "step": [4, 0xd,],
+                "durations": [4, 0x11,],
+                "calories": [4, 0x15,],
+                "distance": [4, 0x19,],
+                "avg_hr_value": [1, 0x1d,],
+                "max_hr_value": [1, 0x1e,],
+                "min_hr_value": [1, 0x1f,],
+                "avg_step_frequency": [1, 0x20,],
+                "max_step_frequency": [1, 0x21,],
+                "avg_step_stride": [1, 0x22,],
+                "max_step_stride": [1, 0x23,],
+                "avg_speed": [2, 0x24,],
+                "max_speed": [2, 0x26,],
+                "avg_pace_speed": [2, 0x2c,],
+                "fast_pace_speed": [2, 0x2e,],
+                "km_speed": [2, 0x28,],
+                "fast_km_speed": [2, 0x2a,],
+                "training_effect": [1, 0x44,],
+                "recovery_time_year": [2, 0x47,],
+                "recovery_time_mon": [1, 0x49,],
+                "recovery_time_day": [1, 0x4a,],
+                "recovery_time_hour": [1, 0x4b,],
+                "recovery_time_min": [1, 0x4c,],
+                "recovery_time_s": [1, 0x4d,],
+                "paddle_number_count": [2, 0x5a,],
+                "paddle_frequency_count": [2, 0x5c,],
+                "tread_frequency_count": [2, 0x5e,],
+                "activity_data_item_count": [2, 0x4e,],
+                "frequency_count": [2, 0x56,],
+                "km_speed_count": [2, 0x50,],
+                "mi_speed_count": [2, 0x52,],
+                "pace_count": [2, 0x54,],
+                "end_month": [1, 0x60,],
+                "end_day": [1, 0x61,],
+                "end_hour": [1, 0x62,],
+                "end_minute": [1, 99,],
+                "activity_data_item_count": [2, 0x4e,],
+                "hr_item_count": [2, 0x58,],
+                "distance3d": [4, 0x66,],
+                "avg_3d_speed": [2, 0x6a,],
+                "avg_vertical_speed": [4, 0x6c,],
+                "avg_slope": [1, 0x70,],
+                "max_altitude": [2, 0x71,],
+                "min_altitude": [2, 0x73,],
+                "cumulative_altitude_rise": [2, 0x75,],
+                "cumulative_altitude_loss": [2, 0x77,],
+                "altitude_count": [2, 0x78,],
+                "avg_altitude": [2, 0x7b,],
+
+                "hr_data_value": ["hr_item_count", 0x64, 1], // misspelt in logs
+                "step_cal_distance": ["activity_data_item_count", 0x64, 6],
+                "km_speed_value": ["km_speed_count", 0x64, 2],
+                "item_frequency": ["frequency_count", 0x64, 2],
+                "mi_speed": ["mi_speed_count", 0x64, 2],
+                "pace_speed_items": ["pace_count", 0x64, 2],
+
+            }
+
+            const header = value.getUint8(0);
+            if (header == 2) {
+                // protocol version 2 - used by us to get basic info
+                if (value.getUint8(1) == 1) {
+                    console.log("Basic info detected")
+
+                    var basic_info = {}
+                    for (let [key, offset] of Object.entries(info_layout)) {
+                        basic_info[key] = 0; // set default value
+                        if (offset[0] < value.byteLength) {
+                            if (offset[1] == 2) {
+                                basic_info[key] = value.getInt16(offset[0], 1)
+                            } else {
+                                basic_info[key] = value.getUint8(offset[0])
+                            }
+                        }
+                    }
+                    console.log(basic_info)
+                    event_log("Received Basic Info - Requesting Activity")
+                    sendGetActivity()
+                    document.body.appendChild(document.createTextNode(JSON.stringify(basic_info)))
+                }
+            }
+
+            if (header == 0x33) {
+                if (new Uint8Array(value.buffer.slice(1, 5)).toString() == new Uint8Array([0xda, 0xad, 0xda, 0xad]).toString()) {
+                    console.log("detected preamble - length of packet is " + value.getUint16(6, true))
+                    rx_buffer = new Uint8Array(value.getUint16(6, true))
+                    rx_written = 0;
+                    event_log("Receiving Data")
+                }
+
+                rx_buffer.set(new Uint8Array(value.buffer.slice(1)), rx_written)
+                console.log(rx_written)
+                rx_written = rx_written + value.byteLength - 1
+                if (rx_written == rx_buffer.length) {
+                    console.log("full rx")
+                    console.log(new Uint8Array(rx_buffer.buffer))
+
+                    activity_buffer = new DataView(rx_buffer.buffer)
+
+                    console.log("Activity") // TODO actually detect packet type
+                    event_log("Received Activity")
+
+                    var activity_output = {}
+                    var array_offset = 0
+                    for (let [key, offset] of Object.entries(data_activity)) {
+                        activity_output[key] = 0; // set default value
+                        var buffer_offset = offset[1] + data_offset;
+                        if (buffer_offset < activity_buffer.byteLength) {
+                            if (offset[0] == 2) {
+                                activity_output[key] = activity_buffer.getInt16(buffer_offset, 1) // some of these are actually uints...
+                            } else if (offset[0] == 4) {
+                                activity_output[key] = activity_buffer.getUint32(buffer_offset, 1)
+                            } else if (typeof (offset[0]) == "string") {
+                                activity_output[key] = []
+                                var item_count = activity_output[offset[0]]
+                                for (var i = 0; i < item_count; i++) {
+                                    if (offset[2] == 2) {
+                                        activity_output[key].push(activity_buffer.getInt16(buffer_offset + array_offset, 1)) // some of these are actually uints...
+                                    } else if (offset[2] == 4) {
+                                        activity_output[key].push(activity_buffer.getUint32(buffer_offset + array_offset, 1))
+                                    } else if (offset[2] == 1) {
+                                        activity_output[key].push(activity_buffer.getUint8(buffer_offset + array_offset))
+                                    }
+                                    array_offset = array_offset += offset[2]
+                                }
+
+                            } else {
+                                activity_output[key] = activity_buffer.getUint8(buffer_offset)
+                            }
+                            console.log(activity_output[key])
+                            console.log("---")
+                        }
+                        if (activity_output["version"] != 16){
+                            document.body.appendChild(document.createTextNode("not version we support"))
+                            console.log("not version we support: "+ activity_output["version"])
+                            event_log("Not version we support: "+ activity_output["version"])
+                            return
+                        }
+                    }
+                    console.log(activity_output)
+                    document.body.appendChild(document.createTextNode(JSON.stringify(activity_output)))
+                    event_log("Creating TCX file")
+                    createTCX(activity_output)
+                }
+
+            }
+        }
+
+        function sendGetInfo() {
+            const infoCmd = Uint8Array.of(2, 1);
+            send_char.writeValue(infoCmd);
+        }
+
+        function sendGetActivity() {
+            const infoCmd = Uint8Array.of(
+                0x33, // '3' version protocol
+                0xDA, // this is preamble to detect new command midway through
+                0xAD, // preamble
+                0xDA, // preamble
+                0xAD, // preamble
+                0x01, // health?
+                0x10, // len (without '3' and checksum (last two bytes) - aka minus 3)
+                0x00, // len
+                0x04, // cmd
+                0x00,
+                0x0B, // seq - can just pick anything
+                0x01, // seq
+                0x00, // start / stop
+                0x04, // cmd?
+                0x00,
+                0x00,
+                0x00,
+                0x00, // checksum?
+                0x00  // checksum? crc but doesn't seem to be checked
+
+                // 33DAADDAAD0110000400160000040000000000
+            );
+            send_char.writeValue(infoCmd);
+        }
+
+        function simulateRx(){
+            var data = {target: {value: new DataView(new Uint8Array([51, 218, 173, 218, 173, 1, 209, 0, 4, 0, 11, 1, 0, 4, 0, 0, 0, 2, 0, 100, 0, 84, 0, 0, 0, 0, 16, 233, 7, 2, 9, 15, 12, 27, 5, 0, 1, 2, 48, 162, 0, 0, 0, 66, 0, 0, 0, 5, 0, 0, 0, 222, 0, 0, 0, 119, 123, 116, 147, 155, 158, 158, 186, 4, 249, 5, 44, 1, 236, 0, 0, 0, 0, 0, 0, 0, 0, 0, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 233, 7, 2, 9, 15, 13, 50, 2, 0, 2, 0, 2, 0, 14, 0, 14, 0, 8, 0, 0, 0, 0, 0, 0, 0, 2, 9, 15, 13, 118, 116, 118, 119, 121, 121, 123, 123, 147, 0, 5, 0, 206, 0, 15, 0, 0, 0, 16, 0, 41, 1, 41, 1, 0, 0, 0, 0, 50, 0, 103, 0, 138, 0, 142, 0, 146, 0, 147, 0, 149, 0, 150, 0, 152, 0, 152, 0, 154, 0, 155, 0, 223, 1]).buffer)}}
+            handleCharacteristicValueChanged(data)
+            window.setTimeout(() => {
+                var data =  {target: {value: new DataView(new Uint8Array([51, 223, 1, 0, 0, 0, 0, 0, 0, 109, 1, 30, 1, 5, 1, 245, 0, 239, 0, 236, 0, 236, 0, 255, 0, 71, 1, 120, 1, 131, 1]).buffer)}}
+                handleCharacteristicValueChanged(data)
+            }, 200);
+        }
+
+        function createTCX(data){
+            var xmlDoc = document.implementation.createDocument(null, "TrainingCenterDatabase");
+            xmlDoc.children[0].setAttribute("xmlns","http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2")
+            xmlDoc.children[0].setAttribute("xmlns:ns2","http://www.garmin.com/xmlschemas/ActivityExtension/v2")
+            var activities = xmlDoc.createElement("Activities")
+            xmlDoc.children[0].appendChild(activities)
+
+            var activity = xmlDoc.createElement("Activity")
+            activity.setAttribute("Sport","Running")
+            activities.appendChild(activity)
+
+            
+            var time_elm = new Date(
+                    data['year'],
+                    data['month']-1,
+                    data['day'],
+                    data['hour'],
+                    data['minute'],
+                    data['second']
+            )
+            var startTime = time_elm.toISOString()
+
+            var id = xmlDoc.createElement("Id")
+            id.appendChild(xmlDoc.createTextNode(startTime))
+            activity.appendChild(id)
+
+            var lap = xmlDoc.createElement("Lap")
+            lap.setAttribute("StartTime", startTime)
+            activity.appendChild(lap)
+
+            var totaltimeseconds = xmlDoc.createElement("TotalTimeSeconds")
+            totaltimeseconds.appendChild(xmlDoc.createTextNode(data['durations']))
+            lap.appendChild(totaltimeseconds)
+
+            var distancemeters = xmlDoc.createElement("DistanceMeters")
+            distancemeters.appendChild(xmlDoc.createTextNode(data['distance']))
+            lap.appendChild(distancemeters)
+
+            var maxspeed = xmlDoc.createElement("MaximumSpeed") // m/s
+            maxspeed.appendChild(xmlDoc.createTextNode(data['max_speed']/100*0.2777777))
+            lap.appendChild(maxspeed)
+
+            var avgheartrate = xmlDoc.createElement("AverageHeartRateBpm")
+            var value = xmlDoc.createElement("Value")
+            value.appendChild(xmlDoc.createTextNode(data['avg_hr_value']))
+            avgheartrate.appendChild(value)
+            lap.appendChild(avgheartrate)
+
+            var maxheartrate = xmlDoc.createElement("MaximumHeartRateBpm")
+            var value = xmlDoc.createElement("Value")
+            value.appendChild(xmlDoc.createTextNode(data['max_hr_value']))
+            maxheartrate.appendChild(value)
+            lap.appendChild(maxheartrate)
+            
+            var intensity = xmlDoc.createElement("Intensity") // m/s
+            intensity.appendChild(xmlDoc.createTextNode("Active"))
+            lap.appendChild(intensity)
+
+            var track = xmlDoc.createElement("Track")
+            lap.appendChild(track)
+
+            var max_points = Math.max(
+                data['frequency_count'],
+                data['km_speed_count'],
+                data['pace_count'],
+                data['hr_item_count'],
+            )
+
+            var cum_distance = 0
+
+            for (var x=0; x<max_points; x++){
+                var tp = xmlDoc.createElement("Trackpoint")
+                track.appendChild(tp)
+
+                var interval_time = new Date(time_elm.getTime()+(x*5000))
+                
+                var time = xmlDoc.createElement("Time")
+                time.appendChild(xmlDoc.createTextNode(interval_time.toISOString()))
+                tp.appendChild(time)
+
+                var ext = xmlDoc.createElement("Extensions")
+                tp.appendChild(ext)
+                var tpx = xmlDoc.createElement("TPX")
+                tpx.setAttribute("xmlns", "http://www.garmin.com/xmlschemas/ActivityExtension/v2")
+                ext.appendChild(tpx)
+
+                if (x < data.pace_speed_items.length && data['pace_speed_items'][x] > 1){
+                    var speed = xmlDoc.createElement("Speed")
+                    var meters_sec = (1/data['pace_speed_items'][x])*1000
+                    speed.appendChild(xmlDoc.createTextNode(meters_sec))
+                    cum_distance += meters_sec * 5
+                    tpx.appendChild(speed)
+                }
+
+                if (x < data.item_frequency.length && data['item_frequency'][x] > 1){
+                    var cadence = xmlDoc.createElement("RunCadence")
+                    cadence.appendChild(xmlDoc.createTextNode(data['item_frequency'][x]/2)) // strides not steps.
+                    tpx.appendChild(cadence)
+                }
+
+                var distance_m = xmlDoc.createElement("DistanceMeters")
+                distance_m.appendChild(xmlDoc.createTextNode(cum_distance))
+                tp.appendChild(distance_m)
+
+
+                if (x < data.hr_data_value.length && data['hr_data_value'][x] > 1){
+                    var hr = xmlDoc.createElement("HeartRateBpm")
+                    var value_hr = xmlDoc.createElement("Value")
+                    hr.appendChild(value_hr)
+                    value_hr.appendChild(xmlDoc.createTextNode(data['hr_data_value'][x]))
+                    tp.appendChild(hr)
+                }
+                
+
+
+                
+
+            }
+
+            var serializer = new XMLSerializer();
+
+            var doc = serializer.serializeToString(xmlDoc)
+            
+            
+            var element = document.createElement('a');
+            
+            element.setAttribute('href', 'data:application/octet-stream;base64,' + btoa(doc));
+            var filename = startTime.replace(":","-").replace(".","-") + ".tcx"
+            element.setAttribute('download', filename);
+
+            element.style.display = 'none';
+            document.body.appendChild(element);
+
+            element.click();
+
+            document.body.removeChild(element);
+            event_log("TCX created")
+
+        }
+
+    </script>
+</body>
+
+</html>
