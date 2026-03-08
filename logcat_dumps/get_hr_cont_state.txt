@@ -1,0 +1,13 @@
+03-07 22:56:59.091  4046  5272 I DEBUG LOG: [03-07 22:56:59.091] [protocol.c] [protocol_receive_data] [line 469] RX : 02 01 14 02 11 01 00 1A 01 00 01 00 28 02 01 03 03 00 00 00 
+03-07 22:56:59.091  4046  5272 I DEBUG LOG: [03-07 22:56:59.091] [protocol_write.c] [protocol_write_vbus_control] [line 1293] stop resend evt:301(VBUS_EVT_APP_GET_DEVICE_INFO)
+03-07 22:56:59.092  4046  5272 I DEBUG LOG: [03-07 22:56:59.092] [jni_protocol.cpp] [jni_notice_app_evt] [line 436] jni send evt notice to app evt type:301
+03-07 22:56:59.096  4046  5272 I DEBUG LOG: [03-07 22:56:59.096] [protocol_v3.c] [process_tx_buff] [line 88] v3 protocol write complete
+03-07 22:56:59.096  4046  5272 I DEBUG LOG: [03-07 22:56:59.096] [protocol_v3.c] [process_tx_buff] [line 102] send data buff length:25,offset:25
+03-07 22:56:59.096  4046  5272 I DEBUG LOG: [03-07 22:56:59.096] [protocol_v3.c] [send_end] [line 67] protocol cmd id:0x9 nseq:0x110 send end
+03-07 22:56:59.418  4046  5272 I DEBUG LOG: [03-07 22:56:59.418] [protocol_v3.c] [process_tx_buff] [line 88] v3 protocol write complete
+03-07 22:56:59.422  4046  5272 I DEBUG LOG: [03-07 22:56:59.422] [protocol.c] [protocol_receive_data] [line 469] RX : 33 DA AD DA AD 01 1F 00 09 00 10 01 00 00 00 00 AA 00 00 00 00 00 2C 01 00 00 00 00 04 00 00 00 83 05 
+03-07 22:56:59.422  4046  5272 I DEBUG LOG: [03-07 22:56:59.422] [protocol_v3.c] [protocol_v3_exec] [line 394] rec v3 protocol cmd id:0x9,nseq:0x110,total length:31(+2Bytes CRC),cur get data length:33
+03-07 22:56:59.423  4046  5272 I DEBUG LOG: [03-07 22:56:59.423] [protocol_v3_queue.c] [protocol_v3_rx_data_cb_handle] [line 109] rec v3 protocol cmd id:0x9 nseq:0x110 vserion: 0x1 complete,length:31(+2Bytes CRC)
+03-07 22:56:59.423  4046  5272 I DEBUG LOG: [03-07 22:56:59.423] [protocol_v3_queue.c] [cmd_reply_process] [line 86] cmd 0x9,nseq = 272,is reply
+03-07 22:56:59.423  4046  5272 I DEBUG LOG: [03-07 22:56:59.423] [protocol_v3_queue.c] [process_queue] [line 269] warn:   queue is empty
+03-07 22:56:59.423  4046  5272 I DEBUG LOG: [03-07 22:56:59.423] [jni_protocol.cpp] [jni_notice_app_evt] [line 436] jni send evt notice to app evt type:5010

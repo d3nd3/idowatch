@@ -1,0 +1,16 @@
+03-07 23:45:16.538  4046  4046 I DEBUG LOG: [03-07 23:45:16.538] [jni_protocol.cpp] [Java_com_veryfit_multi_nativeprotocol_Protocol_WriteJsonData] [line 612] app send protocol evt:160(VBUS_EVT_APP_SET_MENSTRUATION_REMIND)
+03-07 23:45:16.540  4046  4046 I DEBUG LOG: [03-07 23:45:16.539] [protocol_write.c] [protocol_write_data_add] [line 236] add queue to send evt:160(VBUS_EVT_APP_SET_MENSTRUATION_REMIND)
+03-07 23:45:16.540  4046  4046 I DEBUG LOG: [03-07 23:45:16.540] [protocol_write.c] [protocol_write_process] [line 108] mem_pop is success
+03-07 23:45:16.540  4046  4046 I DEBUG LOG: [03-07 23:45:16.540] [protocol.c] [protocol_write_data] [line 235]   TX : 03 42 03 03 08 00 03 03 03 
+03-07 23:45:16.540  4046  4046 I DEBUG LOG: [03-07 23:45:16.540] [jni_protocol.cpp] [jni_notice_app_tx_data] [line 345] jni send tx data to app data len:9
+03-07 23:45:16.547  4046  4046 I DEBUG LOG: [03-07 23:45:16.547] [jni_protocol.cpp] [Java_com_veryfit_multi_nativeprotocol_Protocol_WriteJsonData] [line 612] app send protocol evt:159(VBUS_EVT_APP_SET_MENSTRUATION)
+03-07 23:45:16.548  4046  4046 I DEBUG LOG: [03-07 23:45:16.548] [protocol_write.c] [protocol_write_data_add] [line 236] add queue to send evt:159(VBUS_EVT_APP_SET_MENSTRUATION)
+03-07 23:45:16.548  4046  4046 I DEBUG LOG: [03-07 23:45:16.548] [protocol_write.c] [protocol_write_process] [line 102] warn:queue cmd 0x3 0x42 not reply yet add queue to send failed,queue list size:1
+03-07 23:45:16.696  4046  4046 I DEBUG LOG: [03-07 23:45:16.696] [jni_protocol.cpp] [Java_com_veryfit_multi_nativeprotocol_Protocol_WriteJsonData] [line 612] app send protocol evt:5010(VBUS_EVT_FUNC_V3_SET_HR_MODE)
+03-07 23:45:16.698  4046  4046 I DEBUG LOG: [03-07 23:45:16.698] [protocol_v3_queue.c] [protocol_v3_queue_write_ex] [line 360] free ptr:tmp & queue_data
+03-07 23:45:16.698  4046  4046 I DEBUG LOG: [03-07 23:45:16.698] [protocol_v3_queue.c] [protocol_v3_queue_write_ex] [line 362] v3 protocol add queue cmd id=0x9 nseq=0x131 send queue cout=1
+03-07 23:45:16.698  4046  4046 I DEBUG LOG: [03-07 23:45:16.698] [protocol_v3_queue.c] [send_packet] [line 193] v3 protocol send packet cmd id=0x9 nseq=0x131
+03-07 23:45:16.698  4046  4046 I DEBUG LOG: [03-07 23:45:16.698] [protocol_v3.c] [process_tx_buff] [line 88] v3 protocol write complete
+03-07 23:45:16.698  4046  4046 I DEBUG LOG: [03-07 23:45:16.698] [protocol_v3.c] [process_tx_buff] [line 102] send data buff length:25,offset:0
+03-07 23:45:16.698  4046  4046 I DEBUG LOG: [03-07 23:45:16.698] [protocol.c] [protocol_write_data] [line 235]   TX : 33 DA AD DA AD 01 17 00 09 00 31 01 00 00 00 00 00 01 00 00 17 3B 00 00 20 C0 
+03-07 23:45:16.698  4046  4046 I DEBUG LOG: [03-07 23:45:16.698] [jni_protocol.cpp] [jni_notice_app_tx_data] [line 345] jni send tx data to app data len:26

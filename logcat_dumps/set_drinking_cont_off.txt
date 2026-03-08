@@ -1,0 +1,28 @@
+03-07 23:02:57.142  4046  4046 I DEBUG LOG: [03-07 23:02:57.142] [jni_protocol.cpp] [Java_com_veryfit_multi_nativeprotocol_Protocol_WriteJsonData] [line 612] app send protocol evt:168(VBUS_EVT_APP_SET_DRINK_WATER_REMINDER)
+03-07 23:02:57.144  4046  4046 I DEBUG LOG: [03-07 23:02:57.144] [protocol_write.c] [protocol_write_data_add] [line 236] add queue to send evt:168(VBUS_EVT_APP_SET_DRINK_WATER_REMINDER)
+03-07 23:02:57.145  4046  4046 I DEBUG LOG: [03-07 23:02:57.145] [protocol_write.c] [protocol_write_process] [line 108] mem_pop is success
+03-07 23:02:57.145  4046  4046 I DEBUG LOG: [03-07 23:02:57.145] [protocol.c] [protocol_write_data] [line 235]   TX : 03 60 00 09 00 12 00 3E 1E 00 01 00 00 00 00 00 
+03-07 23:02:57.145  4046  4046 I DEBUG LOG: [03-07 23:02:57.145] [jni_protocol.cpp] [jni_notice_app_tx_data] [line 345] jni send tx data to app data len:16
+03-07 23:02:57.249  4046  4046 I DEBUG LOG: [03-07 23:02:57.249] [jni_protocol.cpp] [Java_com_veryfit_multi_nativeprotocol_Protocol_WriteJsonData] [line 612] app send protocol evt:5010(VBUS_EVT_FUNC_V3_SET_HR_MODE)
+03-07 23:02:57.250  4046  4046 I DEBUG LOG: [03-07 23:02:57.250] [protocol_v3_queue.c] [protocol_v3_queue_write_ex] [line 360] free ptr:tmp & queue_data
+03-07 23:02:57.250  4046  4046 I DEBUG LOG: [03-07 23:02:57.250] [protocol_v3_queue.c] [protocol_v3_queue_write_ex] [line 362] v3 protocol add queue cmd id=0x9 nseq=0x11F send queue cout=1
+03-07 23:02:57.250  4046  4046 I DEBUG LOG: [03-07 23:02:57.250] [protocol_v3_queue.c] [send_packet] [line 193] v3 protocol send packet cmd id=0x9 nseq=0x11F
+03-07 23:02:57.250  4046  4046 I DEBUG LOG: [03-07 23:02:57.250] [protocol_v3.c] [process_tx_buff] [line 88] v3 protocol write complete
+03-07 23:02:57.250  4046  4046 I DEBUG LOG: [03-07 23:02:57.250] [protocol_v3.c] [process_tx_buff] [line 102] send data buff length:25,offset:0
+03-07 23:02:57.250  4046  4046 I DEBUG LOG: [03-07 23:02:57.250] [protocol.c] [protocol_write_data] [line 235]   TX : 33 DA AD DA AD 01 17 00 09 00 1F 01 00 00 00 00 00 01 00 00 17 3B 00 00 E3 BD 
+03-07 23:02:57.250  4046  4046 I DEBUG LOG: [03-07 23:02:57.250] [jni_protocol.cpp] [jni_notice_app_tx_data] [line 345] jni send tx data to app data len:26
+03-07 23:02:57.251  4046  4046 I DEBUG LOG: [03-07 23:02:57.251] [protocol_v3_queue.c] [send_packet] [line 208] v3 write data rel:0,free send buff
+03-07 23:02:57.251  4046  4046 I DEBUG LOG: [03-07 23:02:57.251] [protocol_v3_queue.c] [process_queue] [line 265] free queue_data
+03-07 23:02:57.970  4046  6425 I DEBUG LOG: [03-07 23:02:57.970] [protocol.c] [protocol_receive_data] [line 469] RX : 03 60 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+03-07 23:02:57.971  4046  6425 I DEBUG LOG: [03-07 23:02:57.971] [protocol_write.c] [protocol_write_vbus_control] [line 1293] stop resend evt:168(VBUS_EVT_APP_SET_DRINK_WATER_REMINDER)
+03-07 23:02:57.971  4046  6425 I DEBUG LOG: [03-07 23:02:57.971] [jni_protocol.cpp] [jni_notice_app_evt] [line 436] jni send evt notice to app evt type:168
+03-07 23:02:57.978  4046  6425 I DEBUG LOG: [03-07 23:02:57.978] [protocol_v3.c] [process_tx_buff] [line 88] v3 protocol write complete
+03-07 23:02:57.978  4046  6425 I DEBUG LOG: [03-07 23:02:57.978] [protocol_v3.c] [process_tx_buff] [line 102] send data buff length:25,offset:25
+03-07 23:02:57.978  4046  6425 I DEBUG LOG: [03-07 23:02:57.978] [protocol_v3.c] [send_end] [line 67] protocol cmd id:0x9 nseq:0x11F send end
+03-07 23:02:58.295  4046  6425 I DEBUG LOG: [03-07 23:02:58.295] [protocol_v3.c] [process_tx_buff] [line 88] v3 protocol write complete
+03-07 23:02:58.296  4046  4781 I DEBUG LOG: [03-07 23:02:58.296] [protocol.c] [protocol_receive_data] [line 469] RX : 33 DA AD DA AD 01 1F 00 09 00 1F 01 00 00 00 00 AA 00 00 00 00 00 2C 01 00 00 00 00 04 00 00 00 09 4A 
+03-07 23:02:58.296  4046  4781 I DEBUG LOG: [03-07 23:02:58.296] [protocol_v3.c] [protocol_v3_exec] [line 394] rec v3 protocol cmd id:0x9,nseq:0x11F,total length:31(+2Bytes CRC),cur get data length:33
+03-07 23:02:58.297  4046  4781 I DEBUG LOG: [03-07 23:02:58.297] [protocol_v3_queue.c] [protocol_v3_rx_data_cb_handle] [line 109] rec v3 protocol cmd id:0x9 nseq:0x11F vserion: 0x1 complete,length:31(+2Bytes CRC)
+03-07 23:02:58.297  4046  4781 I DEBUG LOG: [03-07 23:02:58.297] [protocol_v3_queue.c] [cmd_reply_process] [line 86] cmd 0x9,nseq = 287,is reply
+03-07 23:02:58.297  4046  4781 I DEBUG LOG: [03-07 23:02:58.297] [protocol_v3_queue.c] [process_queue] [line 269] warn:   queue is empty
+03-07 23:02:58.297  4046  4781 I DEBUG LOG: [03-07 23:02:58.297] [jni_protocol.cpp] [jni_notice_app_evt] [line 436] jni send evt notice to app evt type:5010

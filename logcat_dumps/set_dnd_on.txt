@@ -1,0 +1,30 @@
+03-07 23:35:14.643  4046  4046 I DEBUG LOG: [03-07 23:35:14.643] [jni_protocol.cpp] [Java_com_veryfit_multi_nativeprotocol_Protocol_WriteJsonData] [line 612] app send protocol evt:116(VBUS_EVT_APP_SET_DO_NOT_DISTURB)
+03-07 23:35:14.646  4046  4046 I DEBUG LOG: [03-07 23:35:14.646] [protocol_write.c] [protocol_write_data_add] [line 236] add queue to send evt:116(VBUS_EVT_APP_SET_DO_NOT_DISTURB)
+03-07 23:35:14.646  4046  4046 I DEBUG LOG: [03-07 23:35:14.646] [protocol_write.c] [protocol_write_process] [line 108] mem_pop is success
+03-07 23:35:14.646  4046  4046 I DEBUG LOG: [03-07 23:35:14.646] [protocol.c] [protocol_write_data] [line 235]   TX : 03 29 AA 17 00 07 00 02 FE 55 17 00 07 00 00 00 
+03-07 23:35:14.646  4046  4046 I DEBUG LOG: [03-07 23:35:14.646] [jni_protocol.cpp] [jni_notice_app_tx_data] [line 345] jni send tx data to app data len:16
+03-07 23:35:14.737  4046  4046 I DEBUG LOG: [03-07 23:35:14.737] [jni_protocol.cpp] [Java_com_veryfit_multi_nativeprotocol_Protocol_SysEvtSet] [line 266] api sysEvtSet,intput evt base:VBUS_EVT_BASE_APP_GET evt:326
+03-07 23:35:14.737  4046  4046 I DEBUG LOG: [03-07 23:35:14.737] [protocol_write.c] [protocol_write_data_add] [line 236] add queue to send evt:326(326)
+03-07 23:35:14.737  4046  4046 I DEBUG LOG: [03-07 23:35:14.737] [protocol_write.c] [protocol_write_process] [line 102] warn:queue cmd 0x3 0x29 not reply yet add queue to send failed,queue list size:1
+03-07 23:35:15.571  4046  5272 I DEBUG LOG: [03-07 23:35:15.570] [protocol.c] [protocol_receive_data] [line 469] RX : 07 40 00 00 10 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+03-07 23:35:15.571  4046  5272 I DEBUG LOG: [03-07 23:35:15.571] [jni_protocol.cpp] [jni_notice_app_evt] [line 436] jni send evt notice to app evt type:577
+03-07 23:35:15.575  4046  5272 I DEBUG LOG: [03-07 23:35:15.575] [protocol.c] [protocol_write_data] [line 235]   TX : 07 40 00 00 10 00 00 00 00 00 00 00 00 00 00 00 00 00 
+03-07 23:35:15.575  4046  5272 I DEBUG LOG: [03-07 23:35:15.575] [jni_protocol.cpp] [jni_notice_app_tx_data] [line 345] jni send tx data to app data len:18
+03-07 23:35:15.587  4046  5272 I DEBUG LOG: [03-07 23:35:15.587] [protocol.c] [protocol_receive_data] [line 469] RX : 03 29 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+03-07 23:35:15.587  4046  5272 I DEBUG LOG: [03-07 23:35:15.587] [protocol_write.c] [protocol_write_vbus_control] [line 1293] stop resend evt:116(VBUS_EVT_APP_SET_DO_NOT_DISTURB)
+03-07 23:35:15.587  4046  5272 I DEBUG LOG: [03-07 23:35:15.587] [protocol_write.c] [protocol_write_process] [line 108] mem_pop is success
+03-07 23:35:15.588  4046  5272 I DEBUG LOG: [03-07 23:35:15.587] [protocol.c] [protocol_write_data] [line 235]   TX : 02 B1 
+03-07 23:35:15.588  4046  5272 I DEBUG LOG: [03-07 23:35:15.588] [jni_protocol.cpp] [jni_notice_app_tx_data] [line 345] jni send tx data to app data len:2
+03-07 23:35:15.589  4046  5272 I DEBUG LOG: [03-07 23:35:15.589] [jni_protocol.cpp] [jni_notice_app_evt] [line 436] jni send evt notice to app evt type:116
+03-07 23:35:15.636  4046  4046 I DEBUG LOG: [03-07 23:35:15.636] [jni_protocol.cpp] [Java_com_veryfit_multi_nativeprotocol_Protocol_SysEvtSet] [line 266] api sysEvtSet,intput evt base:VBUS_EVT_BASE_APP_GET evt:VBUS_EVT_APP_GET_DO_NOT_DISTURB
+03-07 23:35:15.636  4046  4046 I DEBUG LOG: [03-07 23:35:15.636] [protocol_write.c] [protocol_write_data_add] [line 236] add queue to send evt:316(VBUS_EVT_APP_GET_DO_NOT_DISTURB)
+03-07 23:35:15.636  4046  4046 I DEBUG LOG: [03-07 23:35:15.636] [protocol_write.c] [protocol_write_process] [line 102] warn:queue cmd 0x2 0xB1 not reply yet add queue to send failed,queue list size:1
+03-07 23:35:16.210  4046  5272 I DEBUG LOG: [03-07 23:35:16.210] [protocol.c] [protocol_receive_data] [line 469] RX : 02 B1 55 05 01 00 00 17 3B 00 00 00 00 00 00 00 00 00 00 00 
+03-07 23:35:16.210  4046  5272 I DEBUG LOG: [03-07 23:35:16.210] [protocol_write.c] [protocol_write_vbus_control] [line 1293] stop resend evt:326(326)
+03-07 23:35:16.211  4046  5272 I DEBUG LOG: [03-07 23:35:16.210] [protocol_write.c] [protocol_write_process] [line 108] mem_pop is success
+03-07 23:35:16.211  4046  5272 I DEBUG LOG: [03-07 23:35:16.211] [protocol.c] [protocol_write_data] [line 235]   TX : 02 30 
+03-07 23:35:16.211  4046  5272 I DEBUG LOG: [03-07 23:35:16.211] [jni_protocol.cpp] [jni_notice_app_tx_data] [line 345] jni send tx data to app data len:2
+03-07 23:35:16.212  4046  5272 I DEBUG LOG: [03-07 23:35:16.212] [jni_protocol.cpp] [jni_notice_app_evt] [line 436] jni send evt notice to app evt type:326
+03-07 23:35:16.530  4046  5272 I DEBUG LOG: [03-07 23:35:16.530] [protocol.c] [protocol_receive_data] [line 469] RX : 02 30 AA 17 00 07 00 02 FE 55 17 00 07 00 00 00 00 00 00 00 
+03-07 23:35:16.531  4046  5272 I DEBUG LOG: [03-07 23:35:16.531] [protocol_write.c] [protocol_write_vbus_control] [line 1293] stop resend evt:316(VBUS_EVT_APP_GET_DO_NOT_DISTURB)
+03-07 23:35:16.531  4046  5272 I DEBUG LOG: [03-07 23:35:16.531] [jni_protocol.cpp] [jni_notice_app_evt] [line 436] jni send evt notice to app evt type:316

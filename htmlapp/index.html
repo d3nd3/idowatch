@@ -26,33 +26,529 @@
         <ul>
             <li>Doesn't mark activities as sync'd, so you need to sync each activity with the app</li>
             <li>Only supports running</li>
-            <li>Only supports a very limit protocol subset - will likely break</li>
+            <li>Only supports a wide subset of the angelfit protocol; some devices may not support all commands</li>
             <li>Doesn't support getting GPS path</li>
             <li>May do unexpected things</li>
         </ul>
     </p>
     <h2>Lets go!</h2>
-    <button id="button">Pair + Get Activity</button>
+    <p><strong>Run from a local server (required for Bluetooth):</strong> In a terminal, from the project folder run <code>cd htmlapp && python3 -m http.server 8000</code>, then in Chrome open <code>http://localhost:8000</code>. Do not open the HTML file directly (file://) or Bluetooth will not work.</p>
+    <p style="font-size:0.85em; color:#666;">From <code>new_setup.json</code>: VeryFit enables notifications on <code>0x0AF7</code> and <code>0x0AF2</code>, but only <code>0x0AF7</code> carries application payloads in this trace. The first host writes are <code>02 04</code> → <code>02 02</code> → <code>02 07</code> → <code>02 F0</code> → v3 activity; the early <code>03 30 55 01 00</code> packet is a watch status notification, not an app write and not live HR. No <code>03 27</code> / <code>F0 01</code> reset command appears in the capture.</p>
+    <button id="button" title="Scan for your watch (0x0AF0), connect, subscribe to 0x0AF7 (and 0x0AF2 if present), then request device info and activity (v3). Required before using any other buttons.">Pair + Get Activity</button>
     <!-- <button id="GetDeviceInfo" onclick="sendGetInfo()">GetDeviceInfo</button>
     <button id="GetActivity" onclick="sendGetActivity()">GetActivity</button> -->
-    <button id="Simulate" onclick="simulateRx()">Simulate activity without a device</button>
+    <button id="Simulate" onclick="simulateRx()" title="Inject a fake activity packet so you can test TCX export and the event log without a real watch.">Simulate activity without a device</button>
+    <label><input type="checkbox" id="debug_log_packets"> Log all BLE packets (debug / discover live data)</label>
+    <br>
+    <p><strong>Send test notification:</strong> <strong>Mi Band style</strong> (0x05 0x01 + UTF-8) triggers call on many IDO watches. If it stops working, re-pair with VeryFit to restore call alert; avoid sending “Enable call alert first” (0x03 0x30) if already set via VeryFit—it can reset state.</p>
+    <label for="notif_format">Format:</label>
+    <input type="text" id="notif_text" placeholder="Hello" maxlength="60" size="14">
+    <label for="notif_sender">Sender:</label>
+    <input type="text" id="notif_sender" placeholder="Caller" maxlength="20" size="10">
+    <select id="notif_format" aria-label="Notification format">
+        <option value="1" selected>Mi Band style: 0x05 0x01 + UTF-8 (call)</option>
+        <option value="4">Firmware call: 0x05 0x01 + total+serial + 16B payload(s)</option>
+        <option value="5">Firmware SMS: 0x05 0x03 + total+serial + 16B payload(s)</option>
+        <option value="2">v2-style: 0x02 0x10 + length + UTF-8</option>
+        <option value="0">Legacy: 0x01 + length + UTF-8</option>
+    </select>
+    <button id="send_notif_btn" onclick="sendTestNotification()" title="Send a test notification to the watch using the selected format and the text/sender fields. Use Mi Band style for a call alert; firmware formats use chunked 16-byte payloads.">Send to watch</button>
+    <button id="call_status_btn" onclick="sendCallStatus()" title="Tell the watch the call ended (or other status). Sends 0x05 0x02 + status. Use 1 to end call (angelfit).">Call status (0x05 0x02)</button>
+    <select id="call_status_value" aria-label="Status"><option value="1" selected>1=end/stop call (angelfit)</option><option value="0">0</option><option value="2">2</option></select>
+    <button id="get_notice_status_btn" onclick="sendGetNoticeStatus()" title="Legacy angelfit notice-status query. Sends GET 0x02 0x10; this was not used in new_setup.json, where VeryFit instead sent GET 0x30 and also received spontaneous 0x03 0x30 status notifications.">Get notice status (legacy)</button>
+    <span id="send_notif_hint" style="color:#666;"> (connect with Pair + Get Activity first)</span>
+    <br>
+    <strong>Brute force:</strong> Try all type bytes for a given prefix. First byte
+    <input type="text" id="brute_first" value="05" size="2" maxlength="2" placeholder="05"> second byte
+    <input type="text" id="brute_second_end" value="1F" size="2" maxlength="2" placeholder="1F"> (hex, 00–FF). Delay
+    <input type="number" id="brute_delay_ms" value="1200" min="500" max="5000" step="100" size="4"> ms.
+    <button id="brute_btn" onclick="startBruteForce()" title="Try each second-byte value (e.g. 0x05 0x00, 0x05 0x01, …) with the given prefix and delay. Use to discover which bytes trigger SMS, call, or other alerts on your watch.">Start brute force</button>
+    <button id="brute_stop_btn" onclick="stopBruteForce()" disabled title="Stop the running brute-force scan.">Stop</button>
+    <p style="color:#666; font-size:0.9em;">If nothing triggers SMS/other: capture VeryFit BLE traffic when an SMS arrives (nRF Connect log or Android Developer options → Bluetooth HCI snoop) to get the exact bytes.</p>
+
+    <h3>Angelfit protocol commands</h3>
+    <p style="font-size:0.9em;">Same protocol as your watch (angelfit/orangebrush). All send to 0x0AF6; replies on 0x0AF7.</p>
+    <strong>GET (cmd 0x02):</strong>
+    <button type="button" onclick="sendProtocolGet(0x02, 0x01)" title="Request device info (firmware, battery, platform, etc.). Reply used internally to then request activity.">Device info</button>
+    <button type="button" onclick="sendProtocolGet(0x02, 0x02)" title="Request the function table: device capabilities (sport types, notifications, find phone, etc.). Result is shown in the box below.">Func table</button>
+    <span id="functable_hint" style="color:#666; font-size:0.9em;"> → result below when received</span>
+    <div id="functable_output" style="margin:8px 0; padding:8px; background:#f5f5f5; border:1px solid #ddd; font-family:monospace; font-size:12px; white-space:pre-wrap; max-height:320px; overflow:auto;"></div>
+    <button type="button" onclick="sendProtocolGet(0x02, 0x03)" title="Request the watch’s current date and time. Reply is logged as [Device time].">Device time</button>
+    <button type="button" onclick="sendProtocolGet(0x02, 0x04)" title="Request the watch MAC address. Reply is logged as [MAC].">MAC</button>
+    <button type="button" onclick="sendProtocolGet(0x02, 0x05)" title="Request battery voltage, status, and level (%). Reply is logged as [Battery].">Battery</button>
+    <button type="button" onclick="sendProtocolGet(0x02, 0x06)" title="Request serial number / SN info (GET 0x02 0x06). Reply format is device-specific.">SN info</button>
+    <button type="button" onclick="sendProtocolGet(0x02, 0x07)" title="VeryFit sends this before activity (new_setup.json). Reply logged as [GET 0x07].">GET 0x07 (VeryFit)</button>
+    <button type="button" onclick="sendProtocolGet(0x02, 0xF0)" title="VeryFit sends this before activity (new_setup.json). Reply logged as [GET 0xF0].">GET 0xF0 (VeryFit)</button>
+    <button type="button" onclick="sendProtocolGet(0x02, 0x08)" title="Continuous HR readback: app sends 02:08 four times in both hr_cont_enabled.json (end of log) and healthdata_toggles.json (when continuous HR was toggled on then off). Reply on 0x0AF7 logged as [GET 0x08].">GET 0x08 (continuous HR readback?)</button>
+    <button type="button" onclick="sendProtocolGet(0x02, 0x30)" title="VeryFit sends GET 0x02 0x30 during setup. Reply in new_setup.json looks like a 23:00-07:00 schedule/config block; it is distinct from legacy GET 0x10 notice status.">GET 0x30 (VeryFit)</button>
+    <button type="button" onclick="sendProtocolGet(0x02, 0xA0)" title="Request a live snapshot: steps, calories, distance, active time, heart rate. Watch usually sends 1–2 packets then stops.">Live data (0x02 0xA0)</button>
+    <button type="button" onclick="sendProtocolGet(0x08, 0xA0)" title="Some firmware use HEALTH_DATA 0x08 0xA0 for live data. Try if 0x02 0xA0 always returns HR=0.">Live data (0x08 0xA0)</button>
+    <button type="button" onclick="sendProtocolGet(0x02, 0x20)" title="Debug: request HR sensor params (rate, led_select). Reply on 0x0AF7.">Get HR sensor param (0x20)</button>
+    <button type="button" onclick="sendProtocolGet(0x02, 0x21)" title="Debug: request G-sensor params (rate, range, threshold). Reply on 0x0AF7.">Get G-sensor param (0x21)</button>
+    (Get notice status is above.)
+    <br>
+    <strong>Control (cmd 0x06):</strong>
+    <button type="button" onclick="sendProtocolControl(0x01, 0x00)" title="Start music control mode on the watch (e.g. play).">Music start</button>
+    <button type="button" onclick="sendProtocolControl(0x01, 0x01)" title="Stop music control mode on the watch (e.g. pause).">Music stop</button>
+    <button type="button" onclick="sendProtocolControl(0x02, 0x00)" title="Start camera/photo remote trigger on the watch.">Photo start</button>
+    <button type="button" onclick="sendProtocolControl(0x02, 0x01)" title="Stop camera/photo remote trigger.">Photo stop</button>
+    <button type="button" onclick="sendProtocolControl(0x04, 0x00)" title="Make the watch vibrate/ring to help you find it.">Find device start</button>
+    <button type="button" onclick="sendProtocolControl(0x04, 0x01)" title="Stop find-device vibration/ring.">Find device stop</button>
+    <button type="button" onclick="sendProtocolControl(0x03, 0x00)" title="Start single sport mode on the watch (Control 0x06 0x03 0x00). Only if func table single_sport is set.">Single sport start</button>
+    <button type="button" onclick="sendProtocolControl(0x03, 0x01)" title="Stop single sport mode (Control 0x06 0x03 0x01).">Single sport stop</button>
+    <button type="button" onclick="sendProtocolCmd(0x06, 0x30)" title="Open ANCS (Apple Notification Center Service) on the watch for iOS notifications.">Open ANCS</button>
+    <button type="button" onclick="sendProtocolCmd(0x06, 0x31)" title="Close ANCS on the watch.">Close ANCS</button>
+    <br>
+    <strong>Set (cmd 0x03):</strong>
+    <button type="button" onclick="sendFindPhone(1, 10)" title="Trigger find-phone on the watch; the phone will ring for 10 seconds so you can locate it.">Find phone (10s)</button>
+    <button type="button" onclick="sendFindPhone(0, 0)" title="Stop find-phone ringing on the phone.">Find phone stop</button>
+    <button type="button" onclick="sendSetHand(0)" title="Set watch to worn on left wrist (affects UI orientation).">Hand: left</button>
+    <button type="button" onclick="sendSetHand(1)" title="Set watch to worn on right wrist.">Hand: right</button>
+    <button type="button" onclick="sendSetMusicOnOff(1)" title="Enable music control on the watch (SET 0x03 0x2A 0xAA).">Music on</button>
+    <button type="button" onclick="sendSetMusicOnOff(0)" title="Disable music control on the watch (SET 0x03 0x2A 0x55).">Music off</button>
+    <span style="color:#666; font-size:0.9em;"> If the watch says “please connect to App”: stay connected with this page, tap <strong>Music on</strong> first, then open Music on the watch.</span>
+    <button type="button" onclick="sendDoNotDisturb(1, 22, 0, 7, 0)" title="Enable do-not-disturb from 22:00 to 07:00. Notifications are muted during this window.">Do not disturb on (22:00–07:00)</button>
+    <button type="button" onclick="sendDoNotDisturb(0, 0, 0, 0, 0)" title="Turn off do-not-disturb so notifications are allowed at any time.">Do not disturb off</button>
+    <button type="button" onclick="sendSetNoticeVeryFitOn()" title="Capture-backed VeryFit notice-enable payload from new_setup.json. Sends 03 30 88 00 00 AA + zero padding (20 bytes); the watch replied 03 30 88 01 00 in the trace.">Enable call alert (capture 0x30)</button>
+    <button type="button" onclick="sendSetNotice()" title="Legacy angelfit 5-byte notice struct: 03 30 01 00 00 01 03. This is not what VeryFit sent in new_setup.json and can reset state on some watches.">Enable call alert (legacy 0x30)</button>
+    <button type="button" onclick="sendSetNoticeOff()" title="Legacy angelfit disable payload 03 30 00 00 00 00 00. Capture did not show a matching VeryFit 'off' write.">Disable call alert (legacy off)</button>
+    <button type="button" onclick="sendSetDeviceTime()" title="Set the watch date and time to the current phone time (SET 0x03 0x01).">Set time to now</button>
+    <button type="button" onclick="sendSetUpHandGesture(1)" title="Enable raise-to-wake / up-hand gesture (SET 0x03 0x28).">Up hand: on</button>
+    <button type="button" onclick="sendSetUpHandGesture(0)" title="Disable raise-to-wake (SET 0x03 0x28).">Up hand: off</button>
+    <button type="button" onclick="sendSetOnekeySos(0xAA)" title="Enable one-key SOS / emergency call (SET 0x03 0x2C). 0xAA = on.">One-key SOS: on</button>
+    <button type="button" onclick="sendSetOnekeySos(0x55)" title="Disable one-key SOS (SET 0x03 0x2C). 0x55 = off.">One-key SOS: off</button>
+    <button type="button" onclick="sendSetWeatherSwitch(1)" title="Enable weather on the watch (SET 0x03 0x2D). Only if func table reports weather.">Weather: on</button>
+    <button type="button" onclick="sendSetWeatherSwitch(0)" title="Disable weather (SET 0x03 0x2D).">Weather: off</button>
+    <br>
+    <strong>Health/reminder (capture-backed):</strong>
+    <button type="button" onclick="sendSetDrinkReminderCapture(1)" title="Exact ON payload from healthdata_toggles.json: SET 0x03 0x60 with raw bytes 01 09 00 12 00 3F 1E 00 01 00 00 00 00 00. Likely the drink-water reminder.">Drink reminder: on</button>
+    <button type="button" onclick="sendSetDrinkReminderCapture(0)" title="Exact OFF payload from healthdata_toggles.json for the same 0x60 config.">Drink reminder: off</button>
+    <button type="button" onclick="sendSetWalkReminderCapture(1)" title="Exact ON payload from healthdata_toggles.json: SET 0x03 0x47. Likely the walk-around / sedentary reminder.">Walk reminder: on</button>
+    <button type="button" onclick="sendSetWalkReminderCapture(0)" title="Exact OFF payload from healthdata_toggles.json for the same 0x47 config.">Walk reminder: off</button>
+    <p style="font-size:0.85em; color:#666;">User toggled in order: (1) Continuous HR on→off, (2) Stress on→off, (3) Drinking on→off, (4) Walk around on→off, (5) Menstrual on→off. Commands in <code>healthdata_toggles.json</code>: <strong>#1 0x45</strong>, <strong>#2 none</strong> (Stress; app-only or shares 0x45), <strong>#3 0x60</strong>, <strong>#4 0x47</strong>, <strong>#5 0x41+0x42</strong>. After 0x45 the app sends GET 0x08 (×4). <code>hr_cont_enabled.json</code> confirms 0x45 + GET 0x08. See TOOBUR.md.</p>
+    <strong>Experimental (healthdata_toggles.json):</strong>
+    <button type="button" onclick="sendSetContinuousHealthCapture(1)" title="0x45 ON from capture. Likely Continuous HR and/or Stress (only key that toggles for those features).">0x45 continuous: on</button>
+    <button type="button" onclick="sendSetContinuousHealthCapture(0)" title="0x45 OFF from capture: 03:45:55:09:00:12:00:55:3f:3c:00:50:00:01:00:1e.">0x45 continuous: off</button>
+    <button type="button" onclick="sendSetWomensHealthCapture(0)" title="0x41+0x42 default/reset from capture: 03:41:55:00:00:00:00:00:00:00:00:00:00:55 then 03:42:00:00:00:00:00:00:00.">0x41/0x42: default</button>
+    <button type="button" onclick="sendSetWomensHealthCapture(1)" title="0x41+0x42 enabled from capture: 03:41:aa:07:1c:ea:07:03:07:0e:05:04:00:55 then 03:42:03:03:08:00:03:03:03.">0x41/0x42: enabled</button>
+    <br>
+    <button type="button" onclick="sendSetHeartRateMode(0x88)" title="Enable heart rate monitoring via the angelfit/legacy path (SET 0x03 0x25 0x88). healthdata_toggles.json did not show VeryFit using 0x25 for its continuous-health toggles on this watch.">Heart rate: on (auto 0x88)</button>
+    <button type="button" onclick="sendSetHeartRateMode(2)" title="Some firmware use IDO v2 mode byte: 2 = automatic. This is still a manual/legacy experiment; VeryFit's health toggle trace did not use 0x25 here.">Heart rate: on (v2 byte 2)</button>
+    <button type="button" onclick="sendSetHeartRateMode(3)" title="IDO v2/v3: 3 = continuous (5s). This is still a manual/legacy experiment; VeryFit's health toggle trace did not use 0x25 here.">Heart rate: on (v2 byte 3)</button>
+    <button type="button" onclick="sendSetHeartRateMode(0x55)" title="Disable heart rate monitoring via the angelfit/legacy path (SET 0x03 0x25 0x55).">Heart rate: off</button>
+    <button type="button" onclick="sendSetRealTimeSensor(0x55, 0x55)" title="Disable real-time G-sensor and HR stream (SET 0x03 0x52). 0x55=off.">Real-time sensors: off</button>
+    <button type="button" onclick="sendSetRealTimeSensor(0x55, 0xAA)" title="Enable real-time HR stream only (SET 0x03 0x52). G-sensor off, HR on (0xAA).">Real-time HR stream: on</button>
+    <button type="button" onclick="sendSetRealTimeSensor(0xAA, 0xAA)" title="Enable both real-time G-sensor and HR streams (SET 0x03 0x52). 0xAA=on.">Real-time sensors: both on</button>
+    <br>
+    <strong>Test continuous heart rate:</strong>
+    <span id="live_hr_display" style="font-weight:bold; margin-left:8px;">Live HR: --</span>
+    <button type="button" onclick="startContinuousHR()" title="Full sequence: interval → mode (0x88) → real-time HR on; 600ms delays; then poll Live every 5s.">Start continuous HR</button>
+    <button type="button" onclick="startContinuousHROrderB()" title="Alternative order: real-time HR on first, then interval, then mode. Use if normal sequence does not enable auto HR.">Alternative order</button>
+    <button type="button" onclick="stopContinuousHR()" title="Disable HR and real-time stream; stop polling.">Stop continuous HR</button>
+    <button type="button" onclick="sendSetHeartRateInterval(135, 96, 160)" title="Set HR alert thresholds (burn_fat=135, aerobic=96, limit=160 bpm). Try this before HR on if the watch ignores 0x25 alone.">Set HR interval (defaults)</button>
+    <span style="color:#666; font-size:0.9em;"> If auto HR does not activate: check Func table (main heart_rate(5), Other2 heart_rate_monitor(3)); try «Alternative order», «v2 byte 2», or «v2 byte 3». Do not treat every <code>0x03</code> packet as HR: in <code>new_setup.json</code>, <code>03 30 55 01 00</code> is notice status, not 85 bpm. Also note that <code>healthdata_toggles.json</code> did <strong>not</strong> show VeryFit using legacy <code>0x25</code> when its app-side continuous HR / stress toggles changed; the only candidate there is a newer <code>0x45</code> health-config family.</span>
+    <button type="button" onclick="sendSetDefaultConfig()" title="Restore factory default config on the watch (SET 0x03 0x27). Only supported if func table reports configDefault. May unbind or reset settings.">Factory defaults (0x03 0x27)</button>
+    <br>
+    <strong>Other (cmd 0xF0):</strong>
+    <button type="button" onclick="sendProtocolCmd(0xF0, 0x01)" title="Reboot the watch (RESET 0xF0 0x01). Connection will drop.">Reboot (0xF0 0x01)</button>
+
+    <h3>Alarms (SET 0x03 0x02)</h3>
+    <p style="font-size:0.9em;">Only if func table alarm_num &gt; 0. Payload: alarm_id, status (0xAA=on, 0x55=off), type, hour, minute, repeat, snooze_min.</p>
+    <strong>Set single alarm:</strong>
+    Slot <input type="number" id="alarm_slot" min="0" max="19" value="0" size="2" title="Alarm slot 0..alarm_num-1 (check Func table).">
+    <label>Enable <select id="alarm_enable" aria-label="Alarm on/off"><option value="0xAA" selected>On</option><option value="0x55">Off</option></select></label>
+    Type <select id="alarm_type" aria-label="Alarm type">
+        <option value="0">Wake up</option><option value="1">Sleep</option><option value="2">Sport</option><option value="3">Medicine</option>
+        <option value="4">Dating</option><option value="5">Party</option><option value="6">Meeting</option><option value="7">Custom</option>
+    </select>
+    <label>Hour <input type="number" id="alarm_hour" min="0" max="23" value="7" size="2"></label>
+    <label>Minute <input type="number" id="alarm_minute" min="0" max="59" value="0" size="2"></label>
+    Repeat <select id="alarm_repeat" aria-label="Repeat">
+        <option value="0">Once</option><option value="255" selected>Every day (0xFF)</option>
+        <option value="31">Weekdays (0x1F)</option><option value="96">Weekend (0x60)</option>
+        <option value="custom">Custom (hex)</option>
+    </select>
+    <span id="alarm_repeat_hex_span" style="display:none;"><input type="text" id="alarm_repeat_hex" value="FF" size="2" maxlength="2" placeholder="FF"></span>
+    Snooze <input type="number" id="alarm_snooze" min="0" max="30" value="5" size="2" title="Snooze duration in minutes."> min
+    <button type="button" onclick="sendSetAlarmFromForm()" title="Send SET 0x03 0x02 with current form values.">Set this alarm</button>
+    <br>
+    <strong>Full alarm sync:</strong> Build a list, then send all to the watch (one packet per alarm, 300 ms apart).
+    <button type="button" onclick="addAlarmToList()" title="Add current form values to the sync list.">Add to list</button>
+    <button type="button" onclick="syncAlarmsToWatch()" title="Send each alarm in the list to the watch with 300 ms delay between.">Sync all to watch</button>
+    <button type="button" onclick="clearAlarmList()" title="Clear the alarm list.">Clear list</button>
+    <span id="alarm_list_count" style="margin-left:8px;">0 alarms in list</span>
+    <div id="alarm_list_display" style="margin:8px 0; padding:6px; background:#f9f9f9; border:1px solid #ddd; font-size:12px; max-height:120px; overflow:auto;"></div>
+
+    <h3>Sleep (goal + data / REM stages)</h3>
+    <p style="font-size:0.9em;">Set daily sleep target and request sleep data (watch may report stages: awake, light, deep, REM). Only if func table main_func sleep(1) is set.</p>
+    <strong>Sleep goal (target duration):</strong>
+    <label>Hours <input type="number" id="sleep_goal_hour" min="0" max="12" value="8" size="2"></label>
+    <label>Minutes <input type="number" id="sleep_goal_minute" min="0" max="59" value="0" size="2"></label>
+    <button type="button" onclick="sendSetSleepGoal()" title="SET 0x03 0x04: set target sleep duration (hour, minute).">Set sleep goal</button>
+    <br>
+    <strong>Request sleep data:</strong> Watch may stream today’s or history sleep (stages: awake, light, deep, REM). Replies on 0x0AF7; may be multi-packet.
+    <button type="button" onclick="sendRequestSleepData(true)" title="Request today’s sleep data (HEALTH_DATA 0x08 0x04 0x01).">Get today’s sleep</button>
+    <button type="button" onclick="sendRequestSleepData(false)" title="Request sleep history (HEALTH_DATA 0x08 0x06 0x01).">Get sleep history</button>
+    <p style="font-size:0.85em; color:#666;">Sleep may be reported as <strong>Light / Deep segments</strong> (start time + duration). The event log shows each segment with human time, <strong>Unix timestamps</strong>, and <strong>hex bytes</strong> — search for that hex in <code>veryfit_wireshark.json</code> or BLE logs to find the same data in the capture.</p>
+    <div id="sleep_data_display" style="margin:8px 0; padding:6px; background:#f0f8ff; border:1px solid #ccc; font-family:monospace; font-size:11px; white-space:pre-wrap; max-height:160px; overflow:auto;"></div>
+
+    <h3>Learn / probe</h3>
+    <p style="font-size:0.9em;">Send raw bytes from a capture (e.g. <code>healthdata_toggles.json</code>, <code>new_setup.json</code>) or probe HEALTH_DATA keys to see what the watch returns.</p>
+    <strong>Send raw hex to 0x0AF6:</strong> Paste a line from Wireshark JSON <code>btatt.value</code> (e.g. <code>03:45:aa:09:00:12:00:55:3f:3c:00:50:00:00:00:1e</code>). Spaces or colons allowed.
+    <br>
+    <input type="text" id="raw_hex_input" placeholder="03 45 aa 09 00 12 00 … or 03:45:aa:09:00:…" size="48" style="font-family:monospace;">
+    <button type="button" onclick="sendRawHex()" title="Parse hex from input and send to 0x0AF6. Watch Events for ACK (0x03 len=2) or other replies.">Send raw hex</button>
+    <br>
+    <strong>HEALTH_DATA (cmd 0x08) key probe:</strong> Request sync start with key
+    <input type="text" id="health_key_hex" value="04" size="2" maxlength="2" placeholder="04" title="Hex key: 04=today sleep, 06=history sleep, A0=live (some firmware)."> (hex)
+    <button type="button" onclick="sendHealthDataKeyProbe()" title="Send 0x08 [key] 0x01 to request health sync. Replies on 0x0AF7; enable Debug log to see raw packets.">Request 0x08 key</button>
+    <span style="color:#666; font-size:0.85em;"> Known: 04=today sleep, 06=history sleep, A0=live (some). Try 41, 42, 45, etc. to discover more.</span>
+
     <br><br>
-    <b>Events:</b><br>
+    <b>Events:</b>
+    <button type="button" onclick="document.getElementById('events').innerHTML=''; event_log('Event log cleared.');" style="margin-left:8px;" title="Clear the event log.">Clear</button>
+    <br>
     <p id="events">
     </p>
     <b>Debug log:</b>
     <hr>
+
+    <h2>Confirmed features (logcat dumps)</h2>
+    <p style="font-size:0.9em;">Each button sends the <strong>exact TX</strong> from the named logcat dump (VeryFit app, no pollution). Connect with Pair + Get Activity first. Dumps in <code>logcat_dumps/</code>.</p>
+    <p style="font-size:0.85em; color:#666;"><strong>GET:</strong></p>
+    <button type="button" onclick="sendDumpTx('02 01', 'get_device_info')" title="logcat_dumps/get_device_info.txt">Device info</button>
+    <button type="button" onclick="sendDumpTx('02 A7', 'get_flashbin_info')" title="logcat_dumps/get_flashbin_info.txt">Flashbin info</button>
+    <button type="button" onclick="sendDumpTx('33 DA AD DA AD 01 0C 00 0F 00 24 01 00 28 18', 'get_alarm')" title="logcat_dumps/get_alarm.txt">Get alarm (v3)</button>
+    <button type="button" onclick="sendProtocolGet(0x02, 0x08)" title="get_hr_cont_state.txt shows v3 reply; GET 0x02 0x08 is legacy readback.">HR cont state (GET 0x08)</button>
+    <br>
+    <p style="font-size:0.85em; color:#666; margin-top:8px;"><strong>Do not disturb:</strong></p>
+    <button type="button" onclick="sendDumpTx('03 29 AA 17 00 07 00 02 FE 55 17 00 07 00 00 00', 'set_dnd_on')">DND on</button>
+    <button type="button" onclick="sendDumpTx('03 29 55 17 00 07 00 02 FE 55 17 00 07 00 00 00', 'set_dnd_off')">DND off</button>
+    <br>
+    <p style="font-size:0.85em; color:#666; margin-top:8px;"><strong>Screen brightness:</strong></p>
+    <button type="button" onclick="sendDumpTx('03 32 28 01 00 01 13 00 06 00 00 05', 'set_auto_brightness_off')">Auto brightness off</button>
+    <button type="button" onclick="sendDumpTx('03 32 28 01 00 03 13 00 06 00 00 05', 'set_auto_brightness_on_19pm_6am')">Auto brightness on (19:00–06:00)</button>
+    <br>
+    <p style="font-size:0.85em; color:#666; margin-top:8px;"><strong>Auto sport detect:</strong></p>
+    <button type="button" onclick="sendDumpTx('03 49 00 00 00 00 00 00 00 00 00', 'set_auto_sport_detect_off')">Auto sport off</button>
+    <button type="button" onclick="sendDumpTx('03 49 01 01 00 00 00 00 00 00 00', 'set_auto_sport_detect_on_walk_run')">Auto sport on (walk &amp; run)</button>
+    <br>
+    <p style="font-size:0.85em; color:#666; margin-top:8px;"><strong>Drinking reminder:</strong></p>
+    <button type="button" onclick="sendDumpTx('03 60 00 09 00 12 00 3E 1E 00 01 00 00 00 00 00', 'set_drinking_cont_off')">Drinking off</button>
+    <button type="button" onclick="sendDumpTx('03 60 01 09 00 12 00 3F 1E 00 01 00 00 00 00 00', 'set_drinking_cont_on')">Drinking on (9–18h, 30min, weekdays)</button>
+    <br>
+    <p style="font-size:0.85em; color:#666; margin-top:8px;"><strong>Hand gesture wake:</strong></p>
+    <button type="button" onclick="sendDumpTx('03 28 55 05 01 00 00 17 3B', 'set_hand_gesture_wake_off')">Hand gesture off</button>
+    <button type="button" onclick="sendDumpTx('03 28 AA 05 01 00 00 17 3B', 'set_hand_gesture_wake_on')">Hand gesture on</button>
+    <br>
+    <p style="font-size:0.85em; color:#666; margin-top:8px;"><strong>HR continuous:</strong></p>
+    <button type="button" onclick="sendDumpTx('33 DA AD DA AD 01 17 00 09 00 14 01 BA AD AC 69 99 00 00 00 00 00 2C 01 56 BE', 'set_hr_cont_state_off')">HR cont off</button>
+    <button type="button" onclick="sendDumpTxSequence(['33 DA AD DA AD 01 17 00 09 00 17 01 D8 AD AC 69 99 00 00 00 00 00 2C 01 56 08', '33 DA AD DA AD 01 17 00 09 00 18 01 00 00 00 00 00 01 00 00 17 3B 00 00 E5 CD'], 'set_hr_cont_state_on')">HR cont on</button>
+    <br>
+    <p style="font-size:0.85em; color:#666; margin-top:8px;"><strong>Music:</strong></p>
+    <button type="button" onclick="sendDumpTx('03 2A 55 55', 'set_music_off')">Music off</button>
+    <button type="button" onclick="sendDumpTx('03 2A AA 55', 'set_music_on')">Music on</button>
+    <br>
+    <p style="font-size:0.85em; color:#666; margin-top:8px;"><strong>Push weather:</strong></p>
+    <button type="button" onclick="sendDumpTx('03 2D 55 00 00 00', 'set_push_weather_off')">Weather off</button>
+    <button type="button" onclick="sendDumpTx('03 2D AA 00 00 00', 'set_push_weather_on')">Weather on</button>
+    <br>
+    <p style="font-size:0.85em; color:#666; margin-top:8px;"><strong>Stress continuous:</strong></p>
+    <button type="button" onclick="sendDumpTx('03 45 55 09 00 12 00 55 3F 3C 00 50 00 01 00 1E', 'set_stress_cont_off')">Stress off</button>
+    <button type="button" onclick="sendDumpTx('03 45 AA 09 00 12 00 55 3F 3C 00 50 00 01 00 1E', 'set_stress_cont_on')">Stress on</button>
+    <br>
+    <p style="font-size:0.85em; color:#666; margin-top:8px;"><strong>Walk-around reminder:</strong></p>
+    <button type="button" onclick="sendDumpTx('03 47 00 64 00 09 00 15 00 FE 00 00 73 00 00 00 01', 'set_walkaround_cont_off')">Walk reminder off</button>
+    <button type="button" onclick="sendDumpTx('03 47 01 64 00 09 00 15 00 FE 00 00 73 00 00 00 01', 'set_walkaround_cont_on')">Walk reminder on (9–21h, goal 100)</button>
+    <br>
+    <p style="font-size:0.85em; color:#666; margin-top:8px;"><strong>Woman health remind:</strong></p>
+    <button type="button" onclick="sendDumpTx('03 42 03 03 08 00 03 03 03', 'set_woman_health_remind_off')">Woman health off</button>
+    <button type="button" onclick="sendDumpTx('03 42 03 03 08 00 03 03 03', 'set_woman_health_remind_on')">Woman health on</button>
+    <br>
+    <p style="font-size:0.85em; color:#666; margin-top:8px;"><strong>UI watch face:</strong></p>
+    <button type="button" onclick="sendDumpTx('33 DA AD DA AD 01 0B 00 06 00 4E 01 4A F5', 'ui_select_watch_face')">Select watch face (v3)</button>
+    <button type="button" onclick="sendDumpTx('33 DA AD DA AD 01 0B 00 07 00 50 01 82 A3', 'ui_watch_face_write_json')">Watch face write JSON (v3)</button>
+    <p style="font-size:0.8em; color:#999;">Drinking off dump also sends v3 0x09 after; stress/walk/woman dumps may send v3 0x09 sync. Buttons above send only the first TX from each dump. For full sequences see raw dumps.</p>
+    <ul style="column-count:2; column-gap:2em; font-size:0.9em; margin-top:8px;">
+        <li><a href="../logcat_dumps/get_device_info.txt">get_device_info.txt</a></li>
+        <li><a href="../logcat_dumps/get_flashbin_info.txt">get_flashbin_info.txt</a></li>
+        <li><a href="../logcat_dumps/get_alarm.txt">get_alarm.txt</a></li>
+        <li><a href="../logcat_dumps/get_hr_cont_state.txt">get_hr_cont_state.txt</a></li>
+        <li><a href="../logcat_dumps/set_dnd_on.txt">set_dnd_on.txt</a></li>
+        <li><a href="../logcat_dumps/set_dnd_off.txt">set_dnd_off.txt</a></li>
+        <li><a href="../logcat_dumps/set_auto_brightness_off.txt">set_auto_brightness_off.txt</a></li>
+        <li><a href="../logcat_dumps/set_auto_brightness_on_19pm_to_6am.txt">set_auto_brightness_on_19pm_to_6am.txt</a></li>
+        <li><a href="../logcat_dumps/set_auto_sport_detect_off.txt">set_auto_sport_detect_off.txt</a></li>
+        <li><a href="../logcat_dumps/set_auto_sport_detect_on_walk_and_run.txt">set_auto_sport_detect_on_walk_and_run.txt</a></li>
+        <li><a href="../logcat_dumps/set_drinking_cont_off.txt">set_drinking_cont_off.txt</a></li>
+        <li><a href="../logcat_dumps/set_drinking_cont_on_9am_to_6pm_interval_30m_weekdays.txt">set_drinking_cont_on_...txt</a></li>
+        <li><a href="../logcat_dumps/set_hand_gesture_wake_off.txt">set_hand_gesture_wake_off.txt</a></li>
+        <li><a href="../logcat_dumps/set_hand_gesture_wake_on.txt">set_hand_gesture_wake_on.txt</a></li>
+        <li><a href="../logcat_dumps/set_hr_cont_state_off.txt">set_hr_cont_state_off.txt</a></li>
+        <li><a href="../logcat_dumps/set_hr_cont_state_on.txt">set_hr_cont_state_on.txt</a></li>
+        <li><a href="../logcat_dumps/set_music_off.txt">set_music_off.txt</a></li>
+        <li><a href="../logcat_dumps/set_music_on.txt">set_music_on.txt</a></li>
+        <li><a href="../logcat_dumps/set_push_weather_off.txt">set_push_weather_off.txt</a></li>
+        <li><a href="../logcat_dumps/set_push_weather_on.txt">set_push_weather_on.txt</a></li>
+        <li><a href="../logcat_dumps/set_stress_cont_off.txt">set_stress_cont_off.txt</a></li>
+        <li><a href="../logcat_dumps/set_stress_cont_on.txt">set_stress_cont_on.txt</a></li>
+        <li><a href="../logcat_dumps/set_walkaround_cont_off.txt">set_walkaround_cont_off.txt</a></li>
+        <li><a href="../logcat_dumps/set_walkaround_cont_on_9am_to_9pm_hourlygoal_100_everyday.txt">set_walkaround_cont_on_...txt</a></li>
+        <li><a href="../logcat_dumps/set_woman_health_remind_off.txt">set_woman_health_remind_off.txt</a></li>
+        <li><a href="../logcat_dumps/set_woman_health_remind_on.txt">set_woman_health_remind_on.txt</a></li>
+        <li><a href="../logcat_dumps/ui_select_watch_face.txt">ui_select_watch_face.txt</a></li>
+        <li><a href="../logcat_dumps/ui_watch_face_write_json.txt">ui_watch_face_write_json.txt</a></li>
+    </ul>
+
     <script>
         var send_char;
         var rx_written;
         var rx_buffer;
+        var bruteForceCancel = false;
+        var bruteTimeoutId = null;
+        var liveHrPollIntervalId = null;
+        var sleep_rx_chunks = [];
+        var sleep_key = 0;
+        var sleep_label = "";
+
+        function updateLiveHRDisplay(value) {
+            var el = document.getElementById("live_hr_display");
+            if (el) el.textContent = "Live HR: " + (value != null ? value + " bpm" : "--");
+        }
+
+        function startContinuousHR() {
+            if (!send_char) { event_log("Not connected."); return; }
+            event_log("Continuous HR: interval → mode → real-time (600ms delays)…");
+            sendSetHeartRateInterval(135, 96, 160);
+            setTimeout(function() {
+                sendSetHeartRateMode(0x88);
+                setTimeout(function() {
+                    sendSetRealTimeSensor(0x55, 0xAA);
+                    if (liveHrPollIntervalId) clearInterval(liveHrPollIntervalId);
+                    sendProtocolGet(0x02, 0xA0);
+                    liveHrPollIntervalId = setInterval(function() {
+                        if (send_char) sendProtocolGet(0x02, 0xA0);
+                    }, 5000);
+                    event_log("Continuous HR: enabled (polling Live every 5s). If HR still off, try «Alternative order» or «v2 mode» below; check Func table main_func heart_rate(5) and ohter2 heart_rate_monitor(3).");
+                    setTimeout(function() { if (send_char) { sendProtocolGet(0x02, 0xA0); event_log("Live data re-request (3s after HR on)."); } }, 3000);
+                    setTimeout(function() { if (send_char) { sendProtocolGet(0x02, 0xA0); event_log("Live data re-request (8s after HR on)."); } }, 8000);
+                }, 600);
+            }, 600);
+        }
+
+        function startContinuousHROrderB() {
+            if (!send_char) { event_log("Not connected."); return; }
+            event_log("Continuous HR (alternative order): real-time HR on first → interval → mode (600ms delays). Try this if normal sequence does not enable auto HR.");
+            sendSetRealTimeSensor(0x55, 0xAA);
+            setTimeout(function() {
+                sendSetHeartRateInterval(135, 96, 160);
+                setTimeout(function() {
+                    sendSetHeartRateMode(0x88);
+                    if (liveHrPollIntervalId) clearInterval(liveHrPollIntervalId);
+                    sendProtocolGet(0x02, 0xA0);
+                    liveHrPollIntervalId = setInterval(function() {
+                        if (send_char) sendProtocolGet(0x02, 0xA0);
+                    }, 5000);
+                    event_log("Alternative-order HR: real-time → interval → mode sent. Check watch and Live data.");
+                    setTimeout(function() { if (send_char) { sendProtocolGet(0x02, 0xA0); sendProtocolGet(0x08, 0xA0); event_log("Live re-request (3s) 0x02 0xA0 + 0x08 0xA0."); } }, 3000);
+                    setTimeout(function() { if (send_char) { sendProtocolGet(0x02, 0xA0); event_log("Live re-request (8s)."); } }, 8000);
+                }, 600);
+            }, 600);
+        }
+
+        function stopContinuousHR() {
+            if (liveHrPollIntervalId) { clearInterval(liveHrPollIntervalId); liveHrPollIntervalId = null; }
+            if (send_char) {
+                sendSetHeartRateMode(0x55);
+                sendSetRealTimeSensor(0x55, 0x55);
+            }
+            updateLiveHRDisplay(null);
+            event_log("Continuous HR: stopped.");
+        }
+
+        function hexDump(arr) {
+            return Array.from(arr).map(function(b) { return ('0' + b.toString(16)).slice(-2); }).join(' ');
+        }
+
+        function describeSetKey(key) {
+            var names = {
+                0x24: "heart rate interval",
+                0x25: "heart rate mode",
+                0x30: "notice",
+                0x35: "VeryFit sync state?",
+                0x41: "women's health config?",
+                0x42: "women's health detail?",
+                0x45: "continuous health config?",
+                0x47: "walk-around reminder?",
+                0x52: "real-time sensor status",
+                0x60: "drink reminder?"
+            };
+            return names[key] || "";
+        }
+
+        function sendCaptureSet(buf, label) {
+            if (!send_char) { event_log("Not connected."); return; }
+            send_char.writeValue(new Uint8Array(buf));
+            event_log("Sent capture-backed " + label + " " + hexDump(buf));
+            console.log("Sent to 0x0AF6:", hexDump(buf));
+        }
 
         function event_log(message){
             var evt_msg = document.createElement("div")
             evt_msg.appendChild(document.createTextNode(message))
             document.getElementById("events").appendChild(evt_msg)
         }
+
+        /** Log a single "Data parsing" line for Steps, Sports, Sleep, BPM, kcal, SPO2, Relax, Blood sugar, Hydration, Battery. */
+        function logDataParsing(opts) {
+            var parts = [];
+            parts.push("Steps" in opts ? opts.Steps : "—");
+            parts.push("Sports" in opts ? opts.Sports : "—");
+            parts.push("Sleep" in opts ? opts.Sleep : "—");
+            parts.push("BPM" in opts ? opts.BPM : "—");
+            parts.push("kcal" in opts ? opts.kcal : "—");
+            parts.push("SPO2" in opts ? opts.SPO2 : "—");
+            parts.push("Relax" in opts ? opts.Relax : "—");
+            parts.push("Blood sugar" in opts ? opts["Blood sugar"] : "—");
+            parts.push("Hydration" in opts ? opts.Hydration : "—");
+            parts.push("Battery" in opts ? opts.Battery : "—");
+            event_log("[Data parsing] Steps=" + parts[0] + " | Sports=" + parts[1] + " | Sleep=" + parts[2] + " | BPM=" + parts[3] + " | kcal=" + parts[4] + " | SPO2=" + parts[5] + " | Relax=" + parts[6] + " | Blood sugar=" + parts[7] + " | Hydration=" + parts[8] + " | Battery=" + parts[9]);
+        }
+
+        /** Parse sleep payload (angelfit: 8-min bins, stage in low nibble 0=awake 1=light 2=deep 3=REM). */
+        function parseSleepPayload(data) {
+            if (!data || data.length === 0) return null;
+            var awake = 0, light = 0, deep = 0, rem = 0, other = 0;
+            for (var i = 0; i < data.length; i++) {
+                var v = data[i] & 0x0f;
+                if (v === 0) awake++;
+                else if (v === 1) light++;
+                else if (v === 2) deep++;
+                else if (v === 3) rem++;
+                else other++;
+            }
+            var binMin = 8;
+            var totalMin = (awake + light + deep + rem + other) * binMin;
+            if (totalMin === 0) return null;
+            return { awakeMin: awake * binMin, lightMin: light * binMin, deepMin: deep * binMin, remMin: rem * binMin, totalMin: totalMin, bins: data.length };
+        }
+
+        /** Try to parse sleep as segments: each segment = type (1) + start datetime (6 bytes: y_lo, y_hi, mon, day, h, min) + duration_min (1 byte). 8 bytes/segment. Type 0=awake 1=light 2=deep 3=REM. */
+        function parseSleepSegments(data) {
+            if (!data || data.length < 8) return null;
+            var SEG_LEN = 8;
+            var typeNames = ["Awake", "Light", "Deep", "REM"];
+            var segments = [];
+            for (var i = 0; i + SEG_LEN <= data.length; i += SEG_LEN) {
+                var type = data[i] & 0x0f;
+                var y = data[i + 1] | (data[i + 2] << 8);
+                if (y < 2000 || y > 2100) y = 2000 + (data[i + 1] || 0);
+                var mon = data[i + 3], day = data[i + 4], h = data[i + 5], min = data[i + 6], dur = data[i + 7];
+                if (mon < 1 || mon > 12 || day < 1 || day > 31 || h > 23 || min > 59) continue;
+                var startDate = new Date(y, mon - 1, day, h, min, 0);
+                var startUnix = Math.floor(startDate.getTime() / 1000);
+                var endUnix = startUnix + dur * 60;
+                var endDate = new Date(endUnix * 1000);
+                var typeStr = typeNames[type] || ("type" + type);
+                segments.push({ type: typeStr, typeByte: type, startUnix: startUnix, endUnix: endUnix, startDate: startDate, endDate: endDate, durationMin: dur, offset: i, rawHex: Array.from(data.slice(i, i + SEG_LEN)).map(function(b){ return ("0" + b.toString(16)).slice(-2); }).join(":") });
+            }
+            return segments.length > 0 ? segments : null;
+        }
+
+        /** Segment format: 7 bytes = type(1) + year_off(1, 2000+off) + mon(1) + day(1) + h(1) + min(1) + dur(1). E.g. Light 18m from 7/3/2026 13:56 = 01 1a 03 07 0d 38 12. */
+        function parseSleepSegments7(data) {
+            if (!data || data.length < 7) return null;
+            var typeNames = ["Awake", "Light", "Deep", "REM"];
+            var segments = [];
+            for (var i = 0; i + 7 <= data.length; i += 7) {
+                var type = data[i] & 0x0f;
+                var y = 2000 + (data[i + 1] || 0);
+                var mon = data[i + 2], day = data[i + 3], h = data[i + 4], min = data[i + 5], dur = data[i + 6];
+                if (mon < 1 || mon > 12 || day < 1 || day > 31 || h > 23 || min > 59 || dur > 24 * 60) continue;
+                var startDate = new Date(y, mon - 1, day, h, min, 0);
+                var startUnix = Math.floor(startDate.getTime() / 1000);
+                var endUnix = startUnix + dur * 60;
+                var endDate = new Date(endUnix * 1000);
+                segments.push({ type: (typeNames[type] || ("type" + type)), typeByte: type, startUnix: startUnix, endUnix: endUnix, startDate: startDate, endDate: endDate, durationMin: dur, offset: i, rawHex: Array.from(data.slice(i, i + 7)).map(function(b){ return ("0" + b.toString(16)).slice(-2); }).join(":") });
+            }
+            return segments.length > 0 ? segments : null;
+        }
+
+        /** Try segment format: 4-byte unix timestamp (LE) + 2-byte duration_min (LE) + 1 byte type = 7 bytes per segment. */
+        function parseSleepSegmentsUnix(data) {
+            if (!data || data.length < 7) return null;
+            var typeNames = ["Awake", "Light", "Deep", "REM"];
+            var segments = [];
+            for (var i = 0; i + 7 <= data.length; i += 7) {
+                var startUnix = (data[i] | (data[i+1]<<8) | (data[i+2]<<16) | (data[i+3]<<24)) >>> 0;
+                var dur = data[i+4] | (data[i+5] << 8);
+                var type = data[i+6] & 0x0f;
+                if (startUnix < 1600000000 || startUnix > 2000000000 || dur > 24 * 60) continue;
+                var endUnix = startUnix + dur * 60;
+                var startDate = new Date(startUnix * 1000);
+                var endDate = new Date(endUnix * 1000);
+                segments.push({ type: (typeNames[type] || ("type" + type)), typeByte: type, startUnix: startUnix, endUnix: endUnix, startDate: startDate, endDate: endDate, durationMin: dur, offset: i, rawHex: Array.from(data.slice(i, i + 7)).map(function(b){ return ("0" + b.toString(16)).slice(-2); }).join(":") });
+            }
+            return segments.length > 0 ? segments : null;
+        }
+
+        function formatSegmentForSearch(seg) {
+            var pad = function(n){ return n < 10 ? "0" + n : "" + n; };
+            return seg.type + " " + seg.durationMin + "m from " + seg.startDate.getFullYear() + "/" + pad(seg.startDate.getMonth()+1) + "/" + pad(seg.startDate.getDate()) + " " + pad(seg.startDate.getHours()) + ":" + pad(seg.startDate.getMinutes()) + " to " + pad(seg.endDate.getHours()) + ":" + pad(seg.endDate.getMinutes()) + " | unix " + seg.startUnix + "-" + seg.endUnix + " | hex " + seg.rawHex;
+        }
+
+        function finishSleepSync() {
+            if (sleep_rx_chunks.length === 0) return;
+            var totalLen = 0;
+            for (var i = 0; i < sleep_rx_chunks.length; i++) totalLen += sleep_rx_chunks[i].length;
+            var data = new Uint8Array(totalLen);
+            var off = 0;
+            for (var i = 0; i < sleep_rx_chunks.length; i++) { data.set(sleep_rx_chunks[i], off); off += sleep_rx_chunks[i].length; }
+            sleep_rx_chunks = [];
+            var el = document.getElementById("sleep_data_display");
+            if (el) {
+                var hex = Array.from(data).map(function(b){ return ("0" + b.toString(16)).slice(-2); }).join(" ");
+                el.textContent = (el.textContent.indexOf("Waiting") === 0 ? "" : el.textContent + "\n") + sleep_label + " [assembled " + data.length + "B]: " + (hex.length > 120 ? hex.slice(0, 120) + "…" : hex);
+            }
+            event_log("[Sleep data] " + sleep_label + " assembled " + data.length + " bytes");
+            var parsed = parseSleepPayload(data);
+            var sleepStr = sleep_label;
+            if (parsed && parsed.totalMin > 0) {
+                var h = Math.floor(parsed.totalMin / 60), m = parsed.totalMin % 60;
+                sleepStr = h + "h" + m + "m (awake " + parsed.awakeMin + "m light " + parsed.lightMin + "m deep " + parsed.deepMin + "m REM " + parsed.remMin + "m)";
+                event_log("[Sleep parsed] total " + h + "h" + (m < 10 ? "0" : "") + m + "m | awake " + parsed.awakeMin + "m | light " + parsed.lightMin + "m | deep " + parsed.deepMin + "m | REM " + parsed.remMin + "m (" + parsed.bins + " bins)");
+            }
+            var segments = parseSleepSegments7(data) || parseSleepSegments(data) || parseSleepSegmentsUnix(data);
+            if (segments && segments.length > 0) {
+                event_log("[Sleep segments] " + segments.length + " segment(s) (use hex below to search in BLE/wireshark logs):");
+                for (var s = 0; s < segments.length; s++) {
+                    var line = formatSegmentForSearch(segments[s]);
+                    event_log("  #" + (s + 1) + " " + line);
+                }
+                var searchHex = segments.map(function(seg){ return seg.rawHex; }).join(" ");
+                event_log("[Sleep search] In wireshark/JSON search for (colon-separated hex): " + (searchHex.length > 100 ? searchHex.slice(0, 100) + "…" : searchHex));
+            }
+            logDataParsing({ Sleep: sleepStr, Steps: "—", Sports: "—", BPM: "—", kcal: "—", SPO2: "—", Relax: "—", "Blood sugar": "—", Hydration: "—", Battery: "—" });
+            sleep_key = 0;
+            sleep_label = "";
+        }
+        if (!navigator.bluetooth) {
+            var where = "Current page: " + location.href + ". ";
+            if (location.protocol === "file:") {
+                event_log(where + "Open from a local server instead: in a terminal run 'cd htmlapp && python3 -m http.server 8000', then in Chrome go to http://localhost:8000");
+            } else {
+                event_log(where + "If this is localhost, enable Web Bluetooth in chrome://flags and relaunch Chrome.");
+            }
+        }
+        function characteristicLabel(target) {
+            var uuid = target && target.uuid ? String(target.uuid).toLowerCase() : "";
+            if (uuid.indexOf("0af7") !== -1) return "0x0AF7";
+            if (uuid.indexOf("0af2") !== -1) return "0x0AF2";
+            return uuid || "unknown";
+        }
+
         button.addEventListener('pointerup', function (event) {
+            if (!navigator.bluetooth) return;
             navigator.bluetooth.requestDevice({
                 filters: [{
                     services: [0x0AF0]
@@ -67,14 +563,30 @@
                     return server.getPrimaryService(0x0AF0)
                 })
                 .then(service => {
-                    service.getCharacteristic(0x0AF6).then(tx_char => { send_char = tx_char });
-                    return service.getCharacteristic(0x0AF7)
+                    return Promise.all([
+                        service.getCharacteristic(0x0AF6),
+                        service.getCharacteristic(0x0AF7),
+                        service.getCharacteristic(0x0AF2).catch(function() { return null; })
+                    ]);
                 })
-                .then(characteristic => characteristic.startNotifications())
-                .then(characteristic => {
-                    characteristic.addEventListener('characteristicvaluechanged',
-                        handleCharacteristicValueChanged);
-                    event_log("Receiving Notifications")
+                .then(([tx_char, rx_char, rx2_char]) => {
+                    send_char = tx_char;
+                    var hint = document.getElementById('send_notif_hint');
+                    if (hint) hint.textContent = ' (connected – you can send now)';
+                    var notifyChars = [rx_char];
+                    if (rx2_char) notifyChars.push(rx2_char);
+                    notifyChars.forEach(function(ch) {
+                        ch.addEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);
+                    });
+                    return Promise.all(notifyChars.map(function(ch) {
+                        return ch.startNotifications();
+                    })).then(function() {
+                        return notifyChars;
+                    });
+                })
+                .then(characteristics => {
+                    var labels = characteristics.map(characteristicLabel).join(" + ");
+                    event_log("Receiving Notifications on " + labels)
                     console.log('Notifications have been started.');
                     sendGetInfo()
                     document.body.appendChild(document.createTextNode("Probably connected to a device."))
@@ -84,8 +596,134 @@
 
         function handleCharacteristicValueChanged(event) {
             const value = event.target.value;
+            var arr = new Uint8Array(value.buffer);
+            var header = value.getUint8(0);
+            var key = arr.length >= 2 ? arr[1] : 0;
+            var sourceLabel = characteristicLabel(event.target);
+            var debug = document.getElementById('debug_log_packets') && document.getElementById('debug_log_packets').checked;
+            if (debug) {
+                var hex = hexDump(arr);
+                console.log('[BLE ' + sourceLabel + '] len=' + arr.length + ' ' + hex);
+                event_log('[BLE ' + sourceLabel + '] len=' + arr.length + ' ' + (hex.length > 80 ? hex.slice(0, 80) + '…' : hex));
+                if (header !== 2 && header !== 0x03 && header !== 0x07 && header !== 0x08 && header !== 0x33) {
+                    event_log('Other packet (not parsed yet): header=0x' + header.toString(16) + ' len=' + arr.length);
+                }
+            }
+            if (header === 0x03 && arr.length === 2) {
+                var ackKey = key;
+                var ackLabel = describeSetKey(ackKey);
+                event_log("[ACK] SET 0x03 0x" + ackKey.toString(16) + (ackLabel ? " (" + ackLabel + ")" : "") + " (watch acknowledged)");
+            } else if (header === 0x03 && key === 0x30 && arr.length >= 5) {
+                event_log("[Notice status 0x03 0x30] switch=0x" + ("0" + arr[2].toString(16)).slice(-2) + " status=" + arr[3] + " err=" + arr[4] + " (" + sourceLabel + "; this is not live HR)");
+            } else if (header === 0x03 && key === 0x35 && arr.length >= 4) {
+                event_log("[SET 0x35 reply] status=0x" + ("0" + arr[2].toString(16)).slice(-2) + " extra=0x" + ("0" + arr[3].toString(16)).slice(-2));
+            } else if (header === 0x03 && arr.length > 2) {
+                var payloadHex = Array.from(arr.slice(2)).map(function(b){ return ("0" + b.toString(16)).slice(-2); }).join(" ");
+                var statusLabel = describeSetKey(key);
+                event_log("[SET/Status 0x03 0x" + key.toString(16) + (statusLabel ? " (" + statusLabel + ")" : "") + "] len=" + arr.length + (payloadHex ? " payload=" + payloadHex : ""));
+            }
+            if (header === 0x08 && arr.length >= 2 && (key === 0x04 || key === 0x06)) {
+                var label = key === 0x04 ? "Sleep (today)" : "Sleep (history)";
+                if (arr.length >= 4) {
+                    var serial = arr[2], payloadLen = arr[3];
+                    if (serial === 0x01) {
+                        sleep_rx_chunks = [];
+                        sleep_key = key;
+                        sleep_label = label;
+                        event_log("[Sleep data] " + label + " sync start (serial 1)");
+                    }
+                    if (serial >= 0x03 && payloadLen > 0 && 4 + payloadLen <= arr.length) {
+                        sleep_rx_chunks.push(arr.slice(4, 4 + payloadLen));
+                    }
+                } else {
+                    event_log("[Sleep data] " + label + " len=" + arr.length + " " + (arr.length <= 24 ? Array.from(arr).map(function(b){ return ("0" + b.toString(16)).slice(-2); }).join(" ") : Array.from(arr.slice(0, 12)).map(function(b){ return ("0" + b.toString(16)).slice(-2); }).join(" ") + " …"));
+                    var el = document.getElementById("sleep_data_display");
+                    if (el) {
+                        var hex = Array.from(arr).map(function(b){ return ("0" + b.toString(16)).slice(-2); }).join(" ");
+                        el.textContent = (el.textContent.indexOf("Waiting") === 0 ? "" : el.textContent + "\n") + label + " [" + arr.length + "]: " + hex;
+                    }
+                    logDataParsing({ Sleep: label + " " + arr.length + "B", Steps: "—", Sports: "—", BPM: "—", kcal: "—", SPO2: "—", Relax: "—", "Blood sugar": "—", Hydration: "—", Battery: "—" });
+                }
+            }
+            if (header === 0x08 && key === 0xEE) {
+                event_log("[Sleep data] DATA_END (0x08 0xEE) – sync complete");
+                finishSleepSync();
+            }
+            if (header === 0x08 && key === 0xA0 && arr.length >= 3) {
+                var step = 0, cal = 0, dist = 0, active = 0, hr = 0;
+                if (arr.length >= 19) {
+                    step = (arr[2]|(arr[3]<<8)|(arr[4]<<16)|(arr[5]<<24))>>>0;
+                    cal = (arr[6]|(arr[7]<<8)|(arr[8]<<16)|(arr[9]<<24))>>>0;
+                    dist = (arr[10]|(arr[11]<<8)|(arr[12]<<16)|(arr[13]<<24))>>>0;
+                    active = (arr[14]|(arr[15]<<8)|(arr[16]<<16)|(arr[17]<<24))>>>0;
+                    hr = arr[18];
+                }
+                event_log("[Live data 0x08 0xA0] len=" + arr.length + " steps=" + step + " HR=" + hr + " raw=" + Array.from(arr).map(function(b){ return ("0" + b.toString(16)).slice(-2); }).join(" "));
+                if (typeof updateLiveHRDisplay === 'function') updateLiveHRDisplay(hr);
+                logDataParsing({ Steps: step, kcal: cal, BPM: hr, Sleep: "—", SPO2: "—", Relax: "—", "Blood sugar": "—", Hydration: "—", Battery: "—", Sports: "—" });
+            }
+            if (header === 0x08 && key !== 0x04 && key !== 0x06 && key !== 0xEE && key !== 0xA0) {
+                var hex = Array.from(arr).map(function(b){ return ("0" + b.toString(16)).slice(-2); }).join(" ");
+                event_log("[HEALTH_DATA 0x08 0x" + key.toString(16) + "] len=" + arr.length + " " + (hex.length > 100 ? hex.slice(0, 100) + "…" : hex));
+            }
+            if (header === 0x02 && arr.length >= 4) {
+                if (key === 0x03 && arr.length >= 10) {
+                    var y = arr[2] | (arr[3] << 8), m = arr[4], d = arr[5], h = arr[6], min = arr[7], s = arr[8];
+                    event_log("[Device time] " + y + "-" + (m<10?"0":"") + m + "-" + (d<10?"0":"") + d + " " + (h<10?"0":"") + h + ":" + (min<10?"0":"") + min + ":" + (s<10?"0":"") + s);
+                } else if (key === 0x04 && arr.length >= 8) {
+                    var mac = Array.from(arr.slice(2, 8)).map(function(b){ return ('0'+b.toString(16)).slice(-2); }).join(':');
+                    event_log("[MAC] " + mac);
+                } else if (key === 0x05 && arr.length >= 8) {
+                    var v = arr[3] | (arr[4]<<8), status = arr[5], level = arr[6];
+                    event_log("[Battery] voltage=" + v + "mV status=" + status + " level=" + level + "%");
+                    logDataParsing({ Battery: level + "%", Steps: "—", Sports: "—", Sleep: "—", BPM: "—", kcal: "—", SPO2: "—", Relax: "—", "Blood sugar": "—", Hydration: "—" });
+            } else if (key === 0xA0 && arr.length >= 3) {
+                    var step = 0, cal = 0, dist = 0, active = 0, hr = 0;
+                    if (arr.length >= 19) {
+                        step = (arr[2]|(arr[3]<<8)|(arr[4]<<16)|(arr[5]<<24))>>>0;
+                        cal = (arr[6]|(arr[7]<<8)|(arr[8]<<16)|(arr[9]<<24))>>>0;
+                        dist = (arr[10]|(arr[11]<<8)|(arr[12]<<16)|(arr[13]<<24))>>>0;
+                        active = (arr[14]|(arr[15]<<8)|(arr[16]<<16)|(arr[17]<<24))>>>0;
+                        hr = arr[18];
+                    }
+                    var rawHex = Array.from(arr).map(function(b){ return ("0" + b.toString(16)).slice(-2); }).join(" ");
+                    event_log("[Live data] len=" + arr.length + " steps=" + step + " cal=" + cal + " dist=" + dist + "m active=" + active + "s HR=" + hr + (arr.length !== 19 ? " (expected len 19; raw: " + rawHex + ")" : ""));
+                    if (typeof updateLiveHRDisplay === 'function') updateLiveHRDisplay(hr);
+                    logDataParsing({ Steps: step, kcal: cal, BPM: hr, Sleep: "—", SPO2: "—", Relax: "—", "Blood sugar": "—", Hydration: "—", Battery: "—", Sports: "—" });
+                    if (arr.length >= 19 && arr.length <= 25) {
+                        var altHr = arr.length > 19 ? arr[19] : null;
+                        if (altHr != null && altHr >= 40 && altHr <= 240) event_log("[Live data] alternate HR at [19]? " + altHr + " bpm");
+                    }
+                } else if (key === 0x10 && arr.length >= 6) {
+                    event_log("[Notice status] notify_switch=" + arr[2] + " status=" + arr[3] + " err=" + arr[4]);
+                } else if (key === 0x06 && arr.length >= 4) {
+                    event_log("[SN info] len=" + arr.length + " " + (arr.length <= 20 ? Array.from(arr.slice(2)).map(function(b){ return ("0" + b.toString(16)).slice(-2); }).join(" ") : "…"));
+                } else if (key === 0x20 && arr.length >= 5) {
+                    var rate = arr[2] | (arr[3] << 8), led = arr[4];
+                    event_log("[HR sensor param] rate=" + rate + " led_select=0x" + led.toString(16));
+                } else if (key === 0x21 && arr.length >= 7) {
+                    var rate = arr[2] | (arr[3] << 8), range = arr[4], thresh = arr[5] | (arr[6] << 8);
+                    event_log("[G-sensor param] rate=" + rate + " range=" + range + " threshold=" + thresh);
+                } else if (key === 0x30) {
+                    var hex = Array.from(arr.slice(2)).map(function(b){ return ("0" + b.toString(16)).slice(-2); }).join(" ");
+                    event_log("[GET 0x30] len=" + (arr.length - 2) + " " + hex + " (VeryFit setup uses this; payload looks like a schedule/config block, not legacy GET 0x10 notice status)");
+                } else if (key === 0x07 || key === 0xF0 || key === 0x08) {
+                    var hex = Array.from(arr.slice(2)).map(function(b){ return ("0" + b.toString(16)).slice(-2); }).join(" ");
+                    event_log("[GET 0x" + key.toString(16) + "] len=" + (arr.length - 2) + " " + (hex.length > 80 ? hex.slice(0, 80) + "…" : hex));
+                } else if (key === 0x02 && arr.length >= 17) {
+                    var out = document.getElementById("functable_output");
+                    if (out) out.textContent = formatFuncTable(arr);
+                    event_log("Func table received (see above).");
+                } else {
+                    var hex = Array.from(arr.slice(2)).map(function(b){ return ("0" + b.toString(16)).slice(-2); }).join(" ");
+                    event_log("[GET 0x" + key.toString(16) + "] len=" + (arr.length - 2) + " " + (hex.length > 80 ? hex.slice(0, 80) + "…" : hex));
+                }
+            }
+            if (header === 0x07 && arr.length >= 2) {
+                var hex = Array.from(arr.slice(2)).map(function(b){ return ("0" + b.toString(16)).slice(-2); }).join(" ");
+                event_log("[BLE_CONTROL 0x07 0x" + key.toString(16) + "] len=" + (arr.length - 2) + (hex ? " " + hex : ""));
+            }
             console.log(new Uint8Array(value.buffer))
-            document.body.appendChild(document.createTextNode(JSON.stringify(new Uint8Array(value.buffer))))
 
             const info_layout = {
                 "device_id": [2, 2], // offset, length
@@ -155,7 +793,6 @@
                 "end_day": [1, 0x61,],
                 "end_hour": [1, 0x62,],
                 "end_minute": [1, 99,],
-                "activity_data_item_count": [2, 0x4e,],
                 "hr_item_count": [2, 0x58,],
                 "distance3d": [4, 0x66,],
                 "avg_3d_speed": [2, 0x6a,],
@@ -177,7 +814,6 @@
 
             }
 
-            const header = value.getUint8(0);
             if (header == 2) {
                 // protocol version 2 - used by us to get basic info
                 if (value.getUint8(1) == 1) {
@@ -202,21 +838,53 @@
             }
 
             if (header == 0x33) {
-                if (new Uint8Array(value.buffer.slice(1, 5)).toString() == new Uint8Array([0xda, 0xad, 0xda, 0xad]).toString()) {
-                    console.log("detected preamble - length of packet is " + value.getUint16(6, true))
-                    rx_buffer = new Uint8Array(value.getUint16(6, true))
+                var isPreamble = arr.length >= 8 && arr[1] === 0xda && arr[2] === 0xad && arr[3] === 0xda && arr[4] === 0xad;
+                if (isPreamble) {
+                    var totalLen = value.getUint16(6, true);
+                    rx_buffer = new Uint8Array(totalLen);
                     rx_written = 0;
-                    event_log("Receiving Data")
+                    event_log("Receiving Data (0/" + totalLen + " bytes)");
+                    // First packet: copy from offset 1, length totalLen (or what we have)
+                    var toCopy = Math.min(totalLen, arr.length - 1);
+                    if (toCopy > 0) {
+                        rx_buffer.set(new Uint8Array(value.buffer, 1, toCopy), 0);
+                        rx_written = toCopy;
+                        if (rx_written < rx_buffer.length) {
+                            event_log("Receiving Data (" + rx_written + "/" + rx_buffer.length + " bytes)");
+                        }
+                    }
+                } else if (typeof rx_buffer !== "undefined" && rx_buffer.length > 0 && rx_written < rx_buffer.length) {
+                    // Continuation packet: 33 00 00 00 00 00 00 00 00 00 00 00 00 [segment] [data...] — append from offset 13
+                    var contHeaderLen = 13;
+                    if (arr.length > contHeaderLen) {
+                        var contPayloadLen = arr.length - contHeaderLen;
+                        var toCopy = Math.min(contPayloadLen, rx_buffer.length - rx_written);
+                        if (toCopy > 0) {
+                            rx_buffer.set(new Uint8Array(value.buffer, contHeaderLen, toCopy), rx_written);
+                            rx_written += toCopy;
+                            if (rx_written < rx_buffer.length) {
+                                event_log("Receiving Data (" + rx_written + "/" + rx_buffer.length + " bytes)");
+                            }
+                        }
+                    }
                 }
 
-                rx_buffer.set(new Uint8Array(value.buffer.slice(1)), rx_written)
-                console.log(rx_written)
-                rx_written = rx_written + value.byteLength - 1
-                if (rx_written == rx_buffer.length) {
+                if (typeof rx_buffer !== "undefined" && rx_written === rx_buffer.length) {
                     console.log("full rx")
                     console.log(new Uint8Array(rx_buffer.buffer))
 
                     activity_buffer = new DataView(rx_buffer.buffer)
+                    var totalLen = rx_buffer.length;
+
+                    // Parse sync header (wire: preamble 4 + byte + length 2 + cmd 2 + key 2 + serial 1 + headLen 1 + date 6 + dataLen 1 + hrInterval 2 + hrItems 1 + packetCount 1)
+                    if (totalLen >= 23) {
+                        var buf = activity_buffer;
+                        var cmd = buf.getUint16(6, true), key = buf.getUint16(8, true), serial = buf.getUint8(10), headLen = buf.getUint8(11);
+                        var y = buf.getUint8(12), m = buf.getUint8(13), d = buf.getUint8(14), h = buf.getUint8(15), min = buf.getUint8(16), s = buf.getUint8(17);
+                        var dataLen = buf.getUint8(18), hrInterval = buf.getUint16(19, true), hrItems = buf.getUint8(21), packetCount = buf.getUint8(22);
+                        var timeStr = "20" + (y < 10 ? "0" : "") + y + "-" + (m < 10 ? "0" : "") + m + "-" + (d < 10 ? "0" : "") + d + " " + (h < 10 ? "0" : "") + h + ":" + (min < 10 ? "0" : "") + min + ":" + (s < 10 ? "0" : "") + s;
+                        event_log("[Activity data] total=" + totalLen + " cmd=0x" + cmd.toString(16) + " key=0x" + key.toString(16) + " serial=" + serial + " time=" + timeStr + " packets=" + packetCount);
+                    }
 
                     console.log("Activity") // TODO actually detect packet type
                     event_log("Received Activity")
@@ -251,15 +919,22 @@
                             console.log(activity_output[key])
                             console.log("---")
                         }
-                        if (activity_output["version"] != 16){
-                            document.body.appendChild(document.createTextNode("not version we support"))
-                            console.log("not version we support: "+ activity_output["version"])
-                            event_log("Not version we support: "+ activity_output["version"])
-                            return
-                        }
                     }
+                    var sportLabels = { 0: "Unknown", 1: "Walk", 2: "Run", 3: "Bike", 4: "On foot", 5: "Swim", 6: "Mountain", 7: "Badminton", 8: "Other" };
+                    var sportStr = sportLabels[activity_output["type"]] || ("type " + activity_output["type"]);
+                    logDataParsing({ Steps: activity_output["step"], Sports: sportStr, kcal: activity_output["calories"], BPM: (activity_output["avg_hr_value"] || activity_output["max_hr_value"]) ? (activity_output["avg_hr_value"] + "/" + activity_output["max_hr_value"] + " avg/max") : "—", Sleep: "—", SPO2: "—", Relax: "—", "Blood sugar": "—", Hydration: "—", Battery: "—" });
                     console.log(activity_output)
                     document.body.appendChild(document.createTextNode(JSON.stringify(activity_output)))
+                    var v = activity_output["version"];
+                    if (v != 16) {
+                        if (v === 0 && !activity_output["year"] && !activity_output["step"]) {
+                            event_log("No stored activity (version 0, all zeros). Record a run on the watch and try again, or the watch may have already synced to the app.");
+                        } else {
+                            event_log("Activity version " + v + " (TCX export supports 16). Data logged above.");
+                        }
+                        console.log("Activity version " + v + " – TCX export supports version 16 only.");
+                        return;
+                    }
                     event_log("Creating TCX file")
                     createTCX(activity_output)
                 }
@@ -272,30 +947,588 @@
             send_char.writeValue(infoCmd);
         }
 
-        function sendGetActivity() {
-            const infoCmd = Uint8Array.of(
-                0x33, // '3' version protocol
-                0xDA, // this is preamble to detect new command midway through
-                0xAD, // preamble
-                0xDA, // preamble
-                0xAD, // preamble
-                0x01, // health?
-                0x10, // len (without '3' and checksum (last two bytes) - aka minus 3)
-                0x00, // len
-                0x04, // cmd
-                0x00,
-                0x0B, // seq - can just pick anything
-                0x01, // seq
-                0x00, // start / stop
-                0x04, // cmd?
-                0x00,
-                0x00,
-                0x00,
-                0x00, // checksum?
-                0x00  // checksum? crc but doesn't seem to be checked
+        var NOTICE_PAYLOAD_SIZE = 16;
+        var NOTICE_CHUNK_DELAY_MS = 150;
 
-                // 33DAADDAAD0110000400160000040000000000
-            );
+        function sendChunkedNotice(cmd, key, payloadBytes, doneLog) {
+            var chunks = [];
+            for (var i = 0; i < payloadBytes.length; i += NOTICE_PAYLOAD_SIZE) {
+                var chunk = payloadBytes.slice(i, i + NOTICE_PAYLOAD_SIZE);
+                while (chunk.length < NOTICE_PAYLOAD_SIZE) chunk.push(0);
+                chunks.push(chunk);
+            }
+            var total = chunks.length;
+            var serial = 0;
+            function sendNext() {
+                if (serial >= total) {
+                    if (doneLog) event_log(doneLog);
+                    return;
+                }
+                serial++;
+                var packet = [cmd, key, total, serial].concat(chunks[serial - 1]);
+                send_char.writeValue(new Uint8Array(packet)).then(function() {
+                    console.log("Sent chunk " + serial + "/" + total + " to 0x0AF6:", hexDump(packet));
+                    setTimeout(sendNext, NOTICE_CHUNK_DELAY_MS);
+                }).catch(function(e) {
+                    event_log("Chunk send error: " + e.message);
+                });
+            }
+            sendNext();
+        }
+
+        function sendCallStatus() {
+            if (!send_char) {
+                event_log("Not connected. Pair + Get Activity first.");
+                return;
+            }
+            var sel = document.getElementById("call_status_value");
+            var status = sel ? parseInt(sel.value, 10) : 1;
+            if (isNaN(status)) status = 1;
+            var buf = [0x05, 0x02, status];
+            send_char.writeValue(new Uint8Array(buf));
+            event_log("Sent call status 0x05 0x02 " + status + " (1=end call per angelfit)");
+            console.log("Sent to 0x0AF6:", hexDump(buf));
+        }
+
+        function formatFuncTable(arr) {
+            if (arr.length < 17 || arr[0] !== 0x02 || arr[1] !== 0x02) return "";
+            var main_ = arr[2], alarmNum = arr[3], alarmType = arr[4], control = arr[5], call_ = arr[6], msg_ = arr[7], other = arr[8], msgConfig = arr[9], msg2_ = arr[10], other2 = arr[11], s1 = arr[12], s2 = arr[13], s3 = arr[14], s4 = arr[15], main1_ = arr[16];
+            var lines = [];
+            function flags(byte, names) { var list = []; for (var i = 0; i < names.length; i++) if (byte & (1 << i)) list.push(names[i]); return list.length ? list.join(", ") : "-"; }
+            lines.push("====== Func table (device capabilities) ======");
+            lines.push("");
+            lines.push("Main:        " + flags(main_, ["sport", "sleep", "single_sport", "live_data", "OTA", "heart_rate", "ANCS", "timeline"]));
+            lines.push("Alarms:      count = " + alarmNum);
+            lines.push("Alarm types: " + flags(alarmType, ["wake_up", "sleep", "sport", "medicine", "dating", "party", "meeting", "custom"]));
+            lines.push("Control:     " + flags(control, ["photo", "music"]));
+            lines.push("Call:        " + flags(call_, ["incoming", "contacts", "id"]));
+            lines.push("Notify:      " + flags(msg_, ["SMS", "mail", "QQ", "WeChat", "Weibo", "Facebook", "Twitter"]));
+            lines.push("Notify2:     " + flags(msg2_, ["WhatsApp", "Messenger", "Instagram", "LinkedIn", "calendar", "Skype", "alarm_clock", "Pokeman"]));
+            lines.push("SMS config:  " + flags(msgConfig, ["show_contacts", "show_id", "show_content"]));
+            lines.push("Other:       " + flags(other, ["long_sit", "lost_find", "one_key_SOS", "find_phone", "find_device", "config_default", "up_hand_gesture", "weather"]));
+            lines.push("Other2:      " + flags(other2, ["static_HR", "do_not_disturb", "display_mode", "heart_rate_monitor", "bilateral_antilost", "all_app_notice", "flip_screen", "reserved"]));
+            lines.push("Sport set 1: " + flags(s1, ["walk", "run", "bike", "on_foot", "swim", "mountain_climbing", "badminton", "other"]));
+            lines.push("Sport set 2: " + flags(s2, ["fitness", "spinning", "ellipsoid", "treadmill", "sit_up", "push_up", "dumbbell", "weightlifting"]));
+            lines.push("Sport set 3: " + flags(s3, ["bodybuilding", "yoga", "rope_skipping", "table_tennis", "basketball", "football", "volleyball", "tennis"]));
+            lines.push("Sport set 4: " + flags(s4, ["golf", "baseball", "skiing", "roller_skating", "dance", "walk"]));
+            lines.push("Main1:       " + flags(main1_, ["log_in"]));
+            lines.push("");
+            lines.push("Raw: " + Array.from(arr.slice(2, 17)).map(function(b){ return ("0" + b.toString(16)).slice(-2); }).join(" "));
+            return lines.join("\n");
+        }
+
+        function sendGetNoticeStatus() {
+            if (!send_char) {
+                event_log("Not connected. Pair + Get Activity first.");
+                return;
+            }
+            var buf = [0x02, 0x10];
+            send_char.writeValue(new Uint8Array(buf));
+            event_log("Sent get notice status 0x02 0x10 (PROTOCOL_KEY_GET_NOTICE_STATUS). Watch may reply on 0x0AF7.");
+            console.log("Sent to 0x0AF6:", hexDump(buf));
+        }
+
+        function sendProtocolGet(cmd, key) {
+            if (!send_char) { event_log("Not connected."); return; }
+            var names = { 0x01: "device info", 0x02: "func table", 0x03: "device time", 0x04: "MAC", 0x05: "battery", 0x06: "SN info", 0x07: "GET 0x07", 0x08: "GET 0x08", 0x10: "notice status", 0x20: "HR sensor param", 0x21: "G-sensor param", 0x30: "GET 0x30", 0xA0: "live data", 0xA7: "GET 0xA7", 0xB1: "GET 0xB1" };
+            var buf = [cmd, key];
+            send_char.writeValue(new Uint8Array(buf));
+            event_log("GET " + (names[key] || "0x" + key.toString(16)) + " 0x" + cmd.toString(16) + " 0x" + key.toString(16));
+            console.log("Sent to 0x0AF6:", hexDump(buf));
+        }
+
+        function sendProtocolControl(key, cmd1) {
+            if (!send_char) { event_log("Not connected."); return; }
+            var buf = [0x06, key, cmd1, 0x00, 0x00];
+            send_char.writeValue(new Uint8Array(buf));
+            event_log("Control 0x06 0x" + key.toString(16) + " 0x" + cmd1.toString(16));
+            console.log("Sent to 0x0AF6:", hexDump(buf));
+        }
+
+        function sendProtocolCmd(cmd, key) {
+            if (!send_char) { event_log("Not connected."); return; }
+            var buf = [cmd, key];
+            send_char.writeValue(new Uint8Array(buf));
+            event_log("Cmd 0x" + cmd.toString(16) + " 0x" + key.toString(16));
+            console.log("Sent to 0x0AF6:", hexDump(buf));
+        }
+
+        function sendFindPhone(status, timeout) {
+            if (!send_char) { event_log("Not connected."); return; }
+            var buf = [0x03, 0x26, status, timeout];
+            send_char.writeValue(new Uint8Array(buf));
+            event_log("Find phone 0x03 0x26 status=" + status + " timeout=" + timeout + "s");
+            console.log("Sent to 0x0AF6:", hexDump(buf));
+        }
+
+        function sendSetHand(handType) {
+            if (!send_char) { event_log("Not connected."); return; }
+            var buf = [0x03, 0x22, handType];
+            send_char.writeValue(new Uint8Array(buf));
+            event_log("Set hand 0x03 0x22 " + (handType ? "right" : "left"));
+            console.log("Sent to 0x0AF6:", hexDump(buf));
+        }
+
+        function sendSetMusicOnOff(switchStatus) {
+            if (!send_char) { event_log("Not connected."); return; }
+            var byte = switchStatus ? 0xAA : 0x55;  // firmware expects 0xAA=on, 0x55=off (same as VeryFit)
+            var buf = [0x03, 0x2A, byte];
+            send_char.writeValue(new Uint8Array(buf));
+            event_log("Music on/off 0x03 0x2A " + (switchStatus ? "on (0xAA)" : "off (0x55)"));
+            console.log("Sent to 0x0AF6:", hexDump(buf));
+        }
+
+        function sendDoNotDisturb(switchFlag, startHour, startMinute, endHour, endMinute) {
+            if (!send_char) { event_log("Not connected."); return; }
+            var buf = [0x03, 0x29, switchFlag, startHour, startMinute, endHour, endMinute];
+            send_char.writeValue(new Uint8Array(buf));
+            event_log("Do not disturb 0x03 0x29 " + (switchFlag ? "on " + startHour + ":" + startMinute + "-" + endHour + ":" + endMinute : "off"));
+            console.log("Sent to 0x0AF6:", hexDump(buf));
+        }
+
+        function sendSetNoticeVeryFitOn() {
+            if (!send_char) { event_log("Not connected."); return; }
+            var buf = [0x03, 0x30, 0x88, 0x00, 0x00, 0xAA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
+            send_char.writeValue(new Uint8Array(buf));
+            event_log("Sent capture-backed VeryFit notice enable 0x03 0x30 88 00 00 AA + padding. Expected reply in new_setup.json: 03 30 88 01 00.");
+            console.log("Sent to 0x0AF6:", hexDump(buf));
+        }
+
+        function sendSetNotice() {
+            if (!send_char) { event_log("Not connected."); return; }
+            var buf = [0x03, 0x30, 0x01, 0x00, 0x00, 0x01, 0x03];
+            send_char.writeValue(new Uint8Array(buf));
+            event_log("Sent legacy angelfit set notice 0x03 0x30 (notify+call on, call_delay 3s). new_setup.json shows VeryFit using a different 20-byte payload, so this can reset state on some watches.");
+            console.log("Sent to 0x0AF6:", hexDump(buf));
+        }
+
+        function sendSetNoticeOff() {
+            if (!send_char) { event_log("Not connected."); return; }
+            var buf = [0x03, 0x30, 0x00, 0x00, 0x00, 0x00, 0x00];
+            send_char.writeValue(new Uint8Array(buf));
+            event_log("Sent legacy angelfit set notice 0x03 0x30 off. Capture did not show a matching VeryFit disable payload.");
+            console.log("Sent to 0x0AF6:", hexDump(buf));
+        }
+
+        function sendSetDeviceTime() {
+            if (!send_char) { event_log("Not connected."); return; }
+            var now = new Date();
+            var y = now.getFullYear(), m = now.getMonth() + 1, d = now.getDate(), h = now.getHours(), min = now.getMinutes(), s = now.getSeconds(), w = now.getDay();
+            var buf = [0x03, 0x01, y & 0xff, (y >> 8) & 0xff, m, d, h, min, s, w];
+            send_char.writeValue(new Uint8Array(buf));
+            event_log("Set device time 0x03 0x01 " + y + "-" + (m < 10 ? "0" : "") + m + "-" + (d < 10 ? "0" : "") + d + " " + (h < 10 ? "0" : "") + h + ":" + (min < 10 ? "0" : "") + min + ":" + (s < 10 ? "0" : "") + s + " (week " + w + ")");
+            console.log("Sent to 0x0AF6:", hexDump(buf));
+        }
+
+        function sendSetUpHandGesture(onOff) {
+            if (!send_char) { event_log("Not connected."); return; }
+            var showSecond = 3;
+            if (showSecond < 2) showSecond = 2;
+            if (showSecond > 7) showSecond = 7;
+            var onOffByte = onOff ? 0xAA : 0x55;
+            var buf = [0x03, 0x28, onOffByte, showSecond];
+            send_char.writeValue(new Uint8Array(buf));
+            event_log("Set up hand gesture 0x03 0x28 " + (onOff ? "on (0xAA)" : "off (0x55)") + " show_second=" + showSecond);
+            console.log("Sent to 0x0AF6:", hexDump(buf));
+        }
+
+        function sendSetOnekeySos(onOff) {
+            if (!send_char) { event_log("Not connected."); return; }
+            var buf = [0x03, 0x2C, onOff];
+            send_char.writeValue(new Uint8Array(buf));
+            event_log("Set one-key SOS 0x03 0x2C " + (onOff === 0xAA ? "on (0xAA)" : "off (0x55)"));
+            console.log("Sent to 0x0AF6:", hexDump(buf));
+        }
+
+        function sendSetDefaultConfig() {
+            if (!send_char) { event_log("Not connected."); return; }
+            var buf = [0x03, 0x27];
+            send_char.writeValue(new Uint8Array(buf));
+            event_log("Sent factory defaults 0x03 0x27 (restore default config). Only supported if func table configDefault is set; may unbind or reset settings.");
+            console.log("Sent to 0x0AF6:", hexDump(buf));
+        }
+
+        function sendSetHeartRateMode(mode) {
+            if (!send_char) { event_log("Not connected."); return; }
+            var buf = [0x03, 0x25, mode];  // angelfit: 0x55=off, 0x88=auto, 0xAA=manual; v2: 0=off, 1=manual, 2=auto, 3=continuous
+            send_char.writeValue(new Uint8Array(buf));
+            var label = mode === 0x55 ? "off" : (mode === 0x88 ? "on (auto 0x88)" : (mode === 2 ? "on (v2 auto)" : (mode === 3 ? "on (v2 continuous)" : "manual/other")));
+            event_log("Heart rate mode 0x03 0x25 " + label + " (0x" + (mode <= 15 ? mode.toString(16) : mode.toString(16).toUpperCase()) + ")");
+            console.log("Sent to 0x0AF6:", hexDump(buf));
+        }
+
+        function sendSetHeartRateInterval(burnFat, aerobic, limit) {
+            if (!send_char) { event_log("Not connected."); return; }
+            var buf = [0x03, 0x24, burnFat, aerobic, limit];  // thresholds 1–255 bpm (angelfit default 135, 96, 160)
+            send_char.writeValue(new Uint8Array(buf));
+            event_log("Heart rate interval 0x03 0x24 burn_fat=" + burnFat + " aerobic=" + aerobic + " limit=" + limit);
+            console.log("Sent to 0x0AF6:", hexDump(buf));
+        }
+
+        function sendSetRealTimeSensor(gsensorByte, hrByte) {
+            if (!send_char) { event_log("Not connected."); return; }
+            var buf = [0x03, 0x52, gsensorByte, hrByte];  // 0x55=off, 0xAA=on (angelfit convention)
+            send_char.writeValue(new Uint8Array(buf));
+            event_log("Real-time sensor 0x03 0x52 gsensor=0x" + gsensorByte.toString(16) + " hr=0x" + hrByte.toString(16));
+            console.log("Sent to 0x0AF6:", hexDump(buf));
+        }
+
+        function sendSetWeatherSwitch(onOff) {
+            if (!send_char) { event_log("Not connected."); return; }
+            var buf = [0x03, 0x2D, onOff ? 1 : 0, 0x00, 0x00];
+            send_char.writeValue(new Uint8Array(buf));
+            event_log("Set weather switch 0x03 0x2D " + (onOff ? "on" : "off") + " (only if func table weather bit is set).");
+            console.log("Sent to 0x0AF6:", hexDump(buf));
+        }
+
+        function sendSetDrinkReminderCapture(onOff) {
+            var buf = onOff
+                ? [0x03, 0x60, 0x01, 0x09, 0x00, 0x12, 0x00, 0x3f, 0x1e, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00]
+                : [0x03, 0x60, 0x00, 0x09, 0x00, 0x12, 0x00, 0x3e, 0x1e, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00];
+            sendCaptureSet(buf, "drink reminder " + (onOff ? "ON" : "OFF") + " (0x60, likely from healthdata_toggles.json)");
+        }
+
+        function sendSetWalkReminderCapture(onOff) {
+            var buf = [0x03, 0x47, onOff ? 0x01 : 0x00, 0x64, 0x00, 0x09, 0x00, 0x15, 0x00, 0xfe, 0x00, 0x00, 0x73, 0x00, 0x00, 0x00, 0x01];
+            sendCaptureSet(buf, "walk-around reminder " + (onOff ? "ON" : "OFF") + " (0x47, likely from healthdata_toggles.json)");
+        }
+
+        function sendSetContinuousHealthCapture(onOff) {
+            var buf = onOff
+                ? [0x03, 0x45, 0xaa, 0x09, 0x00, 0x12, 0x00, 0x55, 0x3f, 0x3c, 0x00, 0x50, 0x00, 0x00, 0x00, 0x1e]
+                : [0x03, 0x45, 0x55, 0x09, 0x00, 0x12, 0x00, 0x55, 0x3f, 0x3c, 0x00, 0x50, 0x00, 0x01, 0x00, 0x1e];
+            sendCaptureSet(buf, "0x45 continuous health " + (onOff ? "ON" : "OFF") + " (healthdata_toggles.json)");
+        }
+
+        function sendSetWomensHealthCapture(enabled) {
+            if (!send_char) { event_log("Not connected."); return; }
+            if (enabled) {
+                sendCaptureSet([0x03, 0x41, 0xaa, 0x07, 0x1c, 0xea, 0x07, 0x03, 0x07, 0x0e, 0x05, 0x04, 0x00, 0x55], "0x41 women's health ON (capture)");
+                setTimeout(function() {
+                    if (send_char) sendCaptureSet([0x03, 0x42, 0x03, 0x03, 0x08, 0x00, 0x03, 0x03, 0x03], "0x42 women's health detail (capture)");
+                }, 300);
+            } else {
+                sendCaptureSet([0x03, 0x41, 0x55, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x55], "0x41 women's health default (capture)");
+                setTimeout(function() {
+                    if (send_char) sendCaptureSet([0x03, 0x42, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00], "0x42 default (capture)");
+                }, 300);
+            }
+        }
+
+        function sendSetSleepGoal() {
+            if (!send_char) { event_log("Not connected."); return; }
+            var h = parseInt(document.getElementById("sleep_goal_hour").value, 10) || 8;
+            var m = parseInt(document.getElementById("sleep_goal_minute").value, 10) || 0;
+            if (h < 0) h = 0; if (h > 12) h = 12;
+            if (m < 0) m = 0; if (m > 59) m = 59;
+            var buf = [0x03, 0x04, h, m];
+            send_char.writeValue(new Uint8Array(buf));
+            event_log("Set sleep goal 0x03 0x04 " + h + "h " + m + "min (target duration). Only if func table main_func sleep(1) is set.");
+            console.log("Sent to 0x0AF6:", hexDump(buf));
+        }
+
+        function sendRequestSleepData(todayNotHistory) {
+            if (!send_char) { event_log("Not connected."); return; }
+            sleep_rx_chunks = [];
+            sleep_key = 0;
+            sleep_label = "";
+            var cmd = 0x08, key = todayNotHistory ? 0x04 : 0x06, syncStart = 0x01;
+            var buf = [cmd, key, syncStart];
+            send_char.writeValue(new Uint8Array(buf));
+            event_log("Request " + (todayNotHistory ? "today's" : "history") + " sleep 0x08 0x" + key.toString(16) + " 0x01 (HEALTH_DATA sync start). Watch may stream packets on 0x0AF7.");
+            console.log("Sent to 0x0AF6:", hexDump(buf));
+            var el = document.getElementById("sleep_data_display");
+            if (el) el.textContent = "Waiting for sleep data… (check Events and Debug log for raw packets)";
+        }
+
+        function parseHexString(str) {
+            if (!str || typeof str !== "string") return null;
+            var s = str.replace(/[\s:]+/g, "").toLowerCase();
+            if (!/^[0-9a-f]*$/.test(s) || s.length % 2 !== 0) return null;
+            var arr = [];
+            for (var i = 0; i < s.length; i += 2) arr.push(parseInt(s.slice(i, i + 2), 16));
+            return arr;
+        }
+
+        function sendRawHex() {
+            if (!send_char) { event_log("Not connected."); return; }
+            var input = document.getElementById("raw_hex_input");
+            var str = input ? input.value.trim() : "";
+            var buf = parseHexString(str);
+            if (!buf || buf.length === 0) {
+                event_log("Raw hex: invalid or empty. Use spaces or colons, e.g. 03 45 aa 09 00 or 03:45:aa:09:00");
+                return;
+            }
+            send_char.writeValue(new Uint8Array(buf));
+            event_log("Sent raw (" + buf.length + " bytes) " + Array.from(buf).map(function(b){ return ("0" + b.toString(16)).slice(-2); }).join(" "));
+            console.log("Sent to 0x0AF6:", buf);
+        }
+
+        function sendDumpTx(hexStr, label) {
+            if (!send_char) { event_log("Not connected."); return; }
+            var buf = parseHexString(hexStr);
+            if (!buf || buf.length === 0) { event_log("Dump TX invalid: " + label); return; }
+            send_char.writeValue(new Uint8Array(buf));
+            event_log("[Dump] " + label + " (" + buf.length + " B) " + Array.from(buf).map(function(b){ return ("0" + b.toString(16)).slice(-2); }).join(" "));
+        }
+        function sendDumpTxSequence(hexList, label) {
+            if (!send_char) { event_log("Not connected."); return; }
+            var delay = 0;
+            hexList.forEach(function(hexStr, i) {
+                var buf = parseHexString(hexStr);
+                if (!buf || buf.length === 0) return;
+                var payload = buf;
+                (function(p, idx) {
+                    setTimeout(function() {
+                        if (!send_char) return;
+                        send_char.writeValue(new Uint8Array(p));
+                        event_log("[Dump] " + label + " packet " + (idx + 1) + "/" + hexList.length + " (" + p.length + " B)");
+                    }, delay);
+                })(payload, i);
+                delay += 350;
+            });
+        }
+
+        function sendHealthDataKeyProbe() {
+            if (!send_char) { event_log("Not connected."); return; }
+            var input = document.getElementById("health_key_hex");
+            var keyStr = input ? input.value.trim() : "04";
+            var key = parseInt(keyStr, 16);
+            if (isNaN(key) || key < 0 || key > 255) {
+                event_log("HEALTH_DATA key: invalid hex (00–FF).");
+                return;
+            }
+            var buf = [0x08, key & 0xff, 0x01];
+            send_char.writeValue(new Uint8Array(buf));
+            event_log("Request HEALTH_DATA 0x08 0x" + (key < 16 ? "0" : "") + key.toString(16) + " 0x01 — watch may reply on 0x0AF7 (enable Debug log).");
+            console.log("Sent to 0x0AF6:", hexDump(buf));
+        }
+
+        var alarmList = [];
+
+        function sendSetAlarm(alarmId, status, type, hour, minute, repeat, snoozeMinutes) {
+            if (!send_char) { event_log("Not connected."); return; }
+            var buf = [0x03, 0x02, alarmId & 0xff, status & 0xff, type & 0xff, hour & 0xff, minute & 0xff, repeat & 0xff, snoozeMinutes & 0xff];
+            send_char.writeValue(new Uint8Array(buf));
+            event_log("Alarm SET 0x03 0x02 id=" + alarmId + " status=0x" + (status.toString(16)) + " type=" + type + " " + (hour < 10 ? "0" : "") + hour + ":" + (minute < 10 ? "0" : "") + minute + " repeat=0x" + (repeat.toString(16)) + " snooze=" + snoozeMinutes + "min");
+            console.log("Sent to 0x0AF6:", hexDump(buf));
+        }
+
+        function getAlarmFormValues() {
+            var slotEl = document.getElementById("alarm_slot");
+            var enableEl = document.getElementById("alarm_enable");
+            var typeEl = document.getElementById("alarm_type");
+            var hourEl = document.getElementById("alarm_hour");
+            var minuteEl = document.getElementById("alarm_minute");
+            var repeatEl = document.getElementById("alarm_repeat");
+            var repeatHexEl = document.getElementById("alarm_repeat_hex");
+            var snoozeEl = document.getElementById("alarm_snooze");
+            var slot = slotEl ? parseInt(slotEl.value, 10) : 0;
+            var status = enableEl ? parseInt(enableEl.value, 16) : 0xAA;
+            var type = typeEl ? parseInt(typeEl.value, 10) : 0;
+            var hour = hourEl ? Math.max(0, Math.min(23, parseInt(hourEl.value, 10))) : 7;
+            var minute = minuteEl ? Math.max(0, Math.min(59, parseInt(minuteEl.value, 10))) : 0;
+            var repeat = 0xFF;
+            if (repeatEl && repeatEl.value === "custom" && repeatHexEl) {
+                var r = parseInt(repeatHexEl.value, 16);
+                repeat = isNaN(r) ? 0xFF : (r & 0xFF);
+            } else if (repeatEl) {
+                repeat = parseInt(repeatEl.value, 10);
+                if (isNaN(repeat)) repeat = 0xFF;
+            }
+            var snooze = snoozeEl ? Math.max(0, Math.min(30, parseInt(snoozeEl.value, 10))) : 5;
+            return { slot: slot, status: status, type: type, hour: hour, minute: minute, repeat: repeat, snooze: snooze };
+        }
+
+        function sendSetAlarmFromForm() {
+            var v = getAlarmFormValues();
+            sendSetAlarm(v.slot, v.status, v.type, v.hour, v.minute, v.repeat, v.snooze);
+        }
+
+        function addAlarmToList() {
+            var v = getAlarmFormValues();
+            alarmList.push({ slot: alarmList.length, status: v.status, type: v.type, hour: v.hour, minute: v.minute, repeat: v.repeat, snooze: v.snooze });
+            renderAlarmList();
+        }
+
+        function clearAlarmList() {
+            alarmList = [];
+            renderAlarmList();
+            event_log("Alarm list cleared.");
+        }
+
+        function renderAlarmList() {
+            var el = document.getElementById("alarm_list_display");
+            var countEl = document.getElementById("alarm_list_count");
+            if (countEl) countEl.textContent = alarmList.length + " alarm(s) in list";
+            if (!el) return;
+            if (alarmList.length === 0) {
+                el.innerHTML = "";
+                return;
+            }
+            var html = "<table><tr><th>#</th><th>On</th><th>Type</th><th>Time</th><th>Repeat</th><th>Snooze</th><th></th></tr>";
+            var types = ["Wake up", "Sleep", "Sport", "Medicine", "Dating", "Party", "Meeting", "Custom"];
+            for (var i = 0; i < alarmList.length; i++) {
+                var a = alarmList[i];
+                var onStr = a.status === 0xAA ? "Yes" : "No";
+                var typeStr = types[a.type] || "?" + a.type;
+                var timeStr = (a.hour < 10 ? "0" : "") + a.hour + ":" + (a.minute < 10 ? "0" : "") + a.minute;
+                var repStr = a.repeat === 0xFF ? "Every day" : (a.repeat === 0 ? "Once" : "0x" + a.repeat.toString(16));
+                html += "<tr><td>" + i + "</td><td>" + onStr + "</td><td>" + typeStr + "</td><td>" + timeStr + "</td><td>" + repStr + "</td><td>" + a.snooze + "m</td><td><button type=\"button\" onclick=\"removeAlarmFromList(" + i + ")\">Remove</button></td></tr>";
+            }
+            html += "</table>";
+            el.innerHTML = html;
+        }
+
+        function removeAlarmFromList(index) {
+            alarmList.splice(index, 1);
+            for (var i = 0; i < alarmList.length; i++) alarmList[i].slot = i;
+            renderAlarmList();
+        }
+
+        function syncAlarmsToWatch() {
+            if (!send_char) { event_log("Not connected."); return; }
+            if (alarmList.length === 0) { event_log("Alarm list is empty. Add alarms first."); return; }
+            event_log("Syncing " + alarmList.length + " alarm(s) to watch (300 ms between each)…");
+            var delayMs = 300;
+            var idx = 0;
+            function sendNext() {
+                if (idx >= alarmList.length) {
+                    event_log("Alarm sync complete.");
+                    return;
+                }
+                var a = alarmList[idx];
+                sendSetAlarm(a.slot, a.status, a.type, a.hour, a.minute, a.repeat, a.snooze);
+                idx++;
+                if (idx < alarmList.length) setTimeout(sendNext, delayMs);
+                else setTimeout(function() { event_log("Alarm sync complete."); }, 50);
+            }
+            sendNext();
+        }
+
+        (function initAlarmRepeatCustom() {
+            var sel = document.getElementById("alarm_repeat");
+            var span = document.getElementById("alarm_repeat_hex_span");
+            if (sel && span) {
+                sel.addEventListener("change", function() {
+                    span.style.display = sel.value === "custom" ? "inline" : "none";
+                });
+            }
+        })();
+
+        function sendTestNotification() {
+            if (!send_char) {
+                event_log("Not connected. Click \"Pair + Get Activity\", select your watch, wait for \"Receiving Notifications\", then try Send to watch again.");
+                return;
+            }
+            var input = document.getElementById('notif_text');
+            var senderInput = document.getElementById('notif_sender');
+            var text = (input && input.value.trim()) ? input.value.trim() : 'Hello';
+            var sender = (senderInput && senderInput.value.trim()) ? senderInput.value.trim() : 'Caller';
+            var utf8 = new TextEncoder().encode(text);
+            var utf8Arr = Array.from(utf8);
+            var senderUtf8 = new TextEncoder().encode(sender);
+            var senderArr = Array.from(senderUtf8);
+            if (utf8.length > 60) {
+                utf8 = utf8.slice(0, 60);
+                utf8Arr = Array.from(utf8);
+            }
+            if (senderArr.length > 20) senderArr = senderArr.slice(0, 20);
+            var formats = [
+                { name: "0x01 + len + UTF-8", buf: [0x01, utf8.length].concat(utf8Arr) },
+                { name: "Mi Band 0x05 0x01 + UTF-8", buf: [0x05, 0x01].concat(utf8Arr) },
+                { name: "v2-style 0x02 0x10 + len + UTF-8", buf: [0x02, 0x10, utf8.length].concat(utf8Arr) },
+                null,
+                null
+            ];
+            // Firmware call: [phone_len, contact_len] + phone + contact; chunk in 16B
+            var contactMaxFirstChunk = 14;
+            var callPayload = [0, senderArr.length].concat(senderArr);
+            while (callPayload.length % NOTICE_PAYLOAD_SIZE !== 0) callPayload.push(0);
+            if (callPayload.length <= NOTICE_PAYLOAD_SIZE) {
+                var single = [0, senderArr.length].concat(senderArr);
+                while (single.length < NOTICE_PAYLOAD_SIZE) single.push(0);
+                formats[3] = { name: "Firmware call 0x05 0x01+16B", buf: [0x05, 0x01, 1, 1].concat(single.slice(0, NOTICE_PAYLOAD_SIZE)) };
+            } else {
+                formats[3] = { name: "Firmware call 0x05 0x01 chunked", chunked: true, cmd: 0x05, key: 0x01, payload: callPayload };
+            }
+            // Firmware SMS: [type, data_length, phone_len, contact_len] + phone + contact + data; chunk in 16B
+            var smsPayload = [0x01, utf8.length, 0, senderArr.length].concat(senderArr).concat(utf8Arr);
+            while (smsPayload.length % NOTICE_PAYLOAD_SIZE !== 0) smsPayload.push(0);
+            formats[4] = { name: "Firmware SMS 0x05 0x03 chunked", chunked: true, cmd: 0x05, key: 0x03, payload: smsPayload };
+            var sel = document.getElementById('notif_format');
+            var rawVal = sel ? parseInt(sel.value, 10) : 1;
+            var idx = (rawVal === 5) ? 4 : (rawVal === 4) ? 3 : (rawVal >= 0 && rawVal <= 2 ? rawVal : 1);
+            var chosen = formats[idx];
+            function doSend() {
+                if (chosen.chunked) {
+                    event_log("Sending " + chosen.name + " (\"" + text + "\" from \"" + sender + "\")…");
+                    sendChunkedNotice(chosen.cmd, chosen.key, chosen.payload, "Sent " + chosen.name + ". Check watch.");
+                } else {
+                    send_char.writeValue(new Uint8Array(chosen.buf));
+                    event_log("Sent notification (\"" + text + "\") as " + chosen.name + ". Check watch.");
+                    console.log("Sent to 0x0AF6:", hexDump(new Uint8Array(chosen.buf)));
+                }
+            }
+            doSend();
+        }
+
+        function stopBruteForce() {
+            bruteForceCancel = true;
+            if (bruteTimeoutId) clearTimeout(bruteTimeoutId);
+            document.getElementById('brute_btn').disabled = false;
+            document.getElementById('brute_stop_btn').disabled = true;
+            event_log("Brute force stopped.");
+        }
+
+        function startBruteForce() {
+            if (!send_char) {
+                event_log("Not connected. Pair + Get Activity first.");
+                return;
+            }
+            var firstStr = (document.getElementById('brute_first') || {}).value || '05';
+            var endStr = (document.getElementById('brute_second_end') || {}).value || '1F';
+            var delayMs = parseInt(document.getElementById('brute_delay_ms').value, 10) || 1200;
+            var firstByte = parseInt(firstStr, 16);
+            var endByte = parseInt(endStr, 16);
+            if (isNaN(firstByte) || isNaN(endByte) || firstByte < 0 || firstByte > 255 || endByte < 0 || endByte > 255) {
+                event_log("Brute force: enter hex for first and second-end (00–FF).");
+                return;
+            }
+            var input = document.getElementById('notif_text');
+            var text = (input && input.value.trim()) ? input.value.trim() : 'Hi';
+            var utf8 = Array.from(new TextEncoder().encode(text.slice(0, 18)));
+            bruteForceCancel = false;
+            document.getElementById('brute_btn').disabled = true;
+            document.getElementById('brute_stop_btn').disabled = false;
+            event_log("Brute force: " + firstStr.toUpperCase() + " 0x00..0x" + endStr.toUpperCase() + ", " + delayMs + " ms. Watch the watch; click Stop to cancel.");
+            var b = 0;
+            function sendNext() {
+                if (bruteForceCancel || b > endByte) {
+                    document.getElementById('brute_btn').disabled = false;
+                    document.getElementById('brute_stop_btn').disabled = true;
+                    event_log("Brute force done. Tried 0x" + firstStr.toUpperCase() + " 0x00..0x" + endStr.toUpperCase() + ".");
+                    return;
+                }
+                var buf = [firstByte, b].concat(utf8);
+                send_char.writeValue(new Uint8Array(buf));
+                event_log("Brute: 0x" + firstStr.toUpperCase() + " 0x" + (b < 16 ? '0' : '') + b.toString(16).toUpperCase());
+                b++;
+                bruteTimeoutId = setTimeout(sendNext, delayMs);
+            }
+            sendNext();
+        }
+
+        function sendGetActivity() {
+            // VeryFit protocol: 33 da ad da ad 01 [len_lo] [len_hi] [cmd_lo] [cmd_hi] [key_lo] [key_hi] [checksum_lo] [checksum_hi]
+            // Capture: 33 da ad da ad 01 0b 00 1a 00 42 00 93 f4 (get activity)
+            const infoCmd = new Uint8Array([
+                0x33, 0xda, 0xad, 0xda, 0xad,
+                0x01, 0x0b, 0x00,   // length 11 LE
+                0x1a, 0x00,         // cmd 0x001a (26) LE
+                0x42, 0x00,        // key 0x0042 (66) LE
+                0x93, 0xf4         // checksum (from VeryFit capture)
+            ]);
             send_char.writeValue(infoCmd);
         }
 

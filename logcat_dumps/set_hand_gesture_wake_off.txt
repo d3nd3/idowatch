@@ -1,0 +1,7 @@
+03-07 23:37:01.461  4046  4046 I DEBUG LOG: [03-07 23:37:01.461] [jni_protocol.cpp] [Java_com_veryfit_multi_nativeprotocol_Protocol_WriteJsonData] [line 612] app send protocol evt:114(VBUS_EVT_APP_SET_UP_HAND_GESTURE)
+03-07 23:37:01.466  4046  4046 I DEBUG LOG: [03-07 23:37:01.466] [protocol_write.c] [protocol_write_data_add] [line 236] add queue to send evt:114(VBUS_EVT_APP_SET_UP_HAND_GESTURE)
+03-07 23:37:01.467  4046  4046 I DEBUG LOG: [03-07 23:37:01.467] [protocol_write.c] [protocol_write_process] [line 108] mem_pop is success
+03-07 23:37:01.467  4046  4046 I DEBUG LOG: [03-07 23:37:01.467] [protocol.c] [protocol_write_data] [line 235]   TX : 03 28 55 05 01 00 00 17 3B 
+03-07 23:37:01.467  4046  4046 I DEBUG LOG: [03-07 23:37:01.467] [jni_protocol.cpp] [jni_notice_app_tx_data] [line 345] jni send tx data to app data len:9
+03-07 23:37:02.450  4046  4781 I DEBUG LOG: [03-07 23:37:02.450] [protocol.c] [protocol_receive_data] [line 469] RX : 07 40 00 00 08 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+03-07 23:37:02.450  4046  4781 I DEBUG LOG: [03-07 23:37:02.450] [jni_protocol.cpp] [jni_notice_app_evt] [line 436] jni send evt notice to app evt type:577

@@ -1,0 +1,8 @@
+03-07 23:04:22.264  4046 26113 I DEBUG LOG: [03-07 23:04:22.264] [jni_protocol.cpp] [Java_com_veryfit_multi_nativeprotocol_Protocol_SysEvtSet] [line 266] api sysEvtSet,intput evt base:VBUS_EVT_BASE_APP_GET evt:VBUS_EVT_APP_GET_DEVICE_INFO
+03-07 23:04:22.264  4046 26113 I DEBUG LOG: [03-07 23:04:22.264] [protocol_write.c] [protocol_write_data_add] [line 236] add queue to send evt:301(VBUS_EVT_APP_GET_DEVICE_INFO)
+03-07 23:04:22.264  4046 26113 I DEBUG LOG: [03-07 23:04:22.264] [protocol_write.c] [protocol_write_process] [line 108] mem_pop is success
+03-07 23:04:22.264  4046 26113 I DEBUG LOG: [03-07 23:04:22.264] [protocol.c] [protocol_write_data] [line 235]   TX : 02 01 
+03-07 23:04:22.264  4046 26113 I DEBUG LOG: [03-07 23:04:22.264] [jni_protocol.cpp] [jni_notice_app_tx_data] [line 345] jni send tx data to app data len:2
+03-07 23:04:23.251  4046  4781 I DEBUG LOG: [03-07 23:04:23.251] [protocol.c] [protocol_receive_data] [line 469] RX : 02 01 14 02 11 01 00 1A 01 00 01 00 28 02 01 03 03 00 00 00 
+03-07 23:04:23.251  4046  4781 I DEBUG LOG: [03-07 23:04:23.251] [protocol_write.c] [protocol_write_vbus_control] [line 1293] stop resend evt:301(VBUS_EVT_APP_GET_DEVICE_INFO)
+03-07 23:04:23.251  4046  4781 I DEBUG LOG: [03-07 23:04:23.251] [jni_protocol.cpp] [jni_notice_app_evt] [line 436] jni send evt notice to app evt type:301

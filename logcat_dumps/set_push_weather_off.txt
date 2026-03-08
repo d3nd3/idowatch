@@ -1,0 +1,17 @@
+03-07 23:34:42.705  4046  4046 I DEBUG LOG: [03-07 23:34:42.704] [jni_protocol.cpp] [Java_com_veryfit_multi_nativeprotocol_Protocol_WriteJsonData] [line 612] app send protocol evt:150(VBUS_EVT_APP_SET_WEATHER_SWITCH)
+03-07 23:34:42.708  4046  4046 I DEBUG LOG: [03-07 23:34:42.708] [protocol_write.c] [protocol_write_data_add] [line 236] add queue to send evt:150(VBUS_EVT_APP_SET_WEATHER_SWITCH)
+03-07 23:34:42.708  4046  4046 I DEBUG LOG: [03-07 23:34:42.708] [protocol_write.c] [protocol_write_process] [line 108] mem_pop is success
+03-07 23:34:42.708  4046  4046 I DEBUG LOG: [03-07 23:34:42.708] [protocol.c] [protocol_write_data] [line 235]   TX : 03 2D 55 00 00 00 
+03-07 23:34:42.708  4046  4046 I DEBUG LOG: [03-07 23:34:42.708] [jni_protocol.cpp] [jni_notice_app_tx_data] [line 345] jni send tx data to app data len:6
+03-07 23:34:42.813  4046  4046 I DEBUG LOG: [03-07 23:34:42.813] [jni_protocol.cpp] [Java_com_veryfit_multi_nativeprotocol_Protocol_SysEvtSet] [line 266] api sysEvtSet,intput evt base:VBUS_EVT_BASE_APP_GET evt:326
+03-07 23:34:42.813  4046  4046 I DEBUG LOG: [03-07 23:34:42.813] [protocol_write.c] [protocol_write_data_add] [line 236] add queue to send evt:326(326)
+03-07 23:34:42.813  4046  4046 I DEBUG LOG: [03-07 23:34:42.813] [protocol_write.c] [protocol_write_process] [line 102] warn:queue cmd 0x3 0x2D not reply yet add queue to send failed,queue list size:1
+03-07 23:34:44.056  4046  5272 I DEBUG LOG: [03-07 23:34:44.055] [protocol.c] [protocol_receive_data] [line 469] RX : 03 2D 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+03-07 23:34:44.056  4046  5272 I DEBUG LOG: [03-07 23:34:44.056] [protocol_write.c] [protocol_write_vbus_control] [line 1293] stop resend evt:150(VBUS_EVT_APP_SET_WEATHER_SWITCH)
+03-07 23:34:44.056  4046  5272 I DEBUG LOG: [03-07 23:34:44.056] [protocol_write.c] [protocol_write_process] [line 108] mem_pop is success
+03-07 23:34:44.056  4046  5272 I DEBUG LOG: [03-07 23:34:44.056] [protocol.c] [protocol_write_data] [line 235]   TX : 02 B1 
+03-07 23:34:44.057  4046  5272 I DEBUG LOG: [03-07 23:34:44.057] [jni_protocol.cpp] [jni_notice_app_tx_data] [line 345] jni send tx data to app data len:2
+03-07 23:34:44.059  4046  5272 I DEBUG LOG: [03-07 23:34:44.059] [jni_protocol.cpp] [jni_notice_app_evt] [line 436] jni send evt notice to app evt type:150
+03-07 23:34:44.371  4046  5272 I DEBUG LOG: [03-07 23:34:44.371] [protocol.c] [protocol_receive_data] [line 469] RX : 02 B1 55 05 01 00 00 17 3B 00 00 00 00 00 00 00 00 00 00 00 
+03-07 23:34:44.372  4046  5272 I DEBUG LOG: [03-07 23:34:44.372] [protocol_write.c] [protocol_write_vbus_control] [line 1293] stop resend evt:326(326)
+03-07 23:34:44.372  4046  5272 I DEBUG LOG: [03-07 23:34:44.372] [jni_protocol.cpp] [jni_notice_app_evt] [line 436] jni send evt notice to app evt type:326

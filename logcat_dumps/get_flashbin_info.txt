@@ -1,0 +1,8 @@
+03-07 23:55:03.690  4046  4046 I DEBUG LOG: [03-07 23:55:03.690] [jni_protocol.cpp] [Java_com_veryfit_multi_nativeprotocol_Protocol_WriteJsonData] [line 612] app send protocol evt:322(VBUS_EVT_APP_GET_FLASH_BIN_INFO)
+03-07 23:55:03.691  4046  4046 I DEBUG LOG: [03-07 23:55:03.691] [protocol_write.c] [protocol_write_data_add] [line 236] add queue to send evt:322(VBUS_EVT_APP_GET_FLASH_BIN_INFO)
+03-07 23:55:03.691  4046  4046 I DEBUG LOG: [03-07 23:55:03.691] [protocol_write.c] [protocol_write_process] [line 108] mem_pop is success
+03-07 23:55:03.691  4046  4046 I DEBUG LOG: [03-07 23:55:03.691] [protocol.c] [protocol_write_data] [line 235]   TX : 02 A7 
+03-07 23:55:03.691  4046  4046 I DEBUG LOG: [03-07 23:55:03.691] [jni_protocol.cpp] [jni_notice_app_tx_data] [line 345] jni send tx data to app data len:2
+03-07 23:55:04.038  4046  6425 I DEBUG LOG: [03-07 23:55:04.038] [protocol.c] [protocol_receive_data] [line 469] RX : 02 A7 00 01 01 78 56 34 12 00 00 00 00 00 00 00 00 00 00 00 
+03-07 23:55:04.038  4046  6425 I DEBUG LOG: [03-07 23:55:04.038] [protocol_write.c] [protocol_write_vbus_control] [line 1293] stop resend evt:322(VBUS_EVT_APP_GET_FLASH_BIN_INFO)
+03-07 23:55:04.038  4046  6425 I DEBUG LOG: [03-07 23:55:04.038] [jni_protocol.cpp] [jni_notice_app_evt] [line 436] jni send evt notice to app evt type:322

@@ -1,0 +1,16 @@
+03-07 23:08:42.381  4046  4046 I DEBUG LOG: [03-07 23:08:42.381] [jni_protocol.cpp] [Java_com_veryfit_multi_nativeprotocol_Protocol_WriteJsonData] [line 612] app send protocol evt:117(VBUS_EVT_APP_SET_MUISC_ONOFF)
+03-07 23:08:42.382  4046  4046 I DEBUG LOG: [03-07 23:08:42.382] [protocol_write.c] [protocol_write_data_add] [line 236] add queue to send evt:117(VBUS_EVT_APP_SET_MUISC_ONOFF)
+03-07 23:08:42.382  4046  4046 I DEBUG LOG: [03-07 23:08:42.382] [protocol_write.c] [protocol_write_process] [line 108] mem_pop is success
+03-07 23:08:42.382  4046  4046 I DEBUG LOG: [03-07 23:08:42.382] [protocol.c] [protocol_write_data] [line 235]   TX : 03 2A 55 55 
+03-07 23:08:42.382  4046  4046 I DEBUG LOG: [03-07 23:08:42.382] [jni_protocol.cpp] [jni_notice_app_tx_data] [line 345] jni send tx data to app data len:4
+03-07 23:08:43.420  4046  5272 I DEBUG LOG: [03-07 23:08:43.420] [protocol.c] [protocol_receive_data] [line 469] RX : 03 2A 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+03-07 23:08:43.420  4046  5272 I DEBUG LOG: [03-07 23:08:43.420] [protocol_write.c] [protocol_write_vbus_control] [line 1293] stop resend evt:117(VBUS_EVT_APP_SET_MUISC_ONOFF)
+03-07 23:08:43.420  4046  5272 I DEBUG LOG: [03-07 23:08:43.420] [jni_protocol.cpp] [jni_notice_app_evt] [line 436] jni send evt notice to app evt type:117
+03-07 23:08:43.423  4046  4046 I DEBUG LOG: [03-07 23:08:43.423] [jni_protocol.cpp] [Java_com_veryfit_multi_nativeprotocol_Protocol_SysEvtSet] [line 266] api sysEvtSet,intput evt base:VBUS_EVT_BASE_APP_SET evt:VBUS_EVT_APP_APP_TO_BLE_MUSIC_STOP
+03-07 23:08:43.423  4046  4046 I DEBUG LOG: [03-07 23:08:43.423] [protocol_write.c] [protocol_write_data_add] [line 236] add queue to send evt:501(VBUS_EVT_APP_APP_TO_BLE_MUSIC_STOP)
+03-07 23:08:43.423  4046  4046 I DEBUG LOG: [03-07 23:08:43.423] [protocol_write.c] [protocol_write_process] [line 108] mem_pop is success
+03-07 23:08:43.423  4046  4046 I DEBUG LOG: [03-07 23:08:43.423] [protocol.c] [protocol_write_data] [line 235]   TX : 06 01 01 00 00 00 
+03-07 23:08:43.423  4046  4046 I DEBUG LOG: [03-07 23:08:43.423] [jni_protocol.cpp] [jni_notice_app_tx_data] [line 345] jni send tx data to app data len:6
+03-07 23:08:43.738  4046  9735 I DEBUG LOG: [03-07 23:08:43.737] [protocol.c] [protocol_receive_data] [line 469] RX : 06 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+03-07 23:08:43.738  4046  9735 I DEBUG LOG: [03-07 23:08:43.738] [protocol_write.c] [protocol_write_vbus_control] [line 1293] stop resend evt:501(VBUS_EVT_APP_APP_TO_BLE_MUSIC_STOP)
+03-07 23:08:43.738  4046  9735 I DEBUG LOG: [03-07 23:08:43.738] [jni_protocol.cpp] [jni_notice_app_evt] [line 436] jni send evt notice to app evt type:501

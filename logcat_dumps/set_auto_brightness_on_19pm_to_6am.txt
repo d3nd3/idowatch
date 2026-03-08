@@ -1,0 +1,5 @@
+03-07 23:40:00.659  4046  4046 I DEBUG LOG: [03-07 23:40:00.659] [jni_protocol.cpp] [Java_com_veryfit_multi_nativeprotocol_Protocol_WriteJsonData] [line 612] app send protocol evt:154(VBUS_EVT_APP_SET_SCREEN_BRIGHTNESS)
+03-07 23:40:00.661  4046  4046 I DEBUG LOG: [03-07 23:40:00.661] [protocol_write.c] [protocol_write_data_add] [line 236] add queue to send evt:154(VBUS_EVT_APP_SET_SCREEN_BRIGHTNESS)
+03-07 23:40:00.661  4046  4046 I DEBUG LOG: [03-07 23:40:00.661] [protocol_write.c] [protocol_write_process] [line 108] mem_pop is success
+03-07 23:40:00.661  4046  4046 I DEBUG LOG: [03-07 23:40:00.661] [protocol.c] [protocol_write_data] [line 235]   TX : 03 32 28 01 00 03 13 00 06 00 00 05 
+03-07 23:40:00.661  4046  4046 I DEBUG LOG: [03-07 23:40:00.661] [jni_protocol.cpp] [jni_notice_app_tx_data] [line 345] jni send tx data to app data len:12

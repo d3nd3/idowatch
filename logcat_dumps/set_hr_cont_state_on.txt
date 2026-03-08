@@ -1,0 +1,35 @@
+03-07 22:59:36.330  4046  4046 I DEBUG LOG: [03-07 22:59:36.330] [jni_protocol.cpp] [Java_com_veryfit_multi_nativeprotocol_Protocol_WriteJsonData] [line 612] app send protocol evt:5010(VBUS_EVT_FUNC_V3_SET_HR_MODE)
+03-07 22:59:36.340  4046  4046 I DEBUG LOG: [03-07 22:59:36.340] [protocol_v3_queue.c] [protocol_v3_queue_write_ex] [line 360] free ptr:tmp & queue_data
+03-07 22:59:36.340  4046  4046 I DEBUG LOG: [03-07 22:59:36.340] [protocol_v3_queue.c] [protocol_v3_queue_write_ex] [line 362] v3 protocol add queue cmd id=0x9 nseq=0x117 send queue cout=1
+03-07 22:59:36.341  4046  4046 I DEBUG LOG: [03-07 22:59:36.341] [protocol_v3_queue.c] [send_packet] [line 193] v3 protocol send packet cmd id=0x9 nseq=0x117
+03-07 22:59:36.341  4046  4046 I DEBUG LOG: [03-07 22:59:36.341] [protocol_v3.c] [process_tx_buff] [line 88] v3 protocol write complete
+03-07 22:59:36.341  4046  4046 I DEBUG LOG: [03-07 22:59:36.341] [protocol_v3.c] [process_tx_buff] [line 102] send data buff length:25,offset:0
+03-07 22:59:36.341  4046  4046 I DEBUG LOG: [03-07 22:59:36.341] [protocol.c] [protocol_write_data] [line 235]   TX : 33 DA AD DA AD 01 17 00 09 00 17 01 D8 AD AC 69 99 00 00 00 00 00 2C 01 56 08 
+03-07 22:59:36.342  4046  4046 I DEBUG LOG: [03-07 22:59:36.342] [jni_protocol.cpp] [jni_notice_app_tx_data] [line 345] jni send tx data to app data len:26
+03-07 22:59:36.342  4046  4046 I DEBUG LOG: [03-07 22:59:36.342] [protocol_v3_queue.c] [send_packet] [line 208] v3 write data rel:0,free send buff
+03-07 22:59:36.342  4046  4046 I DEBUG LOG: [03-07 22:59:36.342] [protocol_v3_queue.c] [process_queue] [line 265] free queue_data
+03-07 22:59:36.493  4046  4046 I DEBUG LOG: [03-07 22:59:36.493] [jni_protocol.cpp] [Java_com_veryfit_multi_nativeprotocol_Protocol_WriteJsonData] [line 612] app send protocol evt:5010(VBUS_EVT_FUNC_V3_SET_HR_MODE)
+03-07 22:59:36.494  4046  4046 I DEBUG LOG: [03-07 22:59:36.494] [protocol_v3_queue.c] [protocol_v3_queue_write_ex] [line 360] free ptr:tmp & queue_data
+03-07 22:59:36.494  4046  4046 I DEBUG LOG: [03-07 22:59:36.494] [protocol_v3_queue.c] [protocol_v3_queue_write_ex] [line 362] v3 protocol add queue cmd id=0x9 nseq=0x118 send queue cout=1
+03-07 22:59:36.494  4046  4046 I DEBUG LOG: [03-07 22:59:36.494] [protocol_v3_queue.c] [process_queue] [line 269] warn:  cmd is not reply 
+03-07 22:59:36.494  4046  4046 I DEBUG LOG: [03-07 22:59:36.494] [protocol_v3_queue.c] [send_packet] [line 193] v3 protocol send packet cmd id=0x9 nseq=0x118
+03-07 22:59:36.494  4046  4046 I DEBUG LOG: [03-07 22:59:36.494] [protocol_v3.c] [process_tx_buff] [line 88] v3 protocol write complete
+03-07 22:59:36.494  4046  4046 I DEBUG LOG: [03-07 22:59:36.494] [protocol_v3.c] [process_tx_buff] [line 102] send data buff length:25,offset:0
+03-07 22:59:36.494  4046  4046 I DEBUG LOG: [03-07 22:59:36.494] [protocol.c] [protocol_write_data] [line 235]   TX : 33 DA AD DA AD 01 17 00 09 00 18 01 00 00 00 00 00 01 00 00 17 3B 00 00 E5 CD 
+03-07 22:59:36.494  4046  4046 I DEBUG LOG: [03-07 22:59:36.494] [jni_protocol.cpp] [jni_notice_app_tx_data] [line 345] jni send tx data to app data len:26
+03-07 22:59:36.495  4046  4046 I DEBUG LOG: [03-07 22:59:36.495] [protocol_v3_queue.c] [send_packet] [line 208] v3 write data rel:0,free send buff
+03-07 22:59:36.495  4046  4046 I DEBUG LOG: [03-07 22:59:36.495] [protocol_v3_queue.c] [process_queue] [line 265] free queue_data
+03-07 22:59:37.187  4046  5272 I DEBUG LOG: [03-07 22:59:37.187] [protocol_v3.c] [process_tx_buff] [line 88] v3 protocol write complete
+03-07 22:59:37.187  4046  5272 I DEBUG LOG: [03-07 22:59:37.187] [protocol_v3.c] [process_tx_buff] [line 102] send data buff length:25,offset:25
+03-07 22:59:37.187  4046  5272 I DEBUG LOG: [03-07 22:59:37.187] [protocol_v3.c] [send_end] [line 67] protocol cmd id:0x9 nseq:0x118 send end
+03-07 22:59:37.191  4046  5272 I DEBUG LOG: [03-07 22:59:37.191] [protocol.c] [protocol_receive_data] [line 469] RX : 33 DA AD DA AD 01 1F 00 09 00 17 01 00 00 00 00 99 00 00 00 00 00 2C 01 00 00 00 00 04 00 00 00 F9 99 
+03-07 22:59:37.192  4046  5272 I DEBUG LOG: [03-07 22:59:37.192] [protocol_v3.c] [protocol_v3_exec] [line 394] rec v3 protocol cmd id:0x9,nseq:0x117,total length:31(+2Bytes CRC),cur get data length:33
+03-07 22:59:37.192  4046  5272 I DEBUG LOG: [03-07 22:59:37.192] [protocol_v3_queue.c] [protocol_v3_rx_data_cb_handle] [line 109] rec v3 protocol cmd id:0x9 nseq:0x117 vserion: 0x1 complete,length:31(+2Bytes CRC)
+03-07 22:59:37.192  4046  5272 I DEBUG LOG: [03-07 22:59:37.192] [jni_protocol.cpp] [jni_notice_app_evt] [line 436] jni send evt notice to app evt type:5010
+03-07 22:59:37.497  4046  5272 I DEBUG LOG: [03-07 22:59:37.497] [protocol_v3.c] [process_tx_buff] [line 88] v3 protocol write complete
+03-07 22:59:37.500  4046  5272 I DEBUG LOG: [03-07 22:59:37.500] [protocol.c] [protocol_receive_data] [line 469] RX : 33 DA AD DA AD 01 1F 00 09 00 18 01 00 00 00 00 99 00 00 00 00 00 2C 01 00 00 00 00 04 00 00 00 73 D6 
+03-07 22:59:37.500  4046  5272 I DEBUG LOG: [03-07 22:59:37.500] [protocol_v3.c] [protocol_v3_exec] [line 394] rec v3 protocol cmd id:0x9,nseq:0x118,total length:31(+2Bytes CRC),cur get data length:33
+03-07 22:59:37.500  4046  5272 I DEBUG LOG: [03-07 22:59:37.500] [protocol_v3_queue.c] [protocol_v3_rx_data_cb_handle] [line 109] rec v3 protocol cmd id:0x9 nseq:0x118 vserion: 0x1 complete,length:31(+2Bytes CRC)
+03-07 22:59:37.500  4046  5272 I DEBUG LOG: [03-07 22:59:37.500] [protocol_v3_queue.c] [cmd_reply_process] [line 86] cmd 0x9,nseq = 280,is reply
+03-07 22:59:37.500  4046  5272 I DEBUG LOG: [03-07 22:59:37.500] [protocol_v3_queue.c] [process_queue] [line 269] warn:   queue is empty
+03-07 22:59:37.501  4046  5272 I DEBUG LOG: [03-07 22:59:37.501] [jni_protocol.cpp] [jni_notice_app_evt] [line 436] jni send evt notice to app evt type:5010
