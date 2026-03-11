@@ -1,0 +1,8 @@
+03-08 01:17:23.123  5334  5334 I DEBUG LOG: [03-08 01:17:23.123] [jni_protocol.cpp] [Java_com_veryfit_multi_nativeprotocol_Protocol_WriteJsonData] [line 612] app send protocol evt:157(VBUS_EVT_APP_SET_CONN_PARAM)
+03-08 01:17:23.124  5334  5334 I DEBUG LOG: [03-08 01:17:23.124] [protocol_write.c] [protocol_write_data_add] [line 236] add queue to send evt:157(VBUS_EVT_APP_SET_CONN_PARAM)
+03-08 01:17:23.124  5334  5334 I DEBUG LOG: [03-08 01:17:23.124] [protocol_write.c] [protocol_write_process] [line 108] mem_pop is success
+03-08 01:17:23.124  5334  5334 I DEBUG LOG: [03-08 01:17:23.124] [protocol.c] [protocol_write_data] [line 235]   TX : 03 35 02 00 00 00 00 00 00 00 00 00 
+03-08 01:17:23.124  5334  5334 I DEBUG LOG: [03-08 01:17:23.124] [jni_protocol.cpp] [jni_notice_app_tx_data] [line 345] jni send tx data to app data len:12
+03-08 01:17:23.201  5334  5676 I DEBUG LOG: [03-08 01:17:23.201] [protocol.c] [protocol_receive_data] [line 469] RX : 03 35 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+03-08 01:17:23.201  5334  5676 I DEBUG LOG: [03-08 01:17:23.201] [protocol_write.c] [protocol_write_vbus_control] [line 1293] stop resend evt:157(VBUS_EVT_APP_SET_CONN_PARAM)
+03-08 01:17:23.201  5334  5676 I DEBUG LOG: [03-08 01:17:23.201] [jni_protocol.cpp] [jni_notice_app_evt] [line 436] jni send evt notice to app evt type:157

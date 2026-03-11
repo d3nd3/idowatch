@@ -1,0 +1,2450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOOBUR A200 – Logcat-confirmed only</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 1rem;
+            background: #fafafa;
+            color: #1a1a1a;
+        }
+        h1 { font-size: 1.25rem; margin: 0 0 0.5rem; }
+        p { margin: 0 0 1rem; font-size: 0.9rem; color: #444; }
+        .status { font-weight: 600; margin-bottom: 1rem; }
+        .status.connected { color: #0a0; }
+        .section {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.75rem;
+        }
+        .section h2 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #666;
+            margin: 0 0 0.5rem;
+        }
+        .btns { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+        button {
+            padding: 0.4rem 0.65rem;
+            font-size: 0.8rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #fff;
+            cursor: pointer;
+        }
+        button:hover { background: #f0f0f0; border-color: #999; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        #log {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            font-family: ui-monospace, monospace;
+            font-size: 11px;
+            line-height: 1.4;
+            max-height: 280px;
+            overflow-y: auto;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        #log .rx { color: #8af; }
+        #log .tx { color: #fa8; }
+    </style>
+</head>
+<body>
+    <h1>TOOBUR A200 – Confirmed features only</h1>
+    <p>All buttons send exact TX from <code>logcat_dumps/*.txt</code>. Categories: <strong>GET</strong> (0x02), <strong>SET</strong> (0x03), <strong>BIND</strong> (0x04), <strong>MSG</strong> (0x05), <strong>Control</strong> (0x06), <strong>V3</strong> (0x33…, health sync, activity). Weather is SET 0x2D.</p>
+    <p style="font-size:0.85em; color:#666;">Open DevTools (F12) → Console to see <strong>parsed interpretations</strong> of each RX packet. Confirm or correct the guesses there.</p>
+    <p class="status" id="status">Disconnected</p>
+
+    <div class="section">
+        <h2>Connect</h2>
+        <div class="btns">
+            <button id="btnConnect">Connect (0x0AF0)</button>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>GET (cmd 0x02)</h2>
+        <p style="margin:0 0 0.5rem; font-size:0.85rem; color:#555;">Read state / info. First byte 0x02; second byte is the key. Keys in ascending order.</p>
+        <div class="btns">
+            <button data-tx="02 01" data-label="get_device_info">Device info (02 01)</button>
+            <button data-tx="02 02" data-label="get_func_table">Func table (02 02)</button>
+            <button data-tx="02 04" data-label="get_mac">MAC (02 04)</button>
+            <button data-tx="02 05" data-label="get_battery" title="VBUS_EVT_APP_GET_BATT_INFO evt 321. app_fresh_launch.txt.">Battery (02 05)</button>
+            <button data-tx="02 07" data-label="get_func_table_ex">Func table ex (02 07)</button>
+            <button data-tx="02 08" data-label="get_hr_state" title="GET 0x02 0x08 — evt 422, base VBUS_EVT_BASE_APP_GET. Sent 4× after HR toggles.">HR state (02 08)</button>
+            <button data-tx="02 28" data-label="get_hand_up_gesture" title="IDOGetHandUpGestureFunction. Reads raise-to-wake (isOpen, time range, showSecond).">Hand-up gesture (02 28)</button>
+            <button data-tx="02 30" data-label="get_dnd" title="VBUS_EVT_APP_GET_DO_NOT_DISTURB / Get DND Mode (see IDOGetNotDisturbFunction). Also fills DND model in parser.">DND (02 30)</button>
+            <button data-tx="02 32" data-label="get_screen_brightness" title="IDOGetScreenBrightnessFunction. Fills Set Brightness form when reply is parsed.">Screen brightness (02 32)</button>
+            <button data-tx="02 A7" data-label="get_flashbin_info">Flashbin info (02 A7)</button>
+            <button data-tx="02 B1" data-label="get_weather_switch" title="GET_WEATHER_SWITCH (evt 316). Reply byte 2 = weather on/off (0x55=off, 0xAA=on).">Weather switch (02 B1)</button>
+            <button data-tx="02 F0" data-label="get_mtu" title="VBUS_EVT_APP_GET_MTU_INFO evt 317. app_fresh_launch.txt, ui_watch_face_write_json.txt.">MTU info (02 F0)</button>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>SET (cmd 0x03)</h2>
+        <p style="margin:0 0 0.5rem; font-size:0.85rem; color:#555;">Write config. First byte 0x03; second byte is the key. Keys in ascending order (0x01 → 0x60).</p>
+
+        <p style="margin:0.5rem 0 0.2rem; font-size:0.75rem; font-weight:600; color:#666;">0x01 Set time</p>
+        <div class="btns">
+            <button data-tx="03 01 EA 07 03 08 01 11 18 06 00 00 00 00 00 00" data-label="set_time" title="VBUS_EVT_APP_SET_TIME evt 104. set_time.txt (fixed time from dump; use index.html for «Set time to now»).">Set time (03 01)</button>
+        </div>
+
+        <p style="margin:0.5rem 0 0.2rem; font-size:0.75rem; font-weight:600; color:#666;">0x22 Hand (wrist)</p>
+        <div class="btns">
+            <button data-tx="03 22 00" data-label="set_hand_left">Left (03 22 00)</button>
+            <button data-tx="03 22 01" data-label="set_hand_right">Right (03 22 01)</button>
+        </div>
+
+        <p style="margin:0.5rem 0 0.2rem; font-size:0.75rem; font-weight:600; color:#666;">0x28 Hand gesture (raise to wake)</p>
+        <div class="btns">
+            <button data-tx="03 28 55 05 01 00 00 17 3B" data-label="set_hand_gesture_off">Off (03 28 55)</button>
+            <button data-tx="03 28 AA 05 01 00 00 17 3B" data-label="set_hand_gesture_on">On (03 28 AA)</button>
+        </div>
+
+        <p style="margin:0.5rem 0 0.2rem; font-size:0.75rem; font-weight:600; color:#666;">0x29 DND</p>
+        <div class="btns">
+            <button data-tx="03 29 AA 17 00 07 00 02 FE 55 17 00 07 00 00 00" data-label="set_dnd_on">DND on (03 29 AA)</button>
+            <button data-tx="03 29 55 17 00 07 00 02 FE 55 17 00 07 00 00 00" data-label="set_dnd_off">DND off (03 29 55)</button>
+        </div>
+
+        <p style="margin:0.5rem 0 0.2rem; font-size:0.75rem; font-weight:600; color:#666;">0x26 Find phone (VBUS_EVT_APP_SET_FIND_PHONE evt 103)</p>
+        <p style="margin:0 0 0.35rem; font-size:0.8rem; color:#555;">Watch triggers phone to ring. app_fresh_launch.txt: 03 26 AA 00 00 00 = on, 03 26 55 00 00 00 = off.</p>
+        <div class="btns">
+            <button data-tx="03 26 AA 00 00 00" data-label="set_find_phone_on" title="Evt 103. app_fresh_launch.txt.">On (03 26 AA)</button>
+            <button data-tx="03 26 55 00 00 00" data-label="set_find_phone_off">Off (03 26 55)</button>
+        </div>
+
+        <p style="margin:0.5rem 0 0.2rem; font-size:0.75rem; font-weight:600; color:#666;">0x2A Music</p>
+        <div class="btns">
+            <button data-tx="03 2A 55 55" data-label="set_music_off">Off (03 2A 55)</button>
+            <button data-tx="03 2A AA 55" data-label="set_music_on">On (03 2A AA)</button>
+        </div>
+
+        <p style="margin:0.5rem 0 0.2rem; font-size:0.75rem; font-weight:600; color:#666;">0x2C One-key SOS (VBUS_EVT_APP_SET_ONEKEY_SOS)</p>
+        <p style="margin:0 0 0.35rem; font-size:0.8rem; color:#555;">Emergency / SOS. 0xAA = on, 0x55 = off. index.html convention; no dedicated dump.</p>
+        <div class="btns">
+            <button data-tx="03 2C 55" data-label="set_onekey_sos_off">Off (03 2C 55)</button>
+            <button data-tx="03 2C AA" data-label="set_onekey_sos_on">On (03 2C AA)</button>
+        </div>
+
+        <p style="margin:0.5rem 0 0.2rem; font-size:0.75rem; font-weight:600; color:#666;">0x2D Weather push</p>
+        <div class="btns">
+            <button data-tx="03 2D 55 00 00 00" data-label="set_weather_off">Off (03 2D 55)</button>
+            <button data-tx="03 2D AA 00 00 00" data-label="set_weather_on">On (03 2D AA)</button>
+        </div>
+
+        <p style="margin:0.5rem 0 0.2rem; font-size:0.75rem; font-weight:600; color:#666;">0x0A WEATCHER (weather data / city) — evt 153, 6500</p>
+        <p style="margin:0 0 0.35rem; font-size:0.8rem; color:#555;">VBUS_EVT_APP_WEATCHER_DATA (153) = <strong>0A 01</strong> + payload; VBUS_EVT_APP_WEATCHER_CITY_NAME (6500) = <strong>0A 02</strong> + len + city UTF-8. Sent after weather switch on. See <code>set_push_weather_on.txt</code>.</p>
+        <div class="btns">
+            <button data-tx="0A 01 02 08 09 07 5B 00 00 02 0E 08 02 10 09 02 0F 09" data-label="weatcher_data" title="VBUS_EVT_APP_WEATCHER_DATA evt 153. 18 B from set_push_weather_on.txt.">Weather data (0A 01)</button>
+            <button data-tx="0A 02 06 4C 6F 6E 64 6F 6E 00 00 00 00 00 00 00 00 00 00 00" data-label="weatcher_city" title="VBUS_EVT_APP_WEATCHER_CITY_NAME evt 6500. City 'London' (len 6). set_push_weather_on.txt.">Weather city London (0A 02)</button>
+        </div>
+
+        <p style="margin:0.5rem 0 0.2rem; font-size:0.75rem; font-weight:600; color:#666;">0x32 Brightness / screen</p>
+        <p style="margin:0 0 0.35rem; font-size:0.8rem; color:#555;">Model: <code>IDOSetScreenBrightnessInfoBluetoothModel</code>. Packet: <code>03 32 [levelValue] [isManual] [mode] [autoAdjustNight] [startHour] [startMinute] [endHour] [endMinute] [nightLevel] [showInterval]</code> (bytes 2–11). Same as <code>MainSetActivity.setScreenBrightness(level)</code> / <code>BLEManager.setScreenBrightness(int)</code>: Day level = level (1–100). See <code>Set screen brightness</code> in IDOGitBook and <code>GET 0x02 0x32</code> parser below.</p>
+        <div style="display:flex; flex-wrap:wrap; gap:0.5rem 1rem; align-items:center; margin-bottom:0.35rem;">
+            <label title="Screen brightness level (1–100)">Day level: <input type="number" id="brightness_level" min="1" max="100" value="40" style="width:3rem;"></label>
+            <label>Manual: 
+                <select id="brightness_is_manual" aria-label="User adjusted">
+                    <option value="1" selected>Yes</option>
+                    <option value="0">No</option>
+                </select>
+            </label>
+            <label>Mode: 
+                <select id="brightness_mode" aria-label="Brightness mode">
+                    <option value="0">0x00 Manual only</option>
+                    <option value="1">0x01 Ambient sensor</option>
+                    <option value="2">0x02 Auto night</option>
+                    <option value="3" selected>0x03 Scheduled night dim</option>
+                </select>
+            </label>
+            <label>Night auto: 
+                <select id="brightness_auto_night" aria-label="Auto adjust at night">
+                    <option value="0" selected>0x00 FW default</option>
+                    <option value="1">0x01 Off</option>
+                    <option value="2">0x02 Auto night</option>
+                    <option value="3">0x03 Scheduled</option>
+                </select>
+            </label>
+            <label>Start: <input type="number" id="brightness_start_h" min="0" max="23" value="19" style="width:2.5rem;">:<input type="number" id="brightness_start_m" min="0" max="59" value="0" style="width:2.5rem;"></label>
+            <label>End: <input type="number" id="brightness_end_h" min="0" max="23" value="6" style="width:2.5rem;">:<input type="number" id="brightness_end_m" min="0" max="59" value="0" style="width:2.5rem;"></label>
+            <label title="Brightness at night (1–100)">Night level: <input type="number" id="brightness_night_level" min="1" max="100" value="20" style="width:3rem;"></label>
+            <label title="Display interval / screen timeout (seconds)">Timeout: <input type="number" id="screen_timeout_sec" min="0" max="255" value="5" style="width:3rem;"></label>
+        </div>
+        <div class="btns">
+            <button data-brightness-send="1" data-label="set_brightness_03_32" title="Same as MainSetActivity.setScreenBrightness(level). Sends SET 03 32 with form values.">Set screen brightness (03 32)</button>
+        </div>
+
+        <p style="margin:0.5rem 0 0.2rem; font-size:0.75rem; font-weight:600; color:#666;">0x42 Woman health remind</p>
+        <div class="btns">
+            <button data-tx="03 42 03 03 08 00 03 03 03" data-label="set_woman_health_off">Off (03 42)</button>
+            <button data-tx="03 42 03 03 08 00 03 03 03" data-label="set_woman_health_on">On (03 42)</button>
+        </div>
+
+        <p style="margin:0.5rem 0 0.2rem; font-size:0.75rem; font-weight:600; color:#666;">0x45 Stress continuous</p>
+        <div class="btns">
+            <button data-tx="03 45 55 09 00 12 00 55 3F 3C 00 50 00 01 00 1E" data-label="set_stress_off">Off (03 45)</button>
+            <button data-tx="03 45 AA 09 00 12 00 55 3F 3C 00 50 00 01 00 1E" data-label="set_stress_on">On (03 45)</button>
+        </div>
+
+        <p style="margin:0.5rem 0 0.2rem; font-size:0.75rem; font-weight:600; color:#666;">0x47 Walk reminder</p>
+        <div class="btns">
+            <button data-tx="03 47 00 64 00 09 00 15 00 FE 00 00 73 00 00 00 01" data-label="set_walk_off">Off (03 47)</button>
+            <button data-tx="03 47 01 64 00 09 00 15 00 FE 00 00 73 00 00 00 01" data-label="set_walk_on">On (03 47)</button>
+        </div>
+
+        <p style="margin:0.5rem 0 0.2rem; font-size:0.75rem; font-weight:600; color:#666;">0x49 Auto sport detect</p>
+        <div class="btns">
+            <button data-tx="03 49 00 00 00 00 00 00 00 00 00" data-label="set_auto_sport_off">Off (03 49)</button>
+            <button data-tx="03 49 01 01 00 00 00 00 00 00 00" data-label="set_auto_sport_on">On (03 49)</button>
+        </div>
+
+        <p style="margin:0.5rem 0 0.2rem; font-size:0.75rem; font-weight:600; color:#666;">0x60 Drinking reminder</p>
+        <div class="btns">
+            <button data-tx="03 60 00 09 00 12 00 3E 1E 00 01 00 00 00 00 00" data-label="set_drinking_off">Off (03 60)</button>
+            <button data-tx="03 60 01 09 00 12 00 3F 1E 00 01 00 00 00 00 00" data-label="set_drinking_on">On (03 60)</button>
+        </div>
+
+        <p style="margin:0.5rem 0 0.2rem; font-size:0.75rem; font-weight:600; color:#666;">0x35 Connection parameters (VBUS_EVT_APP_SET_CONN_PARAM)</p>
+        <p style="margin:0 0 0.35rem; font-size:0.8rem; color:#555;">
+            VeryFit uses a two-step <code>SET 0x35</code> handshake around heavy operations like v3 health sync and watch-face writes.
+            The SDK’s <code>IDOSetConnectParam</code> describes a JSON model (<code>mode</code>, <code>max_interval</code>, etc.), but on this firmware
+            the wire-level packets are simple 12-byte frames where <strong>byte2 is the conn-param step</strong>:
+            <code>03 35 00...</code>, <code>03 35 01...</code>, <code>03 35 02...</code>. The UI below replays the exact TX from
+            <code>set_conn_param.txt</code> and <code>ui_watch_face_write_json.txt</code>; replies are parsed as generic SET ACKs.
+        </p>
+        <div class="btns">
+            <button data-tx="03 35 00 00 00 00 00 00 00 00 00 00" data-label="set_conn_param_00" title="Step 0 (seen before MTU query in ui_watch_face_write_json.txt).">Step 0 (03 35 00…)</button>
+            <button data-tx="03 35 01 00 00 00 00 00 00 00 00 00" data-label="set_conn_param_01" title="Step 1 (prepares conn params before user/config in get_sync_health_v3.txt).">Step 1 (03 35 01…)</button>
+            <button data-tx="03 35 02 00 00 00 00 00 00 00 00 00" data-label="set_conn_param_02" title="Step 2 (finalize conn params; set_conn_param.txt).">Step 2 (03 35 02…)</button>
+        </div>
+
+        <p style="margin:0.75rem 0 0.2rem; font-size:0.75rem; font-weight:600; color:#666;">0x02 Alarms (legacy) + V3 alarms</p>
+        <p style="margin:0 0 0.35rem; font-size:0.8rem; color:#555;">
+            Legacy SET 0x03 0x02 per-alarm payload is: <code>[alarm_id][status][type][hour][minute][repeat][snooze_min]</code>.
+            V3 alarms (cmd 0x0E / <code>VBUS_EVT_FUNC_V3_SPORT_SORT</code>) send a single frame for all 10 slots; the wire payload in
+            <code>set_alarms_and_sports.txt</code> is:
+            <code>[maxAlarms=0x0A][AlarmIndex][on/off][hour][minute][enabled+repeat bits][snoozeMinutes_L][snoozeMinutes_H][snoozeFreq_L][snoozeFreq_H][24B alarmName]…</code>
+            repeated for each alarm index. The UI below manages a 10-slot list and maps the form into that richer V3 structure while
+            keeping the simpler legacy 0x02 helper available.
+        </p>
+        <div style="display:flex; flex-wrap:wrap; gap:0.4rem 0.8rem; align-items:center; margin-bottom:0.4rem;">
+            <label>Slot <input type="number" id="alarm_slot" min="0" max="9" value="0" style="width:2.2rem;" title="Alarm slot 0..9 (v3 has 10 slots)."></label>
+            <label>Enable <select id="alarm_enable" aria-label="On/off"><option value="on" selected>On</option><option value="off">Off</option></select></label>
+            <label>Type <select id="alarm_type" aria-label="Alarm type" title="Alarm category: 0=Wake up, 1=Sleep, 2=Sport, 3=Medicine, 4=Dating, 5=Party, 6=Meeting, 7=Custom (legacy + v3).">
+                <option value="0">Wake up</option><option value="1">Sleep</option><option value="2">Sport</option><option value="3">Medicine</option>
+                <option value="4">Dating</option><option value="5">Party</option><option value="6">Meeting</option><option value="7">Custom</option>
+            </select></label>
+            <label>Hour <input type="number" id="alarm_hour" min="0" max="23" value="7" style="width:2.2rem;"></label>
+            <label>Minute <input type="number" id="alarm_minute" min="0" max="59" value="0" style="width:2.2rem;"></label>
+            <label>Repeat <select id="alarm_repeat" aria-label="Days repeat (0=no repeat)">
+                <option value="0">Once (0)</option><option value="255" selected>Every day (0xFF)</option>
+                <option value="31">Weekdays (0x1F)</option><option value="96">Weekend (0x60)</option>
+                <option value="custom">Custom hex</option>
+            </select></label>
+            <span id="alarm_repeat_hex_span" style="display:none;"><input type="text" id="alarm_repeat_hex" value="FF" size="2" maxlength="2" placeholder="FF" style="width:2.2rem;"></span>
+            <label>Remind interval (snooze) <input type="number" id="alarm_snooze" min="0" max="120" value="10" style="width:2.2rem;" title="Snooze / remind-me-later interval (minutes)."> min</label>
+            <label>Repeats of reminder <input type="number" id="alarm_repeat_times" min="1" max="10" value="1" style="width:2.2rem;" title="How many times to remind after first (V3 only, maps to snooze frequency)."> time(s)</label>
+            <label>Name <input type="text" id="alarm_name" maxlength="24" placeholder="Optional name (24 ASCII bytes max)" style="width:9rem;"></label>
+        </div>
+        <div class="btns">
+            <button type="button" id="btnAddAlarmToList" title="Add current form to sync list.">Add to list</button>
+            <button type="button" id="btnSyncAlarmsToWatch" title="Send all 10 alarm slots in one v3 cmd 0x0E packet (set_alarms_and_sports.txt).">Sync all to watch (v3 0x0E)</button>
+            <button type="button" id="btnClearAlarmList" title="Clear the alarm list.">Clear list</button>
+        </div>
+        <p style="margin:0.25rem 0 0; font-size:0.8rem; color:#666;"><span id="alarm_list_count">0 alarms in list</span></p>
+        <div id="alarm_list_display" style="margin:4px 0; padding:6px; background:#f5f5f5; border:1px solid #e0e0e0; border-radius:4px; font-size:11px; max-height:100px; overflow:auto;"></div>
+
+        <p style="margin:0.75rem 0 0.2rem; font-size:0.75rem; font-weight:600; color:red;">0x30 Notice / call alert (VBUS_EVT_APP_SET_NOTICE) — not fully understood</p>
+        <p style="margin:0 0 0.35rem; font-size:0.8rem; color:#555;">20-byte payload. app_fresh_launch.txt: 03 30 88 00 00 AA 00… = enable; 03 30 88 00 00 55 00… = disable (0x55=off, same as Music/DND).</p>
+        <div class="btns">
+            <button data-tx="03 30 88 00 00 55 00 00 00 00 00 00 00 00 00 00 00 00 00 00" data-label="set_notice_off">Off (03 30)</button>
+            <button data-tx="03 30 88 00 00 AA 00 00 00 00 00 00 00 00 00 00 00 00 00 00" data-label="set_notice_on">On (03 30)</button>
+        </div>
+        <p style="margin:0.35rem 0 0.2rem; font-size:0.75rem; color:#666;">Angelfit 5-byte payload. notify_switch and call_switch: 0→0x55, 1→0x88. notify_itme1, notify_itme2, call_delay: raw 0–255.</p>
+        <div style="display:flex; flex-wrap:wrap; gap:0.5rem 1rem; align-items:center; margin-bottom:0.35rem;">
+            <label title="notify_switch (angelfit). On some devices 0x55 here triggers a pairing request; may not control notifications.">notify_switch: <input type="number" id="notice_notify_switch" min="0" max="255" value="1" style="width:3rem;"></label>
+            <label title="notify_itme1">notify_itme1: <input type="number" id="notice_notify_itme1" min="0" max="255" value="0" style="width:3rem;"></label>
+            <label title="notify_itme2">notify_itme2: <input type="number" id="notice_notify_itme2" min="0" max="255" value="0" style="width:3rem;"></label>
+            <label title="call_switch">call_switch: <input type="number" id="notice_call_switch" min="0" max="255" value="1" style="width:3rem;"></label>
+            <label title="call_delay (e.g. seconds)">call_delay: <input type="number" id="notice_call_delay" min="0" max="255" value="3" style="width:3rem;"></label>
+            <span id="notice_5b_hex" style="font-family:monospace; font-size:0.8rem; color:#555;"></span>
+        </div>
+        <div class="btns">
+            <button data-notice-5b="1" data-label="set_notice_5b">Send (5 B + 15 padding = 20 B)</button>
+            <button type="button" id="btnNotice5bPresetOn" data-label="set_notice_5b_preset">Preset: legacy on (01 00 00 01 03)</button>
+            <button type="button" id="btnNotice5bPresetOff" data-label="set_notice_5b_preset">Preset: legacy off (00 00 00 00 00)</button>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>BIND (cmd 0x04)</h2>
+        <p style="margin:0 0 0.5rem; font-size:0.85rem; color:#555;">VBUS_EVT_APP_BIND_START (evt 200). app_fresh_launch sends this after GET MTU; watch replies to confirm bind. First byte 0x04.</p>
+        <div class="btns">
+            <button data-tx="04 01 F1 01 01 02 02 01 00" data-label="bind_start" title="From app_fresh_launch.txt after 02 F0. May set bind mode on watch.">Bind start (04 01)</button>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>MSG (cmd 0x05)</h2>
+        <p style="margin:0 0 0.5rem; font-size:0.85rem; color:#555;">Phone → watch notifications. <strong>0x05 0x01</strong> = call (KEY_MSG_CALL), <strong>0x05 0x02</strong> = call status (KEY_MSG_CALL_STATUS), <strong>0x05 0x03</strong> = MSG (KEY_MSG_MSG). Chunked in 16-byte payloads for firmware format. TOOBUR.md; angelfit protocol.h.</p>
+
+        <p style="margin:0.5rem 0 0.2rem; font-size:0.75rem; font-weight:600; color:#666;">0x05 0x02 Call status</p>
+        <div class="btns">
+            <button data-tx="05 02 01" data-label="msg_call_status_end" title="Status 1 = end/dismiss call (angelfit VBUS_EVT_APP_SET_NOTICE_STOP_CALL). KEY_MSG_CALL_STATUS.">End call (05 02 01)</button>
+        </div>
+
+        <p style="margin:0.5rem 0 0.2rem; font-size:0.75rem; font-weight:600; color:#666;">0x05 0x01 / 0x05 0x03 — send custom (form)</p>
+        <p style="margin:0 0 0.35rem; font-size:0.8rem; color:#555;">Sender = caller name (call) or message sender. Message = body. For <strong>Firmware MSG</strong> (0x05 0x03), first payload byte = source app type (0–255). 0=nothing (invalid, no notification sent), 1=SMS, 2=Mail, 3=WeChat, 4=Snapchat, 5=invalid, 6=Facebook, 7=Twitter, 8=WhatsApp, 9=Facebook Messenger, 10=Instagram, 11=LinkedIn, 12=Calendar, 13=Skype.</p>
+        <div style="display:flex; flex-wrap:wrap; gap:0.4rem 0.8rem; align-items:center; margin-bottom:0.4rem;">
+            <label>Format <select id="msg_format" aria-label="MSG format">
+                <option value="fwcall">Firmware call (05 01 chunked 16B)</option>
+                <option value="fwmsg">Firmware MSG (05 03 chunked 16B)</option>
+            </select></label>
+            <label id="label_msg_type" style="display:none;">Source app (type) <select id="msg_msg_type" aria-label="MSG source app type byte" title="First payload byte for KEY_MSG_MSG">
+                <option value="1" selected>SMS (1)</option>
+                <option value="2">Mail (2)</option>
+                <option value="3">WeChat (3)</option>
+                <option value="4">Snapchat (4)</option>
+                <option value="6">Facebook (6)</option>
+                <option value="7">Twitter (7)</option>
+                <option value="8">WhatsApp (8)</option>
+                <option value="9">Facebook Messenger (9)</option>
+                <option value="10">Instagram (10)</option>
+                <option value="11">LinkedIn (11)</option>
+                <option value="12">Calendar (12)</option>
+                <option value="13">Skype (13)</option>
+            </select></label>
+            <label>Sender <input type="text" id="msg_sender" value="Test" placeholder="Caller / sender" maxlength="20" style="width:8rem;"></label>
+            <label>Message <input type="text" id="msg_text" value="Hello" placeholder="Message body or call text" maxlength="60" style="width:10rem;"></label>
+        </div>
+        <div class="btns">
+            <button type="button" id="btnSendMsg" data-msg-send="1" data-label="msg_send_custom" title="Send notification using format above. Chunked with 150 ms between chunks if needed.">Send notification to watch</button>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Control (cmd 0x06)</h2>
+        <p style="margin:0 0 0.5rem; font-size:0.85rem; color:#555;">Control commands are <strong>watch → phone</strong> actions (the watch sends to the phone). VBUS_EVT_APP_APP_TO_BLE_*: Music (500/501), Photo (APP_TO_BLE_PHOTO_*), Find device (FIND_DEVICE_*), Single sport, ANCS. TOOBUR.md table; index.html.</p>
+        <div class="btns">
+            <button data-tx="06 01 00 00 00 00" data-label="control_music_start" title="VBUS_EVT_APP_APP_TO_BLE_MUSIC_START evt 500. Start/play music on watch.">Music start (06 01 00)</button>
+            <button data-tx="06 01 01 00 00 00" data-label="control_music_stop" title="VBUS_EVT_APP_APP_TO_BLE_MUSIC_STOP evt 501. Stop/pause music on watch.">Music stop (06 01 01)</button>
+            <button data-tx="06 02 00 00 00 00" data-label="control_photo_start" title="VBUS_EVT_APP_APP_TO_BLE_PHOTO_START. Remote camera trigger.">Photo start (06 02 00)</button>
+            <button data-tx="06 02 01 00 00 00" data-label="control_photo_stop" title="VBUS_EVT_APP_APP_TO_BLE_PHOTO_STOP.">Photo stop (06 02 01)</button>
+            <button data-tx="06 04 00 00 00 00" data-label="control_find_device_start" title="VBUS_EVT_APP_APP_TO_BLE_FIND_DEVICE_START. Watch vibrates/rings.">Find device start (06 04 00)</button>
+            <button data-tx="06 04 01 00 00 00" data-label="control_find_device_stop" title="VBUS_EVT_APP_APP_TO_BLE_FIND_DEVICE_STOP.">Find device stop (06 04 01)</button>
+            <button data-tx="06 03 00 00 00 00" data-label="control_single_sport_start" title="Single sport mode. Func table single_sport must be set.">Single sport start (06 03 00)</button>
+            <button data-tx="06 03 01 00 00 00" data-label="control_single_sport_stop">Single sport stop (06 03 01)</button>
+            <button data-tx="06 30 00 00 00 00" data-label="control_ancs_open" title="VBUS_EVT_APP_APP_TO_BLE_OPEN_ANCS. iOS notifications.">Open ANCS (06 30)</button>
+            <button data-tx="06 31 00 00 00 00" data-label="control_ancs_close" title="VBUS_EVT_APP_APP_TO_BLE_CLOSE_ANCS.">Close ANCS (06 31)</button>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Other (cmd 0xF0)</h2>
+        <p style="margin:0 0 0.5rem; font-size:0.85rem; color:#555;">RESET 0xF0 0x01 = Reboot. Watch reboots; connection drops. TOOBUR.md.</p>
+        <div class="btns">
+            <button data-tx="F0 01" data-label="reboot" title="Reboot the watch. Connection will drop.">Reboot (F0 01)</button>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>V3 (cmd 0x33 — 33 DA AD DA AD…)</h2>
+        <p style="margin:0 0 0.5rem; font-size:0.85rem; color:#555;">Extended protocol. Sub-command in bytes 4–5 (e.g. 0x0B 0x06 = watch face select). Ordered ascending by sub-cmd.</p>
+
+        <p style="margin:0.5rem 0 0.2rem; font-size:0.75rem; font-weight:600; color:#666;">v3 0B 06 / 0B 07 — Watch face</p>
+        <div class="btns">
+            <button data-tx="33 DA AD DA AD 01 0B 00 06 00 4E 01 4A F5" data-label="ui_select_watch_face">Select dial (v3 0B 06)</button>
+            <button data-tx="33 DA AD DA AD 01 0B 00 07 00 50 01 82 A3" data-label="ui_watch_face_write_json">Write JSON (v3 0B 07)</button>
+        </div>
+
+        <p style="margin:0.5rem 0 0.2rem; font-size:0.75rem; font-weight:600; color:#666;">v3 0C 0F — GET alarm (VBUS_EVT_FUNC_V3_GET_ALARM evt 5018)</p>
+        <p style="margin:0 0 0.35rem; font-size:0.8rem; color:#555;">Request alarm list from watch. Reply is multi-packet (353+2 CRC bytes); parsed alarms are loaded into the alarm list below. See <code>logcat_dumps/get_alarm.txt</code>.</p>
+        <div class="btns">
+            <button data-tx="33 DA AD DA AD 01 0C 00 0F 00 24 01 00 28 18" data-label="get_alarm">Get alarm (v3 0C 0F)</button>
+        </div>
+
+        <p style="margin:0.5rem 0 0.2rem; font-size:0.75rem; font-weight:600; color:#666;">v3 0x0E — Set sport type sort (setSportSortV3 / VBUS_EVT_FUNC_V3_SPORT_SORT)</p>
+        <p style="margin:0 0 0.35rem; font-size:0.8rem; color:#555;">Function table: <code>getSportsTypeV3</code>. Event: <code>base_app_set</code> + <code>func_v3_sport_sort</code>. JSON: <code>num</code> (1–30), <code>item</code> array of <code>{ index, type }</code> — index from 1, type = sport type id. Same v3 cmd 0x0E as in <code>set_alarms_and_sports.txt</code> (evt 5017).</p>
+        <div style="margin-bottom:0.35rem;">
+            <label for="sport_sort_json" style="font-size:0.8rem;">JSON (num + item with index &amp; type):</label>
+            <textarea id="sport_sort_json" rows="8" style="width:100%; max-width:24rem; font-family:monospace; font-size:0.8rem;" placeholder='{"num":3,"item":[{"index":1,"type":2},{"index":2,"type":22},{"index":3,"type":33}]}'>{"num":3,"item":[{"index":1,"type":2},{"index":2,"type":22},{"index":3,"type":33}]}</textarea>
+        </div>
+        <div class="btns">
+            <button type="button" id="btnSetSportSortV3" data-set-sport-sort-v3="1" data-label="set_sport_sort_v3">Set sport sort (v3 0x0E)</button>
+        </div>
+
+        <p style="margin:0.5rem 0 0.2rem; font-size:0.75rem; font-weight:600; color:#666;">v3 health sync (get_sync_health_v3.txt)</p>
+        <p style="margin:0 0 0.35rem; font-size:0.8rem; color:#555;"><strong>Get sizes</strong> = v3 <strong>cmd 0x05</strong>: ask the watch how much health data exists. Then use <strong>cmd 0x04</strong> per data type: <strong>4 = workout/activity records</strong>, <strong>7 = sleep</strong>, <strong>8 = daily sport summary (steps / kcal / distance)</strong>. On this firmware, <strong>type 8</strong> is the useful path for day totals; <strong>type 7</strong> for sleep data.</p>
+        <div class="btns">
+            <button data-sync-v3="1" data-label="get_sync_health_v3" title="Exact TX from get_sync_health_v3.txt line 42 (137 B).">Start sync V3 health (cmd 0x05) — get sizes</button>
+            <button data-tx="33 DA AD DA AD 01 10 00 04 00 5B 01 00 04 00 00 00 35 D7" data-label="sync_activity_v3_health" title="Type 4 is workout/activity record sync. It can legitimately be empty if the watch has no stored workout record.">Sync workout record (cmd 0x04 type 4)</button>
+            <button data-tx="33 DA AD DA AD 01 10 00 04 00 61 01 00 08 01 00 00 F4 05" data-label="sync_sport_v3_health" title="Type 8 is the daily sport summary path used by VeryFit for steps/kcal/distance.">Sync sport summary (cmd 0x04 type 8)</button>
+            <button data-tx="33 DA AD DA AD 01 10 00 04 00 61 01 00 07 01 00 00 F5 05" data-label="sync_sleep_v3_health" title="Type 7 is sleep summary (total/light/deep/REM, fall asleep &amp; get up times).">Sync sleep (cmd 0x04 type 7)</button>
+            <button id="btnGetActivity" data-get-activity="1" data-label="get_activity" title="Legacy: 02 01 then v3 cmd 0x1a key 0x42. May return empty on some watches.">Get Activity (02 01 + v3) — deprecated</button>
+            <button id="btnSimulateActivity" data-simulate-activity="1" data-label="simulate_activity">Simulate activity (no device)</button>
+        </div>
+
+        <p style="margin:0.5rem 0 0.2rem; font-size:0.75rem; font-weight:600; color:#666;">v3 1A xx — Function table (raw)</p>
+        <p style="margin:0 0 0.35rem; font-size:0.8rem; color:#555;">
+            Sends the captured <code>0x33 0x1A</code> frame from <code>app_fresh_launch.txt</code> (cmd id 0x1A, seq 0x02) on devices where func table bit <code>v3_function_table_33_1a</code> is set. Reply will be tagged as a v3 function-table packet in the console.
+        </p>
+        <div class="btns">
+            <button data-v3-func-table="1" data-tx="33 DA AD DA AD 01 0B 00 1A 00 02 00 5F F9" data-label="v3_function_table_33_1a">Send v3 func table (33 1A)</button>
+        </div>
+
+        <p style="margin:0.5rem 0 0.2rem; font-size:0.75rem; font-weight:600; color:#666;">v3 17 09 — SET HR continuous</p>
+        <div class="btns">
+            <button data-tx="33 DA AD DA AD 01 17 00 09 00 14 01 BA AD AC 69 99 00 00 00 00 00 2C 01 56 BE" data-label="set_hr_cont_off">Off (v3 17 09 14)</button>
+            <button data-seq="33 DA AD DA AD 01 17 00 09 00 17 01 D8 AD AC 69 99 00 00 00 00 00 2C 01 56 08|33 DA AD DA AD 01 17 00 09 00 18 01 00 00 00 00 00 01 00 00 17 3B 00 00 E5 CD" data-label="set_hr_cont_on">On (v3 17 09, 2 pkts)</button>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            const SERVICE_UUID = 0x0AF0;
+            const TX_UUID = 0x0AF6;
+            const RX_UUID = 0x0AF7;
+            let sendChar = null;
+            let rxChar = null;
+            let getActivityPending = false;
+            let expectV3FunctionTable = false;
+            let rx_buffer = null;
+            let rx_written = 0;
+            let rx_last_logged = -1; // throttle activity progress logs
+            let rx_label = 'v3 packet';
+            const statusEl = document.getElementById('status');
+
+            function log(msg, type) {
+                console.log((type ? '[' + type + '] ' : '') + msg);
+            }
+
+            function event_log(msg) {
+                console.log(msg);
+            }
+
+            function logDataParsing(opts) {
+                const parts = [
+                    opts.Steps != null ? opts.Steps : '—',
+                    opts.Sports != null ? opts.Sports : '—',
+                    opts.Sleep != null ? opts.Sleep : '—',
+                    opts.BPM != null ? opts.BPM : '—',
+                    opts.kcal != null ? opts.kcal : '—',
+                    opts.SPO2 != null ? opts.SPO2 : '—',
+                    opts.Relax != null ? opts.Relax : '—',
+                    opts['Blood sugar'] != null ? opts['Blood sugar'] : '—',
+                    opts.Hydration != null ? opts.Hydration : '—',
+                    opts.Battery != null ? opts.Battery : '—'
+                ];
+                console.log('[Data parsing] Steps=' + parts[0] + ' | Sports=' + parts[1] + ' | Sleep=' + parts[2] + ' | BPM=' + parts[3] + ' | kcal=' + parts[4] + ' | SPO2=' + parts[5] + ' | Relax=' + parts[6] + ' | Blood sugar=' + parts[7] + ' | Hydration=' + parts[8] + ' | Battery=' + parts[9]);
+            }
+
+            /** VeryFit v3 get-activity packet (angelfit assumption). */
+            function sendGetActivity() {
+                if (!sendChar) return;
+                const buf = new Uint8Array([0x33, 0xda, 0xad, 0xda, 0xad, 0x01, 0x0b, 0x00, 0x1a, 0x00, 0x42, 0x00, 0x93, 0xf4]);
+                sendChar.writeValue(buf);
+                log('[TX] get_activity (v3) 33 da ad da ad 01 0b 00 1a 00 42 00 93 f4', 'tx');
+                event_log('Sent get activity (v3 cmd 0x1a key 0x42).');
+            }
+
+            /** Angelfit activity layout: [size, offset] or [countKey, offset, itemSize]. data_offset 25.
+             * Same layout and reassembly as original index.html v3 activity parsing (0x33 preamble, length at 5–6, continuation 33 00… from offset 13). */
+            const DATA_OFFSET = 25;
+            const data_activity = {
+                version: [1, 0], year: [2, 1], month: [1, 3], day: [1, 4], hour: [1, 5], minute: [1, 6], second: [1, 7],
+                connect_app: [1, 10], type: [1, 0xc], sport_start_type: [1, 0xb], hr_data_interval_minute: [2, 8],
+                step: [4, 0xd], durations: [4, 0x11], calories: [4, 0x15], distance: [4, 0x19],
+                avg_hr_value: [1, 0x1d], max_hr_value: [1, 0x1e], min_hr_value: [1, 0x1f],
+                avg_step_frequency: [1, 0x20], max_step_frequency: [1, 0x21], avg_step_stride: [1, 0x22], max_step_stride: [1, 0x23],
+                avg_speed: [2, 0x24], max_speed: [2, 0x26], avg_pace_speed: [2, 0x2c], fast_pace_speed: [2, 0x2e],
+                km_speed: [2, 0x28], fast_km_speed: [2, 0x2a], training_effect: [1, 0x44],
+                recovery_time_year: [2, 0x47], recovery_time_mon: [1, 0x49], recovery_time_day: [1, 0x4a], recovery_time_hour: [1, 0x4b], recovery_time_min: [1, 0x4c], recovery_time_s: [1, 0x4d],
+                paddle_number_count: [2, 0x5a], paddle_frequency_count: [2, 0x5c], tread_frequency_count: [2, 0x5e],
+                activity_data_item_count: [2, 0x4e], frequency_count: [2, 0x56], km_speed_count: [2, 0x50], mi_speed_count: [2, 0x52], pace_count: [2, 0x54],
+                end_month: [1, 0x60], end_day: [1, 0x61], end_hour: [1, 0x62], end_minute: [1, 99],
+                hr_item_count: [2, 0x58], distance3d: [4, 0x66], avg_3d_speed: [2, 0x6a], avg_vertical_speed: [4, 0x6c], avg_slope: [1, 0x70],
+                max_altitude: [2, 0x71], min_altitude: [2, 0x73], cumulative_altitude_rise: [2, 0x75], cumulative_altitude_loss: [2, 0x77], altitude_count: [2, 0x78], avg_altitude: [2, 0x7b],
+                hr_data_value: ['hr_item_count', 0x64, 1], step_cal_distance: ['activity_data_item_count', 0x64, 6], km_speed_value: ['km_speed_count', 0x64, 2],
+                item_frequency: ['frequency_count', 0x64, 2], mi_speed: ['mi_speed_count', 0x64, 2], pace_speed_items: ['pace_count', 0x64, 2]
+            };
+
+            function createTCX(data) {
+                const xmlDoc = document.implementation.createDocument(null, 'TrainingCenterDatabase');
+                xmlDoc.children[0].setAttribute('xmlns', 'http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2');
+                xmlDoc.children[0].setAttribute('xmlns:ns2', 'http://www.garmin.com/xmlschemas/ActivityExtension/v2');
+                const activities = xmlDoc.createElement('Activities');
+                xmlDoc.children[0].appendChild(activities);
+                const activity = xmlDoc.createElement('Activity');
+                activity.setAttribute('Sport', 'Running');
+                activities.appendChild(activity);
+                const time_elm = new Date(data.year, data.month - 1, data.day, data.hour, data.minute, data.second);
+                const startTime = time_elm.toISOString();
+                const id = xmlDoc.createElement('Id');
+                id.appendChild(xmlDoc.createTextNode(startTime));
+                activity.appendChild(id);
+                const lap = xmlDoc.createElement('Lap');
+                lap.setAttribute('StartTime', startTime);
+                activity.appendChild(lap);
+                const totaltimeseconds = xmlDoc.createElement('TotalTimeSeconds');
+                totaltimeseconds.appendChild(xmlDoc.createTextNode(data.durations));
+                lap.appendChild(totaltimeseconds);
+                const distancemeters = xmlDoc.createElement('DistanceMeters');
+                distancemeters.appendChild(xmlDoc.createTextNode(data.distance));
+                lap.appendChild(distancemeters);
+                const maxspeed = xmlDoc.createElement('MaximumSpeed');
+                maxspeed.appendChild(xmlDoc.createTextNode((data.max_speed / 100) * 0.2777777));
+                lap.appendChild(maxspeed);
+                const avgheartrate = xmlDoc.createElement('AverageHeartRateBpm');
+                const v1 = xmlDoc.createElement('Value');
+                v1.appendChild(xmlDoc.createTextNode(data.avg_hr_value));
+                avgheartrate.appendChild(v1);
+                lap.appendChild(avgheartrate);
+                const maxheartrate = xmlDoc.createElement('MaximumHeartRateBpm');
+                const v2 = xmlDoc.createElement('Value');
+                v2.appendChild(xmlDoc.createTextNode(data.max_hr_value));
+                maxheartrate.appendChild(v2);
+                lap.appendChild(maxheartrate);
+                const intensity = xmlDoc.createElement('Intensity');
+                intensity.appendChild(xmlDoc.createTextNode('Active'));
+                lap.appendChild(intensity);
+                const track = xmlDoc.createElement('Track');
+                lap.appendChild(track);
+                const max_points = Math.max(data.frequency_count || 0, data.km_speed_count || 0, data.pace_count || 0, data.hr_item_count || 0);
+                let cum_distance = 0;
+                for (let x = 0; x < max_points; x++) {
+                    const tp = xmlDoc.createElement('Trackpoint');
+                    track.appendChild(tp);
+                    const interval_time = new Date(time_elm.getTime() + (x * 5000));
+                    const time = xmlDoc.createElement('Time');
+                    time.appendChild(xmlDoc.createTextNode(interval_time.toISOString()));
+                    tp.appendChild(time);
+                    const ext = xmlDoc.createElement('Extensions');
+                    tp.appendChild(ext);
+                    const tpx = xmlDoc.createElement('TPX');
+                    tpx.setAttribute('xmlns', 'http://www.garmin.com/xmlschemas/ActivityExtension/v2');
+                    ext.appendChild(tpx);
+                    if (data.pace_speed_items && x < data.pace_speed_items.length && data.pace_speed_items[x] > 1) {
+                        const speed = xmlDoc.createElement('Speed');
+                        speed.appendChild(xmlDoc.createTextNode((1000 / data.pace_speed_items[x])));
+                        cum_distance += (1000 / data.pace_speed_items[x]) * 5;
+                        tpx.appendChild(speed);
+                    }
+                    if (data.item_frequency && x < data.item_frequency.length && data.item_frequency[x] > 1) {
+                        const cadence = xmlDoc.createElement('RunCadence');
+                        cadence.appendChild(xmlDoc.createTextNode(data.item_frequency[x] / 2));
+                        tpx.appendChild(cadence);
+                    }
+                    const distance_m = xmlDoc.createElement('DistanceMeters');
+                    distance_m.appendChild(xmlDoc.createTextNode(cum_distance));
+                    tp.appendChild(distance_m);
+                    if (data.hr_data_value && x < data.hr_data_value.length && data.hr_data_value[x] > 1) {
+                        const hr = xmlDoc.createElement('HeartRateBpm');
+                        const vhr = xmlDoc.createElement('Value');
+                        vhr.appendChild(xmlDoc.createTextNode(data.hr_data_value[x]));
+                        hr.appendChild(vhr);
+                        tp.appendChild(hr);
+                    }
+                }
+                const doc = new XMLSerializer().serializeToString(xmlDoc);
+                const a = document.createElement('a');
+                a.setAttribute('href', 'data:application/octet-stream;base64,' + btoa(doc));
+                a.setAttribute('download', startTime.replace(/:/g, '-').replace(/\./g, '-') + '.tcx');
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                event_log('TCX created and downloaded.');
+            }
+
+            const sportLabels = { 0: 'Unknown', 1: 'Walk', 2: 'Run', 3: 'Bike', 4: 'On foot', 5: 'Swim', 6: 'Mountain', 7: 'Badminton', 8: 'Other' };
+
+            function parseUint16LE(buf, offset) {
+                if (!buf || offset + 1 >= buf.length) return 0;
+                return buf[offset] | (buf[offset + 1] << 8);
+            }
+
+            function parseUint32LE(buf, offset) {
+                if (!buf || offset + 3 >= buf.length) return 0;
+                return ((buf[offset]) | (buf[offset + 1] << 8) | (buf[offset + 2] << 16) | (buf[offset + 3] << 24)) >>> 0;
+            }
+
+            function formatDateParts(year, month, day) {
+                if (!year || !month || !day) return '—';
+                return year + '-' + (month < 10 ? '0' : '') + month + '-' + (day < 10 ? '0' : '') + day;
+            }
+
+            function formatMinutesOfDay(totalMinutes) {
+                if (totalMinutes == null || totalMinutes < 0) return '—';
+                const hour = Math.floor(totalMinutes / 60);
+                const minute = totalMinutes % 60;
+                return (hour < 10 ? '0' : '') + hour + ':' + (minute < 10 ? '0' : '') + minute;
+            }
+
+            function decodeRepeatMask(mask) {
+                if (mask == null) return '—';
+                if (mask === 0x00) return 'once (no repeat)';
+                if (mask === 0xFF) return 'every day';
+                const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                const set = [];
+                for (let i = 0; i < days.length; i++) {
+                    if (mask & (1 << i)) set.push(days[i]);
+                }
+                return set.length ? set.join(', ') : 'none';
+            }
+
+            function resetV3RxState() {
+                rx_buffer = null;
+                rx_written = 0;
+                rx_last_logged = -1;
+                rx_label = 'v3 packet';
+            }
+
+            function parseActivityOutput(activityBuffer, baseOffset) {
+                const activity_output = {};
+                for (const [key, offset] of Object.entries(data_activity)) {
+                    activity_output[key] = 0;
+                    const buffer_offset = baseOffset + offset[1];
+                    if (buffer_offset >= activityBuffer.byteLength) continue;
+                    if (offset[0] === 2) {
+                        activity_output[key] = activityBuffer.getInt16(buffer_offset, true);
+                    } else if (offset[0] === 4) {
+                        activity_output[key] = activityBuffer.getUint32(buffer_offset, true);
+                    } else if (typeof offset[0] === 'string') {
+                        activity_output[key] = [];
+                        const item_count = activity_output[offset[0]] || 0;
+                        let array_offset = 0;
+                        for (let i = 0; i < item_count; i++) {
+                            if (buffer_offset + array_offset + offset[2] > activityBuffer.byteLength) break;
+                            if (offset[2] === 2) activity_output[key].push(activityBuffer.getInt16(buffer_offset + array_offset, true));
+                            else if (offset[2] === 4) activity_output[key].push(activityBuffer.getUint32(buffer_offset + array_offset, true));
+                            else if (offset[2] === 1) activity_output[key].push(activityBuffer.getUint8(buffer_offset + array_offset));
+                            array_offset += offset[2];
+                        }
+                    } else {
+                        activity_output[key] = activityBuffer.getUint8(buffer_offset);
+                    }
+                }
+                return activity_output;
+            }
+
+            function logActivityOutput(activity_output, sourceLabel, zeroMessage) {
+                const sportStr = sportLabels[activity_output.type] || ('type ' + activity_output.type);
+                logDataParsing({
+                    Steps: activity_output.step,
+                    Sports: sportStr,
+                    kcal: activity_output.calories,
+                    BPM: (activity_output.avg_hr_value || activity_output.max_hr_value) ? (activity_output.avg_hr_value + '/' + activity_output.max_hr_value + ' avg/max') : '—',
+                    Sleep: '—', SPO2: '—', Relax: '—', 'Blood sugar': '—', Hydration: '—', Battery: '—'
+                });
+                console.log(sourceLabel, activity_output);
+                const v = activity_output.version;
+                if (v === 0 && !activity_output.year && !activity_output.step) {
+                    event_log(zeroMessage);
+                } else if (v !== 16) {
+                    event_log('Activity version ' + v + ' (TCX export supports 16 only). Data logged above.');
+                } else {
+                    event_log('Creating TCX file.');
+                    createTCX(activity_output);
+                }
+            }
+
+            function parseLegacyActivityReply(buffer) {
+                const activity_buffer = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+                const totalLen = buffer.length;
+                if (totalLen >= 18) {
+                    const cmd = activity_buffer.getUint16(7, true);
+                    const seq = activity_buffer.getUint16(9, true);
+                    const y = activity_buffer.getUint8(12), m = activity_buffer.getUint8(13), d = activity_buffer.getUint8(14);
+                    const h = activity_buffer.getUint8(15), min = activity_buffer.getUint8(16), s = activity_buffer.getUint8(17);
+                    const timeStr = '20' + (y < 10 ? '0' : '') + y + '-' + (m < 10 ? '0' : '') + m + '-' + (d < 10 ? '0' : '') + d + ' ' + (h < 10 ? '0' : '') + h + ':' + (min < 10 ? '0' : '') + min + ':' + (s < 10 ? '0' : '') + s;
+                    event_log('[Legacy v3 activity] total=' + totalLen + ' cmd=0x' + cmd.toString(16) + ' seq=0x' + seq.toString(16) + ' time=' + timeStr);
+                }
+                const activity_output = parseActivityOutput(activity_buffer, DATA_OFFSET);
+                logActivityOutput(activity_output, 'Activity output (legacy 0x1a)', 'No stored activity (legacy 0x1a reply is all zeros). Try v3 health type 8 for daily steps or record a workout first.');
+            }
+
+            function parseV3FunctionTable(buffer) {
+                if (!buffer || buffer.length < 16) {
+                    event_log('[V3 function table] reply too short (' + (buffer ? buffer.length : 0) + ' B)');
+                    return;
+                }
+
+                // Drop leading 0x33 (already removed by reassembly) and v3 header:
+                // [0-3]=DA AD DA AD, [4]=type, [5-6]=len, [7-8]=cmd(0x1A), [9-10]=seq.
+                // For 0x1A on this firmware there is an extra 2‑byte mini header (0x01 0x09),
+                // so function-table bits begin at buffer[11+2] = buffer[13].
+                const headerLen = 13;
+                const crcLen = 2;
+                const totalLen = buffer.length;
+                if (totalLen <= headerLen + crcLen) {
+                    event_log('[V3 function table] no payload (len=' + totalLen + ' B)');
+                    return;
+                }
+                const payloadEnd = Math.max(headerLen, totalLen - crcLen);
+                const payload = buffer.subarray(headerLen, payloadEnd);
+
+                const lines = ['====== V3 function table (0x33 0x1A) ======', ''];
+                lines.push('Header len=' + headerLen + ' payload=' + payload.length + ' B (excluding 2-byte CRC)', '');
+
+                // Build list of v3 function-table groups from IDO_FUNC_TABLES (in file order).
+                const v3Groups = IDO_FUNC_TABLES.filter(def => def && typeof def[0] === 'string' && def[0].indexOf('v3_function_table->') === 0);
+
+                let offset = 0;
+                for (let gi = 0; gi < v3Groups.length && offset < payload.length; gi++) {
+                    const def = v3Groups[gi];
+                    const title = def[0];
+                    const names = def[1] || [];
+                    const bits = names.length;
+                    if (!bits) continue;
+
+                    const numBytes = bits <= 8 ? 1 : bits <= 16 ? 2 : Math.ceil(bits / 8);
+                    if (offset + numBytes > payload.length) break;
+
+                    let setFlags;
+                    if (bits > 32) {
+                        // Per-bit walk when spread across many bytes, LSB-first across the whole group.
+                        setFlags = [];
+                        for (let b = 0; b < bits && b < names.length; b++) {
+                            const byteIdx = offset + (b >> 3);
+                            const bitIdx = b & 7; // LSB-first within each byte
+                            if (byteIdx < payload.length && (payload[byteIdx] & (1 << bitIdx))) {
+                                setFlags.push(names[b]);
+                            }
+                        }
+                    } else {
+                        // Pack little-endian value then interpret bits LSB-first within the group.
+                        let v = 0;
+                        for (let i = 0; i < numBytes; i++) v |= (payload[offset + i] << (i * 8));
+                        setFlags = flagsForValue(v, names, bits);
+                    }
+
+                    const rawBytes = Array.from(payload.subarray(offset, offset + numBytes))
+                        .map(b => ('0' + b.toString(16)).slice(-2)).join(' ');
+
+                    let desc;
+                    if (!setFlags || !setFlags.length) {
+                        desc = '—';
+                    } else if (setFlags.length === 1) {
+                        desc = setFlags[0];
+                    } else {
+                        // One enabled bit per line for readability.
+                        desc = '\n    - ' + setFlags.join('\n    - ');
+                    }
+
+                    lines.push(title + ' (' + numBytes + ' B @payload[' + offset + ']): ' +
+                        desc + '  [raw ' + rawBytes + ']');
+
+                    offset += numBytes;
+                }
+
+                if (offset < payload.length) {
+                    const rest = Array.from(payload.subarray(offset))
+                        .map(b => ('0' + b.toString(16)).slice(-2)).join(' ');
+                    lines.push('', 'Remaining payload bytes (unparsed, ' + (payload.length - offset) + ' B): ' + rest);
+                }
+
+                const fullHex = Array.from(buffer).map(b => ('0' + b.toString(16)).slice(-2)).join(' ');
+                lines.push('', 'Raw full (header+payload+CRC, ' + buffer.length + ' B): ' + fullHex);
+
+                event_log('[V3 function table] parsed; see console for details.');
+                console.log('[PARSE] v3 function table (0x33 0x1a)\n' + lines.join('\n'));
+            }
+
+            function parseV3HealthCommon(payload) {
+                if (!payload || payload.length < 14) return null;
+                return {
+                    operate: payload[0],
+                    dataType: payload[1],
+                    flag1: payload[2],
+                    flag2: payload[3],
+                    flag3: payload[4],
+                    itemCount: parseUint16LE(payload, 5),
+                    headSize: parseUint16LE(payload, 7),
+                    dataSize: parseUint32LE(payload, 9),
+                    reserved: payload[13]
+                };
+            }
+
+            function parseV3SportItems(dataBytes, itemCount) {
+                if (!dataBytes || !itemCount) return null;
+                const itemSize = itemCount ? Math.floor(dataBytes.length / itemCount) : 0;
+                if (itemSize !== 10 || dataBytes.length < itemCount * itemSize) return null;
+
+                const totals = {
+                    steps: 0,
+                    displayCalories: 0,
+                    distance: 0,
+                    rawCalories: 0
+                };
+                const nonZeroItems = [];
+                for (let i = 0; i < itemCount; i++) {
+                    const offset = i * itemSize;
+                    const item = {
+                        index: i,
+                        steps: dataBytes[offset],
+                        displayCalories: dataBytes[offset + 3],
+                        distance: dataBytes[offset + 5],
+                        rawCalories: dataBytes[offset + 7]
+                    };
+                    totals.steps += item.steps;
+                    totals.displayCalories += item.displayCalories;
+                    totals.distance += item.distance;
+                    totals.rawCalories += item.rawCalories;
+                    if (item.steps || item.displayCalories || item.distance || item.rawCalories) nonZeroItems.push(item);
+                }
+
+                return {
+                    itemSize: itemSize,
+                    totals: totals,
+                    nonZeroItems: nonZeroItems
+                };
+            }
+
+            function parseV3SportSummary(headerBytes, dataBytes, itemCount) {
+                if (!headerBytes || headerBytes.length < 20) return null;
+                const sportItems = parseV3SportItems(dataBytes, itemCount);
+                let totalActiveTime = headerBytes.length >= 24 ? parseUint32LE(headerBytes, 20) : 0;
+                if (totalActiveTime > 86400) totalActiveTime = 0;
+                const headerSteps = parseUint32LE(headerBytes, 8);
+                const rawTotalCalories = parseUint32LE(headerBytes, 12);
+                const totalDistance = parseUint32LE(headerBytes, 16);
+                const headerItemCount = headerBytes.length >= 26 ? parseUint16LE(headerBytes, 24) : 0;
+                const headerDisplayCalories = headerBytes.length >= 28 ? parseUint16LE(headerBytes, 26) : 0;
+                const itemTotals = sportItems ? sportItems.totals : null;
+                const totalCalories = headerDisplayCalories || (itemTotals ? itemTotals.displayCalories : 0) || rawTotalCalories;
+                const coveredUntilMinutes = parseUint16LE(headerBytes, 5) + (itemCount * headerBytes[7]);
+                return {
+                    version: headerBytes[0],
+                    year: parseUint16LE(headerBytes, 1),
+                    month: headerBytes[3],
+                    day: headerBytes[4],
+                    minuteOffset: parseUint16LE(headerBytes, 5),
+                    intervalMinutes: headerBytes[7],
+                    totalSteps: headerSteps,
+                    totalCalories: totalCalories,
+                    headerDisplayCalories: headerDisplayCalories,
+                    itemDisplayCalories: itemTotals ? itemTotals.displayCalories : 0,
+                    rawTotalCalories: rawTotalCalories,
+                    totalDistance: totalDistance,
+                    totalActiveTime: totalActiveTime,
+                    coveredUntilMinutes: coveredUntilMinutes,
+                    headerItemCount: headerItemCount,
+                    itemTotals: itemTotals,
+                    nonZeroItems: sportItems ? sportItems.nonZeroItems : []
+                };
+            }
+
+            /** Parse V3 sleep summary from header + data (IDOSyncV3SleepDataModel layout). Header (40 B): [0]=version [1]=reserved, [2-7]=fall asleep year(LE),month,day,hour,min, [8-13]=get up same, [14-15]=totalMin, [16-17]=wakeMin, [18-19]=lightMin, [20-21]=remMin, [22-23]=deepMin. Items: 2 bytes each = stage (1B, 1=awake 2=light 3=deep 4=REM) + duration_minutes (1B). */
+            function parseV3SleepSummary(headerBytes, dataBytes, itemCount) {
+                if (!headerBytes || headerBytes.length < 16) return null;
+                const version = headerBytes[0];
+                let fallAsleepYear = parseUint16LE(headerBytes, 2), fallAsleepMonth = headerBytes[4] || 0, fallAsleepDay = headerBytes[5] || 0, fallAsleepHour = headerBytes[6] || 0, fallAsleepMin = headerBytes[7] || 0;
+                let getUpYear = parseUint16LE(headerBytes, 8), getUpMonth = headerBytes[10] || 0, getUpDay = headerBytes[11] || 0, getUpHour = headerBytes[12] || 0, getUpMin = headerBytes[13] || 0;
+                const totalMinute = headerBytes.length >= 16 ? parseUint16LE(headerBytes, 14) : 0;
+                const wakeMinute = headerBytes.length >= 18 ? parseUint16LE(headerBytes, 16) : 0;
+                const lightSleepMinute = headerBytes.length >= 20 ? parseUint16LE(headerBytes, 18) : 0;
+                const remSleepMinute = headerBytes.length >= 22 ? parseUint16LE(headerBytes, 20) : 0;
+                const deepSleepMinute = headerBytes.length >= 24 ? parseUint16LE(headerBytes, 22) : 0;
+                const sleepScore = headerBytes.length >= 27 ? headerBytes[26] : 0;
+                const goalSleepData = headerBytes.length >= 30 ? parseUint16LE(headerBytes, 28) : 0;
+                const sleepItems = [];
+                const n = itemCount || 0;
+                if (dataBytes && n > 0) {
+                    const itemSize = 2;
+                    for (let i = 0; i < n && (i + 1) * itemSize <= dataBytes.length; i++) {
+                        const off = i * itemSize;
+                        sleepItems.push({
+                            stage: dataBytes[off],
+                            duration: dataBytes[off + 1],
+                            serialNumber: i
+                        });
+                    }
+                }
+                return {
+                    version: version,
+                    itemsCount: n,
+                    fallAsleepYear: fallAsleepYear, fallAsleepMonth: fallAsleepMonth, fallAsleepDay: fallAsleepDay,
+                    fallAsleepHour: fallAsleepHour, fallAsleepMinutes: fallAsleepMin,
+                    getUpYear: getUpYear, getUpMonth: getUpMonth, getUpDay: getUpDay,
+                    getUpHour: getUpHour, getUpMinutes: getUpMin,
+                    totalMinute: totalMinute, wakeMinute: wakeMinute,
+                    lightSleepMinute: lightSleepMinute, deepSleepMinute: deepSleepMinute, remSleepMinute: remSleepMinute,
+                    sleepScore: sleepScore, goalSleepData: goalSleepData,
+                    sleepItems: sleepItems
+                };
+            }
+
+            function describeV3HealthType(dataType) {
+                if (dataType == null) return 'Unknown';
+                const names = {
+                    1: 'SpO2',
+                    2: 'Pressure',
+                    3: 'Heart rate',
+                    4: 'Workout record',
+                    6: 'Swim',
+                    7: 'Sleep',
+                    8: 'Sport summary'
+                };
+                return names[dataType] || ('type 0x' + dataType.toString(16));
+            }
+
+            /** Parse v3 GET alarm reply (cmd 0x0F).
+             *  Wire layout matches SET (set_alarms_and_sports.txt): same 34-byte block.
+             *
+             *    payload[0]=0x24, [1]=version, [2]=reserved, [3]=maxAlarms (0x0A)
+             *    then maxAlarms×34B: [id][0x55][0x00][hour][minute][RepeatAndEnabledBits]
+             *      [SnoozeMinutes 2B BE][SnoozeFreq 2B BE][24B name]
+             */
+            /** Parse v3 GET alarm reply (cmd 0x0F).
+             *  Wire layout (confirmed from RX log):
+             *    buffer[11]  = payload[0]  = alarmVersion (0x00)
+             *    buffer[12]  = payload[1]  = maxAlarms    (0x0A = 10)
+             *    base = 2  → each alarm block starts at payload[2 + i*34]
+             *
+             *  Each 34-byte block:
+             *    [0]  id          (1-based)
+             *    [1]  status      0x55=off, 0xAA=on (SDK model); on this firmware it is always 0x55 in dumps
+             *    [2]  type        alarm type (0=wake_up etc)
+             *    [3]  hour
+             *    [4]  minute
+             *    [5]  repeatBits  weekday bitmask + enabled flag: bit0 = enabled, bits1–7 = repeat days
+             *    [6]  snoozeMin_hi  \  16-bit BE snooze minutes
+             *    [7]  snoozeMin_lo  /
+             *    [8]  snoozeFreq_hi \  16-bit BE repeat count
+             *    [9]  snoozeFreq_lo /
+             *    [10..33] name (24-byte ASCII, NUL padded)
+             */
+            function parseV3GetAlarmReply(buffer) {
+                const payload = buffer.subarray(11);
+                if (payload.length < 2) {
+                    event_log('[V3 GET alarm] reply too short (' + payload.length + ' B).');
+                    return;
+                }
+                // payload[0] = alarmVersion, payload[1] = maxAlarms
+                const alarmCount = Math.min(10, payload[1] || 0);
+                const ALARM_BLOCK_SIZE = 34;
+                const base = 2;
+                const list = [];
+                for (let i = 0; i < alarmCount; i++) {
+                    const off = base + i * ALARM_BLOCK_SIZE;
+                    if (off + ALARM_BLOCK_SIZE > payload.length) break;
+                    const id        = payload[off];
+                    // In our captures status is always 0x55; enabled/disabled comes from repeatBits bit0.
+                    const statusByte = payload[off + 1] & 0xff;
+                    const status    = 0x55; // keep legacy field but ignore statusByte for enabled state
+                    const type      = payload[off + 2] & 0xff;
+                    const hour      = payload[off + 3] & 0xff;
+                    const minute    = payload[off + 4] & 0xff;
+                    const repeatBits = payload[off + 5] & 0xff;
+                    const enabled   = (repeatBits & 0x01) ? 1 : 0;
+                    const repeat    = repeatBits & 0xFE; // upper 7 bits only (weekday mask)
+                    const snoozeMin  = ((payload[off + 6] & 0xff) << 8) | (payload[off + 7] & 0xff);
+                    const snoozeFreq = ((payload[off + 8] & 0xff) << 8) | (payload[off + 9] & 0xff);
+                    let name = '';
+                    for (let j = 0; j < 24; j++) {
+                        const ch = payload[off + 10 + j];
+                        if (ch === 0x00) break;
+                        name += String.fromCharCode(ch);
+                    }
+                    const snooze = Math.min(120, snoozeMin > 0 ? snoozeMin : 10);
+                    const snoozeTimes = Math.min(10, Math.max(1, snoozeFreq > 0 ? snoozeFreq : 1));
+                    list.push({
+                        slot: (id - 1) >= 0 && (id - 1) < 10 ? id - 1 : i,
+                        status,
+                        enabled,
+                        type,
+                        hour,
+                        minute,
+                        repeat,
+                        snooze,
+                        snoozeTimes,
+                        name
+                    });
+                }
+                alarmList.length = 0;
+                alarmList.push.apply(alarmList, list);
+                renderAlarmList();
+                event_log('[V3 GET alarm] loaded ' + list.length + ' alarm(s) (cmd 0x0F).');
+                console.log('[PARSE] v3 GET alarm reply | count=' + alarmCount + ' | alarms=' + JSON.stringify(list));
+            }
+
+            function dispatchV3Reply(buffer) {
+                if (!buffer || buffer.length < 11) return;
+                const cmd = parseUint16LE(buffer, 7);
+                const seq = parseUint16LE(buffer, 9);
+                const payload = buffer.subarray(11);
+
+                if (cmd === 0x0005) {
+                    const totalBytes = payload.length >= 4 ? parseUint32LE(payload, 0) : 0;
+                    const estimatedPackets = totalBytes ? Math.ceil(totalBytes / 136) : 0;
+                    event_log('[V3 health sizes] total=' + totalBytes + ' bytes' + (estimatedPackets ? ' (~' + estimatedPackets + ' BLE packets at MTU 137)' : '') + ' seq=0x' + seq.toString(16));
+                    return;
+                }
+
+                if (cmd === 0x001A) {
+                    if (expectV3FunctionTable) {
+                        expectV3FunctionTable = false;
+                        parseV3FunctionTable(buffer);
+                    } else {
+                        parseLegacyActivityReply(buffer);
+                    }
+                    return;
+                }
+
+                if (cmd === 0x000F) {
+                    parseV3GetAlarmReply(buffer);
+                    return;
+                }
+
+                if (cmd !== 0x0004) {
+                    event_log('[V3] cmd=0x' + cmd.toString(16) + ' seq=0x' + seq.toString(16) + ' len=' + buffer.length);
+                    return;
+                }
+
+                const common = parseV3HealthCommon(payload);
+                if (!common) {
+                    event_log('[V3 health] cmd 0x04 seq=0x' + seq.toString(16) + ' reply too short (' + payload.length + ' B)');
+                    return;
+                }
+
+                const headerStart = 14;
+                const headerEnd = Math.min(payload.length, headerStart + common.headSize);
+                const dataEnd = Math.min(payload.length, headerEnd + common.dataSize);
+                const headerBytes = payload.slice(headerStart, headerEnd);
+                const dataBytes = payload.slice(headerEnd, dataEnd);
+                event_log('[V3 health] ' + describeV3HealthType(common.dataType) + ' | seq=0x' + seq.toString(16) + ' | items=' + common.itemCount + ' | head=' + common.headSize + ' | data=' + common.dataSize);
+
+                if (common.dataType === 4) {
+                    const activityBytes = new Uint8Array(headerBytes.length + dataBytes.length);
+                    activityBytes.set(headerBytes);
+                    activityBytes.set(dataBytes, headerBytes.length);
+                    const activity_output = parseActivityOutput(new DataView(activityBytes.buffer, activityBytes.byteOffset, activityBytes.byteLength), 0);
+                    logActivityOutput(activity_output, 'Activity output (v3 health type 4)', 'No stored workout record in v3 health sync (type 4). Daily steps are usually in type 8 sport summary.');
+                    return;
+                }
+
+                if (common.dataType === 8) {
+                    const summary = parseV3SportSummary(headerBytes, dataBytes, common.itemCount);
+                    if (!summary) {
+                        event_log('V3 sport summary header too short (' + headerBytes.length + ' B).');
+                        return;
+                    }
+                    logDataParsing({
+                        Steps: summary.totalSteps,
+                        Sports: 'Daily sport summary',
+                        kcal: summary.totalCalories,
+                        Sleep: '—',
+                        BPM: '—',
+                        SPO2: '—',
+                        Relax: '—',
+                        'Blood sugar': '—',
+                        Hydration: '—',
+                        Battery: '—'
+                    });
+                    event_log('[V3 sport] date=' + formatDateParts(summary.year, summary.month, summary.day) + ' interval=' + summary.intervalMinutes + 'm offset=' + summary.minuteOffset + ' items=' + common.itemCount + ' steps=' + summary.totalSteps + ' kcal=' + summary.totalCalories + ' headerKcal=' + summary.headerDisplayCalories + ' itemKcal=' + summary.itemDisplayCalories + ' rawKcal=' + summary.rawTotalCalories + ' distance=' + summary.totalDistance + ' coveredUntil=' + formatMinutesOfDay(summary.coveredUntilMinutes) + (summary.totalActiveTime ? ' active=' + summary.totalActiveTime + 's' : ''));
+                    console.log('V3 sport summary', {
+                        common: common,
+                        summary: summary,
+                        dataBytes: dataBytes,
+                        nonZeroItems: summary.nonZeroItems
+                    });
+                    return;
+                }
+
+                if (common.dataType === 7) {
+                    const summary = parseV3SleepSummary(headerBytes, dataBytes, common.itemCount);
+                    if (summary && (summary.totalMinute > 0 || summary.sleepItems.length > 0)) {
+                        const h = (v) => (v > 23 ? v % 24 : v);
+                        const m = (v) => (v > 59 ? v % 60 : v);
+                        const fallStr = summary.fallAsleepYear ? formatDateParts(summary.fallAsleepYear, summary.fallAsleepMonth, summary.fallAsleepDay) + ' ' + (h(summary.fallAsleepHour) < 10 ? '0' : '') + h(summary.fallAsleepHour) + ':' + (m(summary.fallAsleepMinutes) < 10 ? '0' : '') + m(summary.fallAsleepMinutes) : '—';
+                        const getUpStr = summary.getUpYear ? formatDateParts(summary.getUpYear, summary.getUpMonth, summary.getUpDay) + ' ' + (h(summary.getUpHour) < 10 ? '0' : '') + h(summary.getUpHour) + ':' + (m(summary.getUpMinutes) < 10 ? '0' : '') + m(summary.getUpMinutes) : '—';
+                        const totalStr = summary.totalMinute ? Math.floor(summary.totalMinute / 60) + 'h' + (summary.totalMinute % 60) + 'm' : '—';
+                        const parts = [];
+                        if (summary.wakeMinute) parts.push('awake ' + summary.wakeMinute + 'm');
+                        if (summary.lightSleepMinute) parts.push('light ' + summary.lightSleepMinute + 'm');
+                        if (summary.deepSleepMinute) parts.push('deep ' + summary.deepSleepMinute + 'm');
+                        if (summary.remSleepMinute) parts.push('REM ' + summary.remSleepMinute + 'm');
+                        const detailStr = parts.length ? totalStr + ' (' + parts.join(' ') + ')' : totalStr;
+                        logDataParsing({
+                            Steps: '—',
+                            Sports: '—',
+                            Sleep: detailStr,
+                            BPM: '—',
+                            kcal: '—',
+                            SPO2: '—',
+                            Relax: '—',
+                            'Blood sugar': '—',
+                            Hydration: '—',
+                            Battery: '—'
+                        });
+                        event_log('[V3 sleep] fall asleep ' + fallStr + ' | get up ' + getUpStr + ' | total ' + totalStr + (summary.sleepScore ? ' score=' + summary.sleepScore : '') + ' | items=' + summary.sleepItems.length);
+                        console.log('V3 sleep summary', { common: common, summary: summary, headerBytes: headerBytes, dataBytes: dataBytes });
+                    } else {
+                        const sleepVersion = headerBytes.length ? headerBytes[0] : 0;
+                        event_log(sleepVersion || common.itemCount || common.dataSize
+                            ? '[V3 sleep] header=' + common.headSize + ' items=' + common.itemCount + ' data=' + common.dataSize + ' version=' + sleepVersion
+                            : 'No stored sleep summary in v3 health sync (type 7).');
+                    }
+                    return;
+                }
+
+                if (common.dataType === 3) {
+                    event_log(common.itemCount || common.dataSize
+                        ? '[V3 heart rate] items=' + common.itemCount + ' head=' + common.headSize + ' data=' + common.dataSize
+                        : 'No stored heart-rate day data in v3 health sync (type 3).');
+                    return;
+                }
+
+                event_log('[V3 health] ' + describeV3HealthType(common.dataType) + ' reply logged to console.');
+                console.log('V3 health payload', { cmd: cmd, seq: seq, common: common, headerBytes: headerBytes, dataBytes: dataBytes });
+            }
+
+            function getV3FirstPacketTotalLen(arr) {
+                return arr[6] | (arr[7] << 8);
+            }
+
+            function getV3PacketLabel(arr) {
+                const cmd = arr.length >= 10 ? (arr[8] | (arr[9] << 8)) : 0;
+                if (cmd === 0x0005) return 'v3 health sizes';
+                if (cmd === 0x001A) return expectV3FunctionTable ? 'v3 function table (0x1a)' : 'legacy v3 activity';
+                if (cmd === 0x000F) return 'v3 GET alarm reply';
+                if (cmd === 0x0004) {
+                    const dataType = arr.length > 13 ? arr[13] : null;
+                    return describeV3HealthType(dataType) + ' reply';
+                }
+                return 'v3 packet';
+            }
+
+            /** Returns true if packet was consumed as handled v3 reassembly. */
+            function handleV3ReplyReassembly(arr) {
+                if (!arr || arr.length < 2) return false;
+                const inReassembly = rx_buffer && rx_written < rx_buffer.length && rx_written > 0;
+                // Continuation chunk: simply prefixed with 0x33, followed immediately by payload
+                if (inReassembly && arr.length > 0 && arr[0] === 0x33 && !(arr.length >= 5 && arr[1] === 0xda && arr[2] === 0xad)) {
+                    const skip = 1;
+                    const toCopy = Math.min(arr.length - skip, rx_buffer.length - rx_written);
+                    if (toCopy > 0) {
+                        rx_buffer.set(arr.subarray(skip, skip + toCopy), rx_written);
+                        rx_written += toCopy;
+                        const pct = Math.floor((rx_written / rx_buffer.length) * 100);
+                        if (pct >= 10 && (pct - rx_last_logged >= 10 || pct === 100)) {
+                            rx_last_logged = pct;
+                            event_log('Receiving ' + rx_label + ' (' + rx_written + '/' + rx_buffer.length + ' bytes, ' + pct + '%)');
+                        }
+                    }
+                    if (rx_written === rx_buffer.length) {
+                        event_log('Receiving ' + rx_label + ' (' + rx_written + '/' + rx_buffer.length + ' bytes)');
+                        dispatchV3Reply(rx_buffer);
+                        resetV3RxState();
+                    }
+                    return true;
+                }
+                if (arr[0] === 0x33 && arr[1] === 0xda && arr[2] === 0xad && arr[3] === 0xda && arr[4] === 0xad && arr.length >= 10) {
+                    const cmd = arr[8] | (arr[9] << 8);
+                    if (cmd !== 0x0004 && cmd !== 0x0005 && cmd !== 0x001A && cmd !== 0x000F) return false;
+                    const totalLen = getV3FirstPacketTotalLen(arr);
+                    rx_buffer = new Uint8Array(totalLen);
+                    rx_written = 0;
+                    rx_last_logged = 0;
+                    rx_label = getV3PacketLabel(arr);
+                    const toCopy = Math.min(totalLen, arr.length - 1);
+                    if (toCopy > 0) {
+                        rx_buffer.set(arr.subarray(1, 1 + toCopy), 0);
+                        rx_written = toCopy;
+                    }
+                    event_log('Receiving ' + rx_label + ' (' + rx_written + '/' + totalLen + ' bytes' + (toCopy >= totalLen ? '' : ', wait for continuation packets…') + ')');
+                    if (rx_written === rx_buffer.length) {
+                        dispatchV3Reply(rx_buffer);
+                        resetV3RxState();
+                    }
+                    return true;
+                }
+                return false;
+            }
+
+            function simulateActivityRx() {
+                const firstPacket = new Uint8Array([51, 218, 173, 218, 173, 1, 209, 0, 4, 0, 11, 1, 0, 4, 0, 0, 0, 2, 0, 100, 0, 84, 0, 0, 0, 0, 16, 233, 7, 2, 9, 15, 12, 27, 5, 0, 1, 2, 48, 162, 0, 0, 0, 66, 0, 0, 0, 5, 0, 0, 0, 222, 0, 0, 0, 119, 123, 116, 147, 155, 158, 158, 186, 4, 249, 5, 44, 1, 236, 0, 0, 0, 0, 0, 0, 0, 0, 0, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 233, 7, 2, 9, 15, 13, 50, 2, 0, 2, 0, 2, 0, 14, 0, 14, 0, 8, 0, 0, 0, 0, 0, 0, 0, 2, 9, 15, 13, 118, 116, 118, 119, 121, 121, 123, 123, 147, 0, 5, 0, 206, 0, 15, 0, 0, 0, 16, 0, 41, 1, 41, 1, 0, 0, 0, 0, 50, 0, 103, 0, 138, 0, 142, 0, 146, 0, 147, 0, 149, 0, 150, 0, 152, 0, 152, 0, 154, 0, 155, 0, 223, 1]);
+                event_log('Simulating activity (fake v3 packet, no device).');
+                handleV3ReplyReassembly(firstPacket);
+            }
+
+            let alarmList = [];
+            const ALARM_SYNC_DELAY_MS = 300;
+
+            function getAlarmFormValues() {
+                const slotEl = document.getElementById('alarm_slot');
+                const enableEl = document.getElementById('alarm_enable');
+                const typeEl = document.getElementById('alarm_type');
+                const hourEl = document.getElementById('alarm_hour');
+                const minuteEl = document.getElementById('alarm_minute');
+                const repeatEl = document.getElementById('alarm_repeat');
+                const repeatHexEl = document.getElementById('alarm_repeat_hex');
+                const snoozeEl = document.getElementById('alarm_snooze');
+                const snoozeTimesEl = document.getElementById('alarm_repeat_times');
+                const nameEl = document.getElementById('alarm_name');
+                let repeat = 0xFF;
+                if (repeatEl && repeatEl.value === 'custom' && repeatHexEl) {
+                    const r = parseInt(repeatHexEl.value, 16);
+                    repeat = isNaN(r) ? 0xFF : (r & 0xFF);
+                } else if (repeatEl) {
+                    repeat = parseInt(repeatEl.value, 10);
+                    if (isNaN(repeat)) repeat = 0xFF;
+                }
+                const snooze = snoozeEl ? Math.max(0, Math.min(120, parseInt(snoozeEl.value, 10) || 10)) : 10;
+                const snoozeTimes = snoozeTimesEl ? Math.max(1, Math.min(10, parseInt(snoozeTimesEl.value, 10) || 1)) : 1;
+                const status = 0x55;
+                const enabled = enableEl && enableEl.value === 'on' ? 1 : 0;
+                const type = typeEl ? Math.max(0, Math.min(7, parseInt(typeEl.value, 10) || 0)) : 0;
+                const hour = hourEl ? Math.max(0, Math.min(23, parseInt(hourEl.value, 10) || 0)) : 0;
+                const minute = minuteEl ? Math.max(0, Math.min(59, parseInt(minuteEl.value, 10) || 0)) : 0;
+                const slot = slotEl ? Math.max(0, Math.min(9, parseInt(slotEl.value, 10) || 0)) : 0;
+                const name = nameEl && nameEl.value ? nameEl.value : '';
+                return { slot, status, enabled, type, hour, minute, repeat, snooze, snoozeTimes, name };
+            }
+
+            function sendSetAlarm(alarmId, status, type, hour, minute, repeat, snoozeMinutes) {
+                if (!sendChar) { log('Not connected.'); return; }
+                const buf = [0x03, 0x02, alarmId & 0xff, status & 0xff, type & 0xff, hour & 0xff, minute & 0xff, repeat & 0xff, snoozeMinutes & 0xff];
+                sendChar.writeValue(new Uint8Array(buf));
+                const hexStr = buf.map(b => ('0' + b.toString(16)).slice(-2)).join(' ');
+                log('[TX] set_alarm (03 02) id=' + alarmId + ' status=0x' + (status.toString(16)) + ' type=' + type + ' ' + (hour < 10 ? '0' : '') + hour + ':' + (minute < 10 ? '0' : '') + minute + ' repeat=0x' + (repeat.toString(16)) + ' snooze=' + snoozeMinutes + 'min (' + buf.length + ' B) ' + hexStr, 'tx');
+            }
+
+            /** Sends a V3 packet, chunking it into smaller pieces if it exceeds the negotiated MTU-3 limit.
+             *  Prevents GATT Server disconnections caused by Web Bluetooth attempting Long Writes on unsupported devices.
+             *
+             *  Chunking model (confirmed from logcat_dumps):
+             *    - First BLE write: up to MAX_CHUNK bytes of the raw packet (33 DA AD DA AD ...).
+             *    - Continuation writes: exactly ONE byte prefix (0x33), data bytes follow immediately.
+             *    - CRC-16 is present once at the very end of the final write. */
+            function sendV3PacketChunked(packet) {
+                if (!sendChar) { log('Not connected.'); return; }
+                const MAX_CHUNK = 134; // Safe size: MTU=137, ATT gives 134 payload bytes
+
+                const chunks = [];
+                let offset = 0;
+                // First chunk: raw packet bytes, no prefix
+                const firstEnd = Math.min(packet.length, MAX_CHUNK);
+                chunks.push(packet.subarray(0, firstEnd));
+                offset = firstEnd;
+                // Continuation chunks: 0x33 prefix + up to 133 bytes of payload
+                while (offset < packet.length) {
+                    const dataSize = Math.min(packet.length - offset, MAX_CHUNK - 1);
+                    const chunk = new Uint8Array(1 + dataSize);
+                    chunk[0] = 0x33;
+                    chunk.set(packet.subarray(offset, offset + dataSize), 1);
+                    chunks.push(chunk);
+                    offset += dataSize;
+                }
+                let i = 0;
+                function sendNextChunk() {
+                    if (i >= chunks.length) return;
+                    const chunk = chunks[i];
+                    const hexStr = Array.from(chunk).map(b => ('0' + b.toString(16)).slice(-2)).join(' ');
+                    log('[TX] v3 chunk ' + (i + 1) + '/' + chunks.length + ' (' + chunk.length + ' B) ' + hexStr, 'tx');
+                    sendChar.writeValue(chunk).then(() => {
+                        i++;
+                        if (i < chunks.length) {
+                            setTimeout(sendNextChunk, 20);
+                        }
+                    }).catch(e => {
+                        event_log('V3 chunk send error (chunk ' + i + '): ' + e.message);
+                        console.error('V3 chunk send error:', e);
+                    });
+                }
+                sendNextChunk();
+            }
+
+            /** Build and send v3 cmd 0x0E (set alarms).
+             *  Wire layout per set_alarms_and_sports.txt and logcat notes:
+             *
+             *    33 DA AD DA AD [ver] [len_lo] [len_hi] [cmd_lo] [cmd_hi] [seq_lo] [seq_hi]
+             *      ver      = 0x01
+             *      len      = 0x0161 (353) on this firmware
+             *      cmd      = 0x000E (V3_SET_ALARM / SPORT_SORT)
+             *      seq      = arbitrary 16‑bit sequence
+             *
+             *    Payload after seq:
+             *      [alarmVersion=0x00][maxAlarms=0x0A]
+             *      then 10×35-byte blocks:
+             *        [id][on/off][type][hour][minute][repeatBits]
+             *        [snoozeMin_L][snoozeMin_H][snoozeFreq_L][snoozeFreq_H]
+             *        [24B name/padding].
+             *
+             *  We expose a higher-level model (slot, status, type, hour, minute, repeat, snooze, snoozeTimes, name) and map down to this.
+             */
+            function sendSetAlarmsV3(alarms) {
+                if (!sendChar) { log('Not connected.'); return; }
+                const NUM_SLOTS = 10;
+                const list = Array(NUM_SLOTS).fill(null).map((_, i) => {
+                    const src = alarms && alarms[i] ? alarms[i] : null;
+                    if (!src) {
+                        return { slot: i, status: 0x55, enabled: 0, type: 0, hour: 0, minute: 0, repeat: 0, snooze: 10, snoozeTimes: 1, name: '' };
+                    }
+                    return {
+                        slot: (typeof src.slot === 'number' ? src.slot : i),
+                        status: 0x55,
+                        enabled: src.enabled ? 1 : 0,
+                        type: (src.type != null ? Math.max(0, Math.min(255, src.type | 0)) : 0),
+                        hour: src.hour || 0,
+                        minute: src.minute || 0,
+                        repeat: (src.repeat != null ? src.repeat : 0),
+                        snooze: (src.snooze != null ? src.snooze : 10),
+                        snoozeTimes: (src.snoozeTimes != null ? src.snoozeTimes : 1),
+                        name: src.name || ''
+                    };
+                });
+                // Payload here is just the bytes after cmd/seq: [alarmVersion][maxAlarms] + 10×blocks (per set_alarms_and_sports.txt):
+                //   [AlarmIndex][status 0x55|0xAA][type 0-7][AlarmHour][AlarmMinute]
+                //   [RepeatAndEnabledBits(Sun)1(Sat)0(Fri)0(Thur)0(Wed)0(Tue)0(Mon)1(Enabled)1]
+                //   [16bit SnoozeMinutes][16bit SnoozeFreq][24B name]
+                // Total payload bytes we allocate = 353, matching 0x0161 len in set_alarms_and_sports.txt.
+                const payload = new Uint8Array(353);
+                let off = 0;
+                // alarmVersion + maxAlarms
+                payload[off++] = 0x00;             // alarmVersion (0 = current)
+                payload[off++] = NUM_SLOTS & 0xff; // maxAlarms (0x0A)
+                for (let i = 0; i < NUM_SLOTS; i++) {
+                    const a = list[i];
+                    const id = (a.slot != null ? a.slot : i) + 1;
+                    payload[off++] = id & 0xff;          // AlarmIndex
+                    payload[off++] = 0x55;               // status byte (always 0x55 on this firmware)
+                    payload[off++] = (a.type != null ? a.type : 0) & 0xff;                    // alarm type (0=wake_up etc)
+                    const hour = Math.max(0, Math.min(23, a.hour || 0)) & 0xff;
+                    const minute = Math.max(0, Math.min(59, a.minute || 0)) & 0xff;
+                    payload[off++] = hour;
+                    payload[off++] = minute;
+                    // Single RepeatAndEnabledBits byte: upper 7 bits = weekdays, bit0 = Enabled.
+                    const enabled = a.enabled ? 1 : 0;
+                    let repeatBits = (a.repeat != null ? (a.repeat & 0xFE) : 0); // clear bit0
+                    if (enabled) repeatBits |= 0x01;
+                    payload[off++] = repeatBits & 0xff;
+                    // Snooze minutes / frequency are 16-bit big-endian, default 10 min => 00 0A, freq 1 => 00 01.
+                    const snoozeMin = Math.max(0, Math.min(120, a.snooze != null ? a.snooze : 10)) & 0xffff;
+                    const snoozeFreq = Math.max(1, Math.min(10, a.snoozeTimes != null ? a.snoozeTimes : 1)) & 0xffff;
+                    payload[off++] = (snoozeMin >> 8) & 0xff;
+                    payload[off++] = snoozeMin & 0xff;
+                    payload[off++] = (snoozeFreq >> 8) & 0xff;
+                    payload[off++] = snoozeFreq & 0xff;
+                    // Name: up to 24 bytes ASCII, NUL padded
+                    let name = a.name || '';
+                    if (name.length > 24) name = name.slice(0, 24);
+                    for (let j = 0; j < 24; j++) {
+                        if (j < name.length) {
+                            payload[off++] = name.charCodeAt(j) & 0xff;
+                        } else {
+                            payload[off++] = 0x00;
+                        }
+                    }
+                }
+                const len = 353; // matches 0x0161 (log: send data buff length:355 incl. CRC)
+                const packet = new Uint8Array(5 + 1 + 2 + 2 + 2 + len);
+                const seq = Math.floor(Math.random() * 0x10000) & 0xffff;
+                // v3 header: preamble + ver + len + cmd + seq
+                packet[0] = 0x33; packet[1] = 0xDA; packet[2] = 0xAD; packet[3] = 0xDA; packet[4] = 0xAD;
+                packet[5] = 0x01;              // ver
+                packet[6] = len & 0xff;        // len_lo = 0x61
+                packet[7] = (len >> 8) & 0xff; // len_hi = 0x01
+                packet[8] = 0x0E;              // cmd_lo
+                packet[9] = 0x00;              // cmd_hi
+                packet[10] = seq & 0xff;       // seq_lo
+                packet[11] = (seq >> 8) & 0xff;// seq_hi
+                // Copy payload starting immediately after seq
+                packet.set(payload, 12);
+                const crc = crc16Ccitt(packet, 1, packet.length - 3);
+                packet[packet.length - 2] = crc & 0xff;
+                packet[packet.length - 1] = (crc >> 8) & 0xff;
+                const onCount = list.filter(a => a.enabled).length;
+                log('[TX] set_alarms_v3 (v3 0x0E) 10 slots, ' + onCount + ' on (' + packet.length + ' B, chunked)', 'tx');
+                event_log('Sent V3 Set Alarms (cmd 0x0E): 10 slots, ' + onCount + ' enabled.');
+                sendV3PacketChunked(packet);
+            }
+
+            /** CRC-16-CCITT-FALSE (poly 0x1021, init 0xFFFF, no reflection).
+             *  For v3 packets, CRC is computed over bytes 1..len-3 (DA AD DA AD 01 [len_lo] [len_hi] ...),
+             *  matching CRCs in set_hr_cont_state_*.txt and ui_watch_face_write_json.txt (see test_v3_crc.py). */
+            function crc16Ccitt(buffer, offset, length) {
+                let crc = 0xFFFF;
+                const end = (offset || 0) + (length !== undefined ? length : (buffer.length - (offset || 0)));
+                for (let i = offset || 0; i < end; i++) {
+                    crc ^= buffer[i] << 8;
+                    for (let k = 0; k < 8; k++) crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) : (crc << 1);
+                    crc &= 0xFFFF;
+                }
+                return crc;
+            }
+
+            /** Build and send v3 cmd 0x0E (set sport type sort). JSON per IDOV3SetSportSort.md: { num, item: [ { index, type }, ... ] }. */
+            function sendSportSortV3() {
+                if (!sendChar) { log('Not connected.'); return; }
+                const el = document.getElementById('sport_sort_json');
+                let json;
+                try {
+                    json = JSON.parse(el && el.value ? el.value.trim() : '{}');
+                } catch (e) {
+                    log('Invalid sport sort JSON: ' + (e && e.message), 'tx');
+                    event_log('Invalid JSON: ' + (e && e.message));
+                    return;
+                }
+                const num = Math.max(0, Math.min(30, parseInt(json.num, 10) || 0));
+                const item = Array.isArray(json.item) ? json.item : [];
+                if (num === 0 || item.length !== num) {
+                    log('Sport sort: num must be 1–30 and match item length (got num=' + num + ', item.length=' + item.length + ')', 'tx');
+                    event_log('Sport sort: num must be 1–30 and match item length.');
+                    return;
+                }
+                // v3 packet: 33 DA AD DA AD [len_lo] [len_hi] [payload]. Payload 353 B = 01 0E [seq] [seq] [data 347 B] [crc 2 B].
+                // Data: 00 00 00 (alarm count 0) + [sport_num 1B] [index 1B] [type 2B LE] per item, then pad to 347.
+                const seq = Math.floor(Math.random() * 256) & 0xff;
+                const payload = new Uint8Array(353);
+                let off = 0;
+                payload[off++] = 0x01; payload[off++] = 0x0E; payload[off++] = seq; payload[off++] = 0x00;
+                payload[off++] = 0x00; payload[off++] = 0x00; payload[off++] = 0x00; // alarm count 0
+                payload[off++] = num & 0xff;
+                for (let i = 0; i < num; i++) {
+                    const idx = Math.max(1, Math.min(255, parseInt(item[i].index, 10) || 1));
+                    const type = Math.max(0, Math.min(0xffff, parseInt(item[i].type, 10) || 0));
+                    payload[off++] = idx & 0xff;
+                    payload[off++] = type & 0xff;
+                    payload[off++] = (type >> 8) & 0xff;
+                }
+                // Pad to 347 bytes data
+                while (off < 351) payload[off++] = 0;
+                const len = 353;
+                const packet = new Uint8Array(5 + 2 + len);
+                packet[0] = 0x33; packet[1] = 0xDA; packet[2] = 0xAD; packet[3] = 0xDA; packet[4] = 0xAD;
+                packet[5] = len & 0xff; packet[6] = (len >> 8) & 0xff;
+                packet.set(payload, 7);
+                const crc = crc16Ccitt(packet, 1, packet.length - 3);
+                packet[packet.length - 2] = crc & 0xff;
+                packet[packet.length - 1] = (crc >> 8) & 0xff;
+                sendV3PacketChunked(packet);
+                const hexPreview = Array.from(packet.subarray(0, 20)).map(b => ('0' + b.toString(16)).slice(-2)).join(' ') + '…';
+                log('[TX] set_sport_sort_v3 (v3 0x0E) num=' + num + ' seq=0x' + (seq.toString(16)) + ' (' + packet.length + ' B) ' + hexPreview, 'tx');
+                event_log('Sent V3 Set Sport Sort (cmd 0x0E): num=' + num + ' items.');
+            }
+
+            function getNotice5ByteValues() {
+                const v = (id) => { const el = document.getElementById(id); return el ? Math.max(0, Math.min(255, parseInt(el.value, 10) || 0)) : 0; };
+                return { notify_switch: v('notice_notify_switch'), notify_itme1: v('notice_notify_itme1'), notify_itme2: v('notice_notify_itme2'), call_switch: v('notice_call_switch'), call_delay: v('notice_call_delay') };
+            }
+            function sendNotice5Byte(label) {
+                if (!sendChar) { log('Not connected.'); return; }
+                const v = getNotice5ByteValues();
+                const bool = (n) => (n === 0 ? 0x55 : n === 1 ? 0x88 : (n & 0xff));
+                const b0 = bool(v.notify_switch);
+                const b1 = v.notify_itme1 & 0xff, b2 = v.notify_itme2 & 0xff;
+                const b3 = bool(v.call_switch);
+                const b4 = v.call_delay & 0xff;
+                const buf = [0x03, 0x30, b0, b1, b2, b3, b4];
+                for (var i = 0; i < 15; i++) buf.push(0);
+                sendChar.writeValue(new Uint8Array(buf));
+                const hexStr = buf.slice(0, 7).map(b => ('0' + b.toString(16)).slice(-2)).join(' ') + ' (+' + (buf.length - 7) + ' padding)';
+                log('[TX] ' + (label || 'set_notice_5b') + ' (20 B) ' + hexStr, 'tx');
+                event_log('Sent SET 0x30: notify_switch=' + b0.toString(16) + ' itme1=' + b1.toString(16) + ' itme2=' + b2.toString(16) + ' call_switch=' + b3.toString(16) + ' call_delay=' + b4.toString(16) + ' + 15 zero padding');
+            }
+            function updateNotice5bHexPreview() {
+                const el = document.getElementById('notice_5b_hex');
+                if (!el) return;
+                const v = getNotice5ByteValues();
+                const bool = (n) => (n === 0 ? 0x55 : n === 1 ? 0x88 : (n & 0xff));
+                const b = [bool(v.notify_switch), v.notify_itme1 & 0xff, v.notify_itme2 & 0xff, bool(v.call_switch), v.call_delay & 0xff];
+                el.textContent = '03 30 ' + b.map(x => ('0' + x.toString(16)).slice(-2)).join(' ') + ' (switches: 0→55, 1→88)';
+            }
+
+            function renderAlarmList() {
+                const el = document.getElementById('alarm_list_display');
+                const countEl = document.getElementById('alarm_list_count');
+                if (!el || !countEl) return;
+                const ALARM_TYPE_NAMES = ['Wake up', 'Sleep', 'Sport', 'Medicine', 'Dating', 'Party', 'Meeting', 'Custom'];
+                const nonNull = alarmList.filter(a => a != null);
+                countEl.textContent = nonNull.length + ' alarm(s) in list';
+                if (nonNull.length === 0) { el.innerHTML = ''; return; }
+                const rows = nonNull.map((a, i) => {
+                    const onStr = a.enabled ? 'On' : 'Off';
+                    const typeStr = (a.type != null && a.type >= 0 && a.type < ALARM_TYPE_NAMES.length) ? ALARM_TYPE_NAMES[a.type] : ('type ' + (a.type != null ? a.type : 0));
+                    const timeStr = (a.hour < 10 ? '0' : '') + a.hour + ':' + (a.minute < 10 ? '0' : '') + a.minute;
+                    const repStr = a.repeat === 0xFF ? 'Every day' : (a.repeat === 0 ? 'Once' : '0x' + a.repeat.toString(16));
+                    const snoozeStr = (a.snooze || 10) + 'm ×' + (a.snoozeTimes || 1);
+                    const nameStr = a.name ? ' "' + a.name + '"' : '';
+                    const slotStr = (typeof a.slot === 'number') ? ('[slot ' + (a.slot + 1) + '] ') : '';
+                    return '#'.concat(i + 1, ' ', slotStr, onStr, ' ', typeStr, ' ', timeStr, ' ', repStr, ' snooze ', snoozeStr, nameStr);
+                });
+                el.textContent = rows.join('\n');
+            }
+
+            /**
+             * Parse RX packet and log interpretation to console (for you to confirm/correct).
+             * All interpretations are guesses from logcat dump patterns.
+             */
+            // IDO function tables 1–42: [ tableTitle, [ bit0Name, bit1Name, ... ] ].
+            // Loaded at runtime from function_table_output.json (generated by extract_json_from_functable.py).
+            let IDO_FUNC_TABLES = [];
+
+            // Base func table (GET 0x02 0x02) wire byte order. Byte index = position in this array.
+            // version_info and is_need_sync_v2 left out for now (position unknown).
+            const BASE_FUNC_TABLE_ORDER = [
+                'main', 'alarm_count', 'type', 'control', 'call', 'notify', 'other', 'sms',
+                'ontify2', 'other2', 'sport_type0', 'sport_type1', 'sport_type2', 'sport_type3',
+                'main1', 'ontify3', 'sport_show_num', 'lang_support'
+            ];
+
+            // Byte 1 is a combined bitfield (e.g. 10 = 0x0a = 0b1010): bit 1 = alarm_count, bit 2 = is_need_sync_v2, bit 3 = version_info.
+            const BYTE1_FLAGS = ['alarm_count', 'is_need_sync_v2', 'version_info'];
+
+            (function loadIdoFuncTables() {
+                const url = 'function_table_output.json';
+                try {
+                    fetch(url)
+                        .then(function (resp) { return resp.json(); })
+                        .then(function (data) {
+                            if (!Array.isArray(data)) {
+                                console.error('[INIT] Unexpected function_table_output.json format:', data);
+                                return;
+                            }
+                            IDO_FUNC_TABLES = data.map(function (obj) {
+                                if (!obj || typeof obj !== 'object') return ['unknown', []];
+                                const keys = Object.keys(obj);
+                                if (!keys.length) return ['unknown', []];
+                                const key = keys[0];
+                                const value = Array.isArray(obj[key]) ? obj[key] : [];
+                                return [key, value];
+                            });
+                            console.log('[INIT] Loaded ' + IDO_FUNC_TABLES.length + ' IDO func tables from function_table_output.json');
+                        })
+                        .catch(function (err) {
+                            console.error('[INIT] Failed to load function_table_output.json', err);
+                        });
+                } catch (e) {
+                    console.error('[INIT] Exception while loading function_table_output.json', e);
+                }
+            })();
+
+            function flagsForValue(value, names, maxBits) {
+                if (!names || !names.length) return [];
+                const list = [];
+                const n = Math.min(maxBits === undefined ? names.length : maxBits, names.length);
+                // LSB-first: names[0] ↔ bit 0 (rightmost), names[1] ↔ bit 1, etc.
+                for (let i = 0; i < n; i++) {
+                    if (value & (1 << i)) list.push(names[i]);
+                }
+                return list;
+            }
+
+            function parseFuncTableBase(payload) {
+                if (!payload || payload.length < 1) return;
+                const lines = ['====== Func table (base) GET 0x02 0x02 ======', ''];
+                const rawHex = Array.from(payload).map(b => ('0' + b.toString(16)).slice(-2)).join(' ');
+
+                // Map table title → def from loaded tables, then apply known wire byte order.
+                const titleToDef = {};
+                for (let i = 0; i < IDO_FUNC_TABLES.length; i++) {
+                    const def = IDO_FUNC_TABLES[i];
+                    if (def && def[0]) titleToDef[def[0]] = def;
+                }
+                const baseTableDefs = BASE_FUNC_TABLE_ORDER.map(function (name) {
+                    return titleToDef[name] || [name, []];
+                });
+
+                const tableCount = Math.min(payload.length, baseTableDefs.length);
+                const byte1FlagsIdx = 1;  // Byte 1 = combined bitfield: alarm_count (bit 1), is_need_sync_v2 (bit 2), version_info (bit 3)
+
+                let byte1Line = null;
+
+                for (let byteIdx = 0; byteIdx < tableCount; byteIdx++) {
+                    const tableDef = baseTableDefs[byteIdx] || ['T' + (byteIdx + 1), []];
+                    const title = tableDef[0] || ('T' + (byteIdx + 1));
+                    const names = tableDef[1] || [];
+                    const val = payload[byteIdx];
+
+                    if (byteIdx === byte1FlagsIdx) {
+                        // Byte 1: bit 1 = alarm_count, bit 2 = is_need_sync_v2, bit 3 = version_info (0b1010 = 10 → alarm_count=1, is_need_sync_v2=0, version_info=1)
+                        const parts = BYTE1_FLAGS.map(function (name, i) {
+                            const bit = i + 1;
+                            return name + '=' + ((val >> bit) & 1);
+                        });
+                        byte1Line = 'Byte ' + byteIdx + ' (' + BYTE1_FLAGS.join(' | ') + '): ' + parts.join(', ') + '  (0x' + ('0' + val.toString(16)).slice(-2) + ' = ' + val + ')';
+                        continue;
+                    }
+
+                    // Single-entry (value) tables: show raw value, not bits
+                    if (names.length === 1) {
+                        lines.push('Byte ' + byteIdx + ' (' + title + '): ' + val);
+                        continue;
+                    }
+
+                    const setFlags = flagsForValue(val, names, names.length);
+                    let desc;
+                    if (!setFlags || !setFlags.length) {
+                        desc = '—';
+                    } else if (setFlags.length === 1) {
+                        desc = setFlags[0];
+                    } else {
+                        desc = '\n    - ' + setFlags.join('\n    - ');
+                    }
+
+                    lines.push('Byte ' + byteIdx + ' (' + title + '): ' + desc);
+                }
+
+                if (byte1Line) {
+                    lines.splice(1, 0, byte1Line);
+                }
+
+                // control is at byte 3 in base order
+                const controlIdx = 3;
+                if (controlIdx < tableCount) {
+                    const controlDef = baseTableDefs[controlIdx];
+                    if (controlDef && controlDef[0] === 'control') {
+                        const controlNames = controlDef[1] || [];
+                        const controlFlags = flagsForValue(payload[controlIdx], controlNames, controlNames.length);
+                        if (controlFlags.indexOf('exFuncTable') !== -1) {
+                            lines.push('', '⚠️ exFuncTable set — use GET 0x02 0x07 for extended table.', '');
+                        }
+                    }
+                }
+
+                lines.push('Raw (' + payload.length + ' B): ' + rawHex);
+                console.log('[PARSE] GET func table (0x02 0x02)\n' + lines.join('\n'));
+            }
+
+            function parseFuncTableEx(payload) {
+                if (!payload || payload.length < 1) return;
+                const lines = ['====== Func table ex GET 0x02 0x07 ======', ''];
+
+                // Build list of extended groups (ex_*) in table order, keeping their original T index.
+                const exGroups = [];
+                for (let idx = 0; idx < IDO_FUNC_TABLES.length; idx++) {
+                    const def = IDO_FUNC_TABLES[idx];
+                    if (!def || typeof def[0] !== 'string') continue;
+                    if (def[0].indexOf('ex_') === 0) exGroups.push({ t: idx + 1, def });
+                }
+
+                let offset = 0;
+                for (let gi = 0; gi < exGroups.length && offset < payload.length; gi++) {
+                    const { t, def } = exGroups[gi];
+                    const title = def[0];
+                    const names = def[1] || [];
+                    const bits = names.length;
+                    if (!bits) continue;
+
+                    let numBytes = bits <= 8 ? 1 : bits <= 16 ? 2 : Math.ceil(bits / 8);
+                    if (offset + numBytes > payload.length) {
+                        const remaining = payload.length - offset;
+                        if (remaining <= 0) break;
+                        // Partial group at end of payload (e.g. ex_table_main11 on some firmwares):
+                        // decode only the flags that fit in the remaining bytes.
+                        numBytes = remaining;
+                    }
+                    const bitsThis = Math.min(bits, numBytes * 8);
+
+                    let setFlags;
+                    if (bits > 32) {
+                        // Per-bit walk when spread across many bytes.
+                        setFlags = [];
+                        for (let b = 0; b < bits && b < names.length; b++) {
+                            const byteIdx = offset + (b >> 3);
+                            const bitIdx = b & 7; // LSB-first within each byte
+                            if (byteIdx < payload.length && (payload[byteIdx] & (1 << bitIdx))) {
+                                setFlags.push(names[b]);
+                            }
+                        }
+                    } else {
+                        let v = 0;
+                        for (let i = 0; i < numBytes; i++) v |= (payload[offset + i] << (i * 8));
+                        setFlags = flagsForValue(v, names, bitsThis);
+                    }
+
+                    const rawBytes = Array.from(payload.subarray(offset, offset + numBytes))
+                        .map(b => ('0' + b.toString(16)).slice(-2)).join(' ');
+
+                    let desc;
+                    if (!setFlags || !setFlags.length) {
+                        desc = '—';
+                    } else if (setFlags.length === 1) {
+                        desc = setFlags[0];
+                    } else {
+                        desc = '\n    - ' + setFlags.join('\n    - ');
+                    }
+
+                    lines.push('T' + t + ' ' + title + ' (' + numBytes + ' B @payload[' + offset + ']): ' +
+                        desc + '  [raw ' + rawBytes + ']');
+
+                    offset += numBytes;
+                }
+
+                lines.push('', 'Raw (' + payload.length + ' B): ' + Array.from(payload).map(b => ('0' + b.toString(16)).slice(-2)).join(' '));
+                console.log('[PARSE] GET func table ex (0x02 0x07)\n' + lines.join('\n'));
+            }
+
+            function parseRx(arr) {
+                if (!arr || arr.length < 2) return;
+                const h0 = arr[0], h1 = arr[1];
+                const hex = Array.from(arr).map(b => ('0' + b.toString(16)).slice(-2)).join(' ');
+
+                // Replies to cmd 0x02 (key-dependent: read/set semantics vary by key and firmware)
+                if (h0 === 0x02) {
+                    if (h1 === 0x01) {
+                        // Angelfit device info layout (from index.html)
+                        const infoLayout = {
+                            device_id: [2, 2],
+                            firmware_version: [4, 1],
+                            mode: [5, 1],
+                            batt_status: [6, 1],
+                            energe: [7, 1],
+                            pair: [8, 1],
+                            reboot: [9, 1],
+                            bind_confirm_flag: [11, 1],
+                            platform: [12, 1],
+                            shape: [13, 1],
+                            dev_type: [14, 1],
+                            user_defined_dial: [15, 1],
+                            cloud_clock_dial: [16, 1],
+                            show_bind_choice: [17, 1],
+                            bootload_version: [18, 1],
+                            gps_platform: [19, 1]
+                        };
+                        const basicInfo = {};
+                        const view = new DataView(arr.buffer, arr.byteOffset, arr.byteLength);
+                        for (const [name, [offset, len]] of Object.entries(infoLayout)) {
+                            if (offset + len <= arr.length) {
+                                basicInfo[name] = len === 2 ? view.getInt16(offset, true) : view.getUint8(offset);
+                            }
+                        }
+                        console.log('[PARSE] GET device info reply (angelfit)', basicInfo);
+                        return;
+                    }
+                    if (h1 === 0x02) {
+                        parseFuncTableBase(arr.subarray(2));
+                        return;
+                    }
+                    if (h1 === 0x05 && arr.length >= 8) {
+                        // GET battery (VBUS_EVT_APP_GET_BATT_INFO evt 321). Same layout as index.html.
+                        const v = arr[3] | (arr[4] << 8);
+                        const status = arr[5];
+                        const level = arr[6];
+                        console.log('[PARSE] [Battery] voltage=' + v + 'mV status=' + status + ' level=' + level + '%');
+                        return;
+                    }
+                    if (h1 === 0x07) {
+                        parseFuncTableEx(arr.subarray(2));
+                        return;
+                    }
+                    if (h1 === 0x28 && arr.length >= 9) {
+                        // Get hand-up (raise-to-wake) gesture (IDOGetHandUpGestureFunction / IDOSetHandUpInfoBuletoothModel)
+                        // Layout (bytes 2–8) matches SetHandUp model:
+                        // [isOpen] [showSecond] [isHasTimeRange] [startHour] [startMinute] [endHour] [endMinute]
+                        const isOpenByte = arr[2];
+                        const isOpen = isOpenByte === 0xAA ? 'ON' : isOpenByte === 0x55 ? 'OFF' : '0x' + isOpenByte.toString(16);
+                        const showSecond = arr[3];
+                        const isHasTimeRange = !!arr[4];
+                        const startHour = arr[5], startMinute = arr[6];
+                        const endHour = arr[7], endMinute = arr[8];
+                        const windowStr = (startHour < 24 && startMinute < 60 && endHour < 24 && endMinute < 60)
+                            ? (startHour.toString().padStart(2, '0') + ':' + startMinute.toString().padStart(2, '0') +
+                               '–' +
+                               endHour.toString().padStart(2, '0') + ':' + endMinute.toString().padStart(2, '0'))
+                            : '—';
+                        console.log('[PARSE] Get hand-up gesture (0x02 0x28) | isOpen=' + isOpen +
+                            ' | showSecond=' + showSecond +
+                            ' | hasTimeRange=' + (isHasTimeRange ? 'yes' : 'no') +
+                            ' | window=' + windowStr +
+                            ' | raw=' + hex.slice(0, 80));
+                        return;
+                    }
+                    if (h1 === 0x32 && arr.length >= 12) {
+                        // Get screen brightness (IDOGetScreenBrightnessFunction / IDOSetScreenBrightnessInfoBluetoothModel)
+                        const levelValue = arr[2];
+                        const isManual = !!arr[3];
+                        const mode = arr[4];
+                        const autoAdjustNight = arr[5];
+                        const startHour = arr[6], startMinute = arr[7];
+                        const endHour = arr[8], endMinute = arr[9];
+                        const nightLevel = arr[10];
+                        const showInterval = arr[11];
+                        const modeDesc = (mode === 0x00) ? 'manual only'
+                            : (mode === 0x01) ? 'ambient sensor'
+                            : (mode === 0x02) ? 'auto night'
+                            : (mode === 0x03) ? 'scheduled night dim'
+                            : '0x' + mode.toString(16);
+                        const autoNightDesc = (autoAdjustNight === 0x00) ? 'fw default'
+                            : (autoAdjustNight === 0x01) ? 'off'
+                            : (autoAdjustNight === 0x02) ? 'auto night'
+                            : (autoAdjustNight === 0x03) ? 'scheduled'
+                            : '0x' + autoAdjustNight.toString(16);
+                        const windowStr = (startHour < 24 && startMinute < 60 && endHour < 24 && endMinute < 60)
+                            ? (startHour.toString().padStart(2, '0') + ':' + startMinute.toString().padStart(2, '0') +
+                               '–' +
+                               endHour.toString().padStart(2, '0') + ':' + endMinute.toString().padStart(2, '0'))
+                            : '—';
+                        // Try to sync into the Set Brightness form (if visible)
+                        try {
+                            const setVal = (id, val) => {
+                                const el = document.getElementById(id);
+                                if (el) el.value = String(val);
+                            };
+                            setVal('brightness_level', Math.max(1, Math.min(100, levelValue)));
+                            const manualSel = document.getElementById('brightness_is_manual');
+                            if (manualSel) manualSel.value = isManual ? '1' : '0';
+                            const modeSel = document.getElementById('brightness_mode');
+                            if (modeSel) modeSel.value = String(mode & 0x03);
+                            const autoSel = document.getElementById('brightness_auto_night');
+                            if (autoSel) autoSel.value = String(autoAdjustNight & 0x03);
+                            setVal('brightness_start_h', startHour);
+                            setVal('brightness_start_m', startMinute);
+                            setVal('brightness_end_h', endHour);
+                            setVal('brightness_end_m', endMinute);
+                            setVal('brightness_night_level', Math.max(1, Math.min(100, nightLevel)));
+                            setVal('screen_timeout_sec', showInterval);
+                        } catch (e) {
+                            // best-effort: ignore form update errors
+                        }
+                        console.log('[PARSE] Get screen brightness (0x02 0x32) | level=' + levelValue +
+                            ' (night=' + nightLevel + ')' +
+                            ' | isManual=' + (isManual ? 'yes' : 'no') +
+                            ' | mode=' + modeDesc +
+                            ' | autoNight=' + autoNightDesc +
+                            ' | window=' + windowStr +
+                            ' | showInterval=' + showInterval + 's' +
+                            ' | raw=' + hex.slice(0, 80));
+                        return;
+                    }
+                    if (h1 === 0xA7) {
+                        const status = arr[2];
+                        const hex = Array.from(arr).map(b => ('0' + b.toString(16)).slice(-2)).join(' ');
+                        let crc32Hex = null;
+                        if (arr.length >= 7) {
+                            const crcBytes = [arr[arr.length - 4], arr[arr.length - 3], arr[arr.length - 2], arr[arr.length - 1]];
+                            crc32Hex = crcBytes.map(b => ('0' + b.toString(16)).slice(-2)).join(' ');
+                        }
+                        console.log('[PARSE] GET flashbin reply | status=0x' + status.toString(16) + ' | last 4 bytes CRC32=0x' + (crc32Hex ? crc32Hex.replace(/ /g, '') : 'n/a') + ' | GUESS: 0x00=ok');
+                        return;
+                    }
+                    if (h1 === 0x08) {
+                        console.log('[PARSE] GET 0x02 0x08 reply (evt 422, VBUS_EVT_BASE_APP_GET) | len=' + arr.length + ' | ' + hex.slice(0, 50) + ' | GUESS: HR/health state readback');
+                        return;
+                    }
+                    if (h1 === 0xB1) {
+                        const state = arr[2];
+                        const onOff = state === 0xAA ? 'ON' : state === 0x55 ? 'OFF' : '0x' + state.toString(16);
+                        console.log('[PARSE] GET_WEATHER_SWITCH (0xB1) reply | state=' + onOff + ' (0x55=off, 0xAA=on) | payload: ' + hex.slice(9, 55));
+                        return;
+                    }
+                    if (h1 === 0x30) {
+                        // Get DND mode (IDOGetNotDisturbFunction / IDOSetNoDisturbModeInfoBluetoothModel)
+                        if (arr.length >= 18) {
+                            const isOpenByte = arr[2];
+                            const isOpen = isOpenByte === 0xAA ? true : isOpenByte === 0x55 ? false : !!isOpenByte;
+                            const startHour = arr[3], startMinute = arr[4];
+                            const endHour = arr[5], endMinute = arr[6];
+                            const hasRangRepeat = !!arr[7];
+                            const repeatMask = arr[8];
+                            const noonOn = !!arr[9];
+                            const noonStartHour = arr[10], noonStartMinute = arr[11];
+                            const noonEndHour = arr[12], noonEndMinute = arr[13];
+                            const repeatStr = decodeRepeatMask(repeatMask);
+                            const mainWindow = (startHour < 24 && startMinute < 60 && endHour < 24 && endMinute < 60)
+                                ? (startHour.toString().padStart(2, '0') + ':' + startMinute.toString().padStart(2, '0') +
+                                   '–' +
+                                   endHour.toString().padStart(2, '0') + ':' + endMinute.toString().padStart(2, '0'))
+                                : '—';
+                            const noonWindow = (noonStartHour < 24 && noonStartMinute < 60 && noonEndHour < 24 && noonEndMinute < 60)
+                                ? (noonStartHour.toString().padStart(2, '0') + ':' + noonStartMinute.toString().padStart(2, '0') +
+                                   '–' +
+                                   noonEndHour.toString().padStart(2, '0') + ':' + noonEndMinute.toString().padStart(2, '0'))
+                                : '—';
+                            console.log('[PARSE] Get DND mode (0x02 0x30) | isOpen=' + (isOpen ? 'ON' : 'OFF') +
+                                ' | window=' + mainWindow +
+                                ' | repeat=' + repeatStr +
+                                ' | intervalRepeat=' + (hasRangRepeat ? 'yes' : 'no') +
+                                ' | lunch=' + (noonOn ? 'ON ' + noonWindow : 'OFF') +
+                                ' | raw=' + hex.slice(0, 80));
+                        } else {
+                            const state = arr[2];
+                            const dndState = state === 0xAA ? 'DND ON' : state === 0x55 ? 'DND OFF' : '0x' + state.toString(16);
+                            console.log('[PARSE] VBUS_EVT_APP_GET_DO_NOT_DISTURB (0x30) reply | byte2=' + dndState + ' (0x55=off, 0xAA=on) | payload: ' + hex.slice(9, 55));
+                        }
+                        return;
+                    }
+                    if (h1 === 0x47 && arr.length >= 12) {
+                        // Get walk reminder (IDOGetWalkReminderFunction / IDOSetWalkReminderBluetoothModel)
+                        const onOff = !!arr[2];
+                        const goalStep = parseUint16LE(arr, 3);
+                        const startHour = arr[5], startMinute = arr[6];
+                        const endHour = arr[7], endMinute = arr[8];
+                        const repeatMask = arr[9];
+                        const goalTime = arr[10];
+                        const notifyFlag = arr.length > 16 ? arr[16] : 0;
+                        const repeatStr = decodeRepeatMask(repeatMask);
+                        let notifyDesc;
+                        if (notifyFlag === 1) notifyDesc = 'enable';
+                        else if (notifyFlag === 2) notifyDesc = 'silent';
+                        else if (notifyFlag === 3) notifyDesc = 'disable';
+                        else if (notifyFlag === 0) notifyDesc = 'firmware default/invalid';
+                        else notifyDesc = '0x' + notifyFlag.toString(16);
+                        const windowStr = (startHour < 24 && startMinute < 60 && endHour < 24 && endMinute < 60)
+                            ? (startHour.toString().padStart(2, '0') + ':' + startMinute.toString().padStart(2, '0') +
+                               '–' +
+                               endHour.toString().padStart(2, '0') + ':' + endMinute.toString().padStart(2, '0'))
+                            : '—';
+                        console.log('[PARSE] Get walk reminder (0x02 0x47) | on=' + (onOff ? 'ON' : 'OFF') +
+                            ' | goalStep=' + goalStep +
+                            ' | window=' + windowStr +
+                            ' | repeat=' + repeatStr +
+                            ' | goalTime=' + goalTime + 'h' +
+                            ' | notifyFlag=' + notifyDesc +
+                            ' | raw=' + hex.slice(0, 80));
+                        return;
+                    }
+                    if (h1 === 0x04) {
+                        const mac = arr.length >= 8 ? Array.from(arr.slice(2, 8)).map(b => ('0' + b.toString(16)).slice(-2)).join(':') : hex.slice(6, 24);
+                        console.log('[PARSE] GET MAC (0x04) reply | MAC=' + mac);
+                        return;
+                    }
+                    if (h1 === 0xF0) {
+                        // IDOGetMtuInfo / IDOGetMtuBlueInfoModel (see IDOGetMtuFunction.html, IDOV2GetEvt/IDOGetMtuInfo.md):
+                        // status (1 B), rx_mtu (2 B LE), tx_mtu (2 B LE), phy_speed (2 B LE), dle_length (2 B LE).
+                        // Example reply: 02 f0 00 89 00 89 00 e8 03 8c 00 → status=0, rx=137, tx=137, phy_speed=1000, dle_length=140.
+                        if (arr.length >= 11) {
+                            const status = arr[2];
+                            const rxMtu = parseUint16LE(arr, 3);
+                            const txMtu = parseUint16LE(arr, 5);
+                            const phySpeed = parseUint16LE(arr, 7);
+                            const dleLength = parseUint16LE(arr, 9);
+                            let phyLabel = phySpeed === 0 ? 'invalid' :
+                                phySpeed === 1000 ? '1M' :
+                                phySpeed === 2000 ? '2M' :
+                                phySpeed === 512 ? '512K' :
+                                (phySpeed + '');
+                            console.log('[PARSE] GET MTU (0xF0) reply | status=' + status +
+                                ' | rx_mtu=' + rxMtu + ' tx_mtu=' + txMtu +
+                                ' | phy_speed=' + phySpeed + ' (' + phyLabel + ')' +
+                                ' | dle_length=' + dleLength +
+                                ' | raw: ' + hex.slice(0, 80));
+                        } else {
+                            console.log('[PARSE] GET 0xF0 reply | len=' + arr.length + ' | ' + hex.slice(0, 60));
+                        }
+                        return;
+                    }
+                    console.log('[PARSE] 0x02 0x' + h1.toString(16) + ' reply | len=' + arr.length + ' | ' + hex.slice(0, 80));
+                    return;
+                }
+
+                // SET ACK (cmd 0x03, key in byte 1)
+                if (h0 === 0x03 && arr.length >= 2) {
+                    const keyNames = {
+                        0x22: 'hand (wrist)',
+                        0x28: 'hand gesture',
+                        0x29: 'DND',
+                        0x2A: 'music',
+                        0x2D: 'weather',
+                        0x32: 'brightness',
+                        0x35: 'conn param',
+                        0x45: 'stress/HR',
+                        0x47: 'walk',
+                        0x49: 'auto sport',
+                        0x60: 'drinking',
+                        0x41: 'woman health',
+                        0x42: 'woman health'
+                    };
+                    const name = keyNames[h1] || ('key 0x' + h1.toString(16));
+                    const status = arr.length >= 3 ? arr[2] : null;
+                    // Special-case 0x35: status byte is the conn-param step we requested / that firmware reports.
+                    if (h1 === 0x35) {
+                        console.log('[PARSE] SET conn param ACK | raw=' + hex.slice(0, 60));
+                        return;
+                    }
+                    console.log('[PARSE] SET ' + name + ' ACK | key=0x' + h1.toString(16) + ' | status byte=' + (status !== null ? '0x' + status.toString(16) : 'n/a') + ' | GUESS: 0x00=success');
+                    return;
+                }
+
+                // v3 packet (33 DA AD DA AD ...)
+                if (arr.length >= 10 && h0 === 0x33 && arr[1] === 0xDA && arr[2] === 0xAD && arr[3] === 0xDA && arr[4] === 0xAD) {
+                    const payloadLen = arr[6] | (arr[7] << 8);
+                    const cmd = arr[8];
+                    const cmdNames = { 0x06: 'watch face list', 0x07: 'watch face write', 0x08: 'watch face select', 0x09: 'HR mode (v3)', 0x0F: 'alarm (v3)' };
+                    const cmdName = cmdNames[cmd] || ('v3 cmd 0x' + cmd.toString(16));
+                    if (cmd === 0x06 && arr.length >= 20) {
+                        const rest = arr.slice(12);
+                        const names = [];
+                        const marker = [0x01, 0x07, 0x00, 0x00, 0x00];
+                        for (let i = 0; i <= rest.length - marker.length; ) {
+                            if (marker.every((m, j) => rest[i + j] === m)) {
+                                i += marker.length;
+                                let end = i;
+                                while (end < rest.length && (end - i < 2 || rest[end] !== 0x01 || rest[end + 1] !== 0x07)) end++;
+                                const chunk = rest.subarray(i, end);
+                                if (chunk.length) names.push(String.fromCharCode.apply(null, chunk));
+                                i = end;
+                            } else i++;
+                        }
+                        console.log('[PARSE] v3 reply ' + cmdName + ' | payloadLen=' + payloadLen + ' | GUESS: dial names=[' + names.join(', ') + ']');
+                        return;
+                    }
+                    if (cmd === 0x08 && arr.length >= 18) {
+                        const nameStart = 14;
+                        let name = '';
+                        for (let i = nameStart; i < arr.length - 2 && arr[i]; i++) name += String.fromCharCode(arr[i]);
+                        console.log('[PARSE] v3 reply ' + cmdName + ' | selected dial?="' + name + '"');
+                        return;
+                    }
+                    if (cmd === 0x09) {
+                        console.log('[PARSE] v3 reply ' + cmdName + ' | payloadLen=' + payloadLen + ' | GUESS: HR continuous state (mode/interval)');
+                        return;
+                    }
+                    if (cmd === 0x0F) {
+                        const dataLen = arr[9];
+                        console.log('[PARSE] v3 reply ' + cmdName + ' | dataLen?=' + dataLen + ' | GUESS: alarm count + alarm entries (multi-packet)');
+                        return;
+                    }
+                    if (cmd === 0x07) {
+                        console.log('[PARSE] v3 reply ' + cmdName + ' | GUESS: dial JSON/write ack; payload may contain dial id/name');
+                        return;
+                    }
+                    console.log('[PARSE] v3 reply ' + cmdName + ' | payloadLen=' + payloadLen + ' | ' + hex.slice(0, 70) + '…');
+                    return;
+                }
+
+                // Continuation v3 (33 00 00 00 ...) — second/third chunk of multi-packet v3
+                if (h0 === 0x33 && arr.length >= 2 && arr[1] === 0x00) {
+                    console.log('[PARSE] v3 continuation chunk | len=' + arr.length + ' | GUESS: next fragment of v3 reply (e.g. alarm list, watch face)');
+                    return;
+                }
+
+                // 07 40 — seen after DND set
+                if (h0 === 0x07 && h1 === 0x40) {
+                    console.log('[PARSE] 0x07 0x40 | GUESS: VBUS/system event ack (e.g. after DND set)');
+                    return;
+                }
+
+                // 06 01 — seen after music on/off
+                if (h0 === 0x06 && h1 === 0x01) {
+                    console.log('[PARSE] 0x06 0x01 | GUESS: Control reply (music control?)');
+                    return;
+                }
+
+                // 0A 01 / 0A 02 — WEATCHER (weather data, city name); evt 153, 6500
+                if (h0 === 0x0A && h1 === 0x01) {
+                    console.log('[PARSE] 0x0A 0x01 | VBUS_EVT_APP_WEATCHER_DATA (evt 153) reply — weather data ACK');
+                    return;
+                }
+                if (h0 === 0x0A && h1 === 0x02) {
+                    console.log('[PARSE] 0x0A 0x02 | VBUS_EVT_APP_WEATCHER_CITY_NAME (evt 6500) — city name write');
+                    return;
+                }
+
+                // D1 xx — chunked transfer (watch face / activity)
+                if (h0 === 0xD1) {
+                    const sub = h1;
+                    if (arr.length >= 6 && sub === 0x02) {
+                        const offLo = arr[2], offHi = arr[3], lenLo = arr[4], lenHi = arr[5];
+                        const offset = offLo | (offHi << 8);
+                        const len = lenLo | (lenHi << 8);
+                        console.log('[PARSE] D1 0x02 chunk | offset=' + offset + ' len=' + len + ' | GUESS: activity/dial data chunk');
+                        return;
+                    }
+                    console.log('[PARSE] D1 0x' + sub.toString(16) + ' | GUESS: chunked transfer (D1 01/02/05 in watch face flow)');
+                    return;
+                }
+
+                console.log('[PARSE] Unknown packet | first bytes: ' + hex.slice(0, 30) + (arr.length > 15 ? '…' : ''));
+            }
+
+            function parseHex(str) {
+                const s = (str || '').replace(/[\s:|]+/g, '').toLowerCase();
+                if (!/^[0-9a-f]*$/.test(s) || s.length % 2 !== 0) return null;
+                const out = [];
+                for (let i = 0; i < s.length; i += 2) out.push(parseInt(s.slice(i, i + 2), 16));
+                return out;
+            }
+
+            function sendTx(hexStr, label) {
+                if (!sendChar) { log('Not connected.'); return; }
+                const buf = parseHex(hexStr);
+                if (!buf || buf.length === 0) { log('Invalid hex: ' + label); return; }
+                sendChar.writeValue(new Uint8Array(buf));
+                log('[TX] ' + label + ' (' + buf.length + ' B) ' + buf.map(b => ('0' + b.toString(16)).slice(-2)).join(' '), 'tx');
+            }
+
+            const NOTICE_PAYLOAD_SIZE = 16;
+            const NOTICE_CHUNK_DELAY_MS = 150;
+
+            function sendChunkedNotice(cmd, key, payloadBytes, doneLog) {
+                const chunks = [];
+                for (let i = 0; i < payloadBytes.length; i += NOTICE_PAYLOAD_SIZE) {
+                    const chunk = payloadBytes.slice(i, i + NOTICE_PAYLOAD_SIZE);
+                    while (chunk.length < NOTICE_PAYLOAD_SIZE) chunk.push(0);
+                    chunks.push(chunk);
+                }
+                const total = chunks.length;
+                let serial = 0;
+                function sendNext() {
+                    if (serial >= total) {
+                        if (doneLog) event_log(doneLog);
+                        return;
+                    }
+                    serial++;
+                    const packet = [cmd, key, total, serial].concat(chunks[serial - 1]);
+                    sendChar.writeValue(new Uint8Array(packet)).then(() => {
+                        log('[TX] MSG chunk ' + serial + '/' + total + ' (' + packet.length + ' B)', 'tx');
+                        setTimeout(sendNext, NOTICE_CHUNK_DELAY_MS);
+                    }).catch(e => { event_log('Chunk send error: ' + e.message); });
+                }
+                sendNext();
+            }
+
+            function sendMsgFromForm() {
+                if (!sendChar) { log('Not connected.'); return; }
+                const formatEl = document.getElementById('msg_format');
+                const senderEl = document.getElementById('msg_sender');
+                const textEl = document.getElementById('msg_text');
+                const format = formatEl ? formatEl.value : 'fwcall';
+                const sender = (senderEl && senderEl.value.trim()) ? senderEl.value.trim() : 'Test';
+                const text = (textEl && textEl.value.trim()) ? textEl.value.trim() : 'Hello';
+                const utf8Arr = Array.from(new TextEncoder().encode(text.slice(0, 60)));
+                const senderArr = Array.from(new TextEncoder().encode(sender.slice(0, 20)));
+
+                if (format === 'fwcall') {
+                    const callPayload = [0, senderArr.length].concat(senderArr);
+                    while (callPayload.length % NOTICE_PAYLOAD_SIZE !== 0) callPayload.push(0);
+                    if (callPayload.length <= NOTICE_PAYLOAD_SIZE) {
+                        const single = [0, senderArr.length].concat(senderArr);
+                        while (single.length < NOTICE_PAYLOAD_SIZE) single.push(0);
+                        const buf = [0x05, 0x01, 1, 1].concat(single.slice(0, NOTICE_PAYLOAD_SIZE));
+                        sendChar.writeValue(new Uint8Array(buf));
+                        event_log('Sent Firmware call 0x05 0x01 (1 chunk, "' + sender + '").');
+                        log('[TX] msg_call_fw (' + buf.length + ' B)', 'tx');
+                    } else {
+                        sendChunkedNotice(0x05, 0x01, callPayload, 'Sent Firmware call 0x05 0x01 chunked.');
+                    }
+                    return;
+                }
+
+                if (format === 'fwmsg') {
+                    const typeEl = document.getElementById('msg_msg_type');
+                    const typeByte = typeEl ? (Math.max(0, Math.min(255, parseInt(typeEl.value, 10) || 0)) & 0xff) : 0x00;
+                    const msgPayload = [typeByte, utf8Arr.length, 0, senderArr.length].concat(senderArr).concat(utf8Arr);
+                    while (msgPayload.length % NOTICE_PAYLOAD_SIZE !== 0) msgPayload.push(0);
+                    sendChunkedNotice(0x05, 0x03, msgPayload, 'Sent Firmware MSG 0x05 0x03 chunked (type=' + typeByte + ').');
+                    return;
+                }
+            }
+
+            function sendSequence(hexList, label) {
+                if (!sendChar) { log('Not connected.'); return; }
+                const delayMs = 350;
+                function sendNext(index) {
+                    if (index >= hexList.length) return;
+                    const hexStr = hexList[index];
+                    const buf = parseHex(hexStr);
+                    if (!buf || buf.length === 0) { sendNext(index + 1); return; }
+                    sendChar.writeValue(new Uint8Array(buf)).then(() => {
+                        log('[TX] ' + label + ' packet ' + (index + 1) + '/' + hexList.length + ' (' + buf.length + ' B)', 'tx');
+                        if (index + 1 < hexList.length)
+                            setTimeout(() => sendNext(index + 1), delayMs);
+                    }).catch(err => {
+                        log('Sequence packet ' + (index + 1) + ' failed: ' + err.message);
+                        if (index + 1 < hexList.length)
+                            setTimeout(() => sendNext(index + 1), delayMs);
+                    });
+                }
+                sendNext(0);
+            }
+
+            /** Start sync V3 health (from get_sync_health_v3 logcat: 28-byte prefix + 109 bytes 0x00 = 137 bytes). */
+            function sendSyncV3Health(label) {
+                if (!sendChar) { log('Not connected.'); return; }
+                const prefix = parseHex('33 DA AD DA AD 01 88 00 05 00 55 00 01 00 00 00 00 02 01 00 00 00 08 06 00 00 00 03');
+                if (!prefix || prefix.length !== 28) { log('Sync V3: invalid prefix.'); return; }
+                const buf = new Uint8Array(28 + 109);
+                buf.set(prefix);
+                for (let i = 28; i < 137; i++) buf[i] = 0x00;
+                sendChar.writeValue(buf);
+                const hex = Array.from(buf).map(b => ('0' + b.toString(16)).slice(-2)).join(' ');
+                log('[TX] ' + label + ' (137 B) ' + hex.slice(0, 90) + ' 00 x 109', 'tx');
+            }
+
+            /** Build SET 0x32 brightness packet from form.
+             * Layout (matches IDOSetScreenBrightnessInfoBluetoothModel / GET 0x02 0x32):
+             * 03 32 [levelValue] [isManual] [mode] [autoAdjustNight] [startHour] [startMinute] [endHour] [endMinute] [nightLevel] [showInterval]
+             */
+            function getBrightnessFormValues() {
+                const levelEl = document.getElementById('brightness_level');
+                const nightLevelEl = document.getElementById('brightness_night_level');
+                const isManualEl = document.getElementById('brightness_is_manual');
+                const modeEl = document.getElementById('brightness_mode');
+                const autoNightEl = document.getElementById('brightness_auto_night');
+                const startHEl = document.getElementById('brightness_start_h');
+                const startMEl = document.getElementById('brightness_start_m');
+                const endHEl = document.getElementById('brightness_end_h');
+                const endMEl = document.getElementById('brightness_end_m');
+                const timeoutEl = document.getElementById('screen_timeout_sec');
+
+                const clamp = (val, min, max, def) => {
+                    const n = parseInt(val, 10);
+                    if (isNaN(n)) return def;
+                    return Math.max(min, Math.min(max, n));
+                };
+
+                const level = clamp(levelEl && levelEl.value, 1, 100, 40);
+                const nightLevel = clamp(nightLevelEl && nightLevelEl.value, 1, 100, level);
+                const isManual = isManualEl && isManualEl.value === '1' ? 1 : 0;
+                const mode = clamp(modeEl && modeEl.value, 0, 3, 3);
+                const autoNight = clamp(autoNightEl && autoNightEl.value, 0, 3, 0);
+                const startH = clamp(startHEl && startHEl.value, 0, 23, 19);
+                const startM = clamp(startMEl && startMEl.value, 0, 59, 0);
+                const endH = clamp(endHEl && endHEl.value, 0, 23, 6);
+                const endM = clamp(endMEl && endMEl.value, 0, 59, 0);
+                const timeout = clamp(timeoutEl && timeoutEl.value, 0, 255, 5);
+
+                return {
+                    b0: level,
+                    b1: isManual,
+                    b2: mode,
+                    b3: autoNight,
+                    start_h: startH,
+                    start_m: startM,
+                    end_h: endH,
+                    end_m: endM,
+                    b8: nightLevel,
+                    b9: timeout
+                };
+            }
+            function sendBrightnessFromForm(label) {
+                if (!sendChar) { log('Not connected.'); return; }
+                const f = getBrightnessFormValues();
+                const buf = [0x03, 0x32, f.b0 & 0xff, f.b1 & 0xff, f.b2 & 0xff, f.b3 & 0xff, f.start_h & 0xff, f.start_m & 0xff, f.end_h & 0xff, f.end_m & 0xff, f.b8 & 0xff, f.b9 & 0xff];
+                sendChar.writeValue(new Uint8Array(buf));
+                const hexStr = buf.map(b => ('0' + b.toString(16)).slice(-2)).join(' ');
+                log('[TX] ' + (label || 'set_brightness_03_32') + ' (12 B) ' + hexStr, 'tx');
+            }
+
+            function setConnected(ok) {
+                statusEl.textContent = ok ? 'Connected' : 'Disconnected';
+                statusEl.classList.toggle('connected', ok);
+                document.querySelectorAll('.section button[data-tx], .section button[data-seq], .section button[data-sync-v3], .section button[data-brightness-send], .section button[data-get-activity], .section button[data-simulate-activity], .section button[data-set-sport-sort-v3], .section button[data-msg-send], .section button[data-notice-5b], #btnNotice5bPresetOn, #btnNotice5bPresetOff, #btnAddAlarmToList, #btnSyncAlarmsToWatch, #btnClearAlarmList').forEach(b => b.disabled = !ok);
+                document.getElementById('btnConnect').textContent = ok ? 'Disconnect' : 'Connect (0x0AF0)';
+            }
+
+            document.getElementById('btnConnect').addEventListener('click', function () {
+                if (sendChar) {
+                    if (sendChar.service && sendChar.service.device && sendChar.service.device.gatt)
+                        sendChar.service.device.gatt.disconnect();
+                    sendChar = null;
+                    rxChar = null;
+                    setConnected(false);
+                    log('Disconnected.');
+                    return;
+                }
+                if (!navigator.bluetooth) {
+                    log('Web Bluetooth not available. Use Chrome and serve over HTTPS or localhost.');
+                    return;
+                }
+                navigator.bluetooth.requestDevice({ filters: [{ services: [SERVICE_UUID] }] })
+                    .then(device => device.gatt.connect())
+                    .then(server => server.getPrimaryService(SERVICE_UUID))
+                    .then(service => Promise.all([
+                        service.getCharacteristic(TX_UUID),
+                        service.getCharacteristic(RX_UUID)
+                    ]))
+                    .then(([tx, rx]) => {
+                        sendChar = tx;
+                        rxChar = rx;
+                        rxChar.addEventListener('characteristicvaluechanged', function (e) {
+                            const arr = new Uint8Array(e.target.value.buffer);
+                            const hex = Array.from(arr).map(b => ('0' + b.toString(16)).slice(-2)).join(' ');
+                            log('[RX] ' + arr.length + ' B ' + hex, 'rx');
+                            if (handleV3ReplyReassembly(arr)) return;
+                            if (arr.length >= 2 && arr[0] === 0x02 && arr[1] === 0x01 && getActivityPending) {
+                                getActivityPending = false;
+                                event_log('Received device info – requesting activity.');
+                                sendGetActivity();
+                            }
+                            parseRx(arr);
+                        });
+                        return rxChar.startNotifications();
+                    })
+                    .then(() => {
+                        setConnected(true);
+                        log('Connected. Notifications on 0x0AF7.');
+                    })
+                    .catch(err => {
+                        log('Error: ' + err.message);
+                        setConnected(false);
+                    });
+            });
+
+            document.querySelectorAll('.section').forEach(section => {
+                section.addEventListener('click', function (e) {
+                    const btn = e.target.closest('button');
+                    if (!btn || btn.id === 'btnConnect') return;
+                    const tx = btn.getAttribute('data-tx');
+                    const seq = btn.getAttribute('data-seq');
+                    const syncV3 = btn.getAttribute('data-sync-v3');
+                    const getActivity = btn.getAttribute('data-get-activity');
+                    const simulateActivity = btn.getAttribute('data-simulate-activity');
+                    const brightnessSend = btn.getAttribute('data-brightness-send');
+                    const v3FuncTable = btn.getAttribute('data-v3-func-table');
+                    const label = btn.getAttribute('data-label') || 'send';
+                    if (btn.getAttribute('data-set-sport-sort-v3')) {
+                        sendSportSortV3();
+                        return;
+                    }
+                    if (btn.getAttribute('data-msg-send')) {
+                        sendMsgFromForm();
+                        return;
+                    }
+                    if (getActivity) {
+                        if (!sendChar) { log('Not connected.'); return; }
+                        getActivityPending = true;
+                        sendTx('02 01', label);
+                        event_log('Requesting device info; will request activity on reply.');
+                        return;
+                    }
+                    if (v3FuncTable) {
+                        if (!sendChar) { log('Not connected.'); return; }
+                        if (!tx) { log('No v3 33 1A payload defined.', 'tx'); return; }
+                        expectV3FunctionTable = true;
+                        sendTx(tx, label || 'v3_function_table_33_1a');
+                        event_log('Sent v3 function table (0x33 0x1A). Waiting for reply…');
+                        return;
+                    }
+                    if (simulateActivity) {
+                        simulateActivityRx();
+                        return;
+                    }
+                    if (syncV3) {
+                        sendSyncV3Health(label);
+                        return;
+                    }
+                    if (brightnessSend) {
+                        sendBrightnessFromForm(label);
+                        return;
+                    }
+                    if (btn.getAttribute('data-notice-5b')) {
+                        sendNotice5Byte(label);
+                        return;
+                    }
+                    if (seq) {
+                        const list = seq.split('|').map(s => s.trim()).filter(Boolean);
+                        sendSequence(list, label);
+                    } else if (tx) {
+                        sendTx(tx, label);
+                    }
+                });
+            });
+
+            document.getElementById('btnAddAlarmToList') && document.getElementById('btnAddAlarmToList').addEventListener('click', function () {
+                const v = getAlarmFormValues();
+                if (v.slot == null || isNaN(v.slot)) {
+                    event_log('Alarm slot is invalid.');
+                    return;
+                }
+                // Maintain a 10-slot list keyed by slot index so we always send 10 blocks in V3 frame.
+                if (!Array.isArray(alarmList) || alarmList.length !== 10) {
+                    const next = new Array(10).fill(null);
+                    if (Array.isArray(alarmList)) {
+                        for (let i = 0; i < alarmList.length && i < 10; i++) {
+                            const a = alarmList[i];
+                            if (a && typeof a.slot === 'number' && a.slot >= 0 && a.slot < 10) {
+                                next[a.slot] = a;
+                            }
+                        }
+                    }
+                    alarmList = next;
+                }
+                alarmList[v.slot] = {
+                    slot: v.slot,
+                    status: v.status,
+                    enabled: v.enabled,
+                    type: v.type,
+                    hour: v.hour,
+                    minute: v.minute,
+                    repeat: v.repeat,
+                    snooze: v.snooze,
+                    snoozeTimes: v.snoozeTimes,
+                    name: v.name
+                };
+                renderAlarmList();
+            });
+            (function () {
+                const fmt = document.getElementById('msg_format');
+                const lbl = document.getElementById('label_msg_type');
+                function updateSmsTypeVisibility() {
+                    if (lbl) lbl.style.display = (fmt && fmt.value === 'fwmsg') ? '' : 'none';
+                }
+                if (fmt) fmt.addEventListener('change', updateSmsTypeVisibility);
+                updateSmsTypeVisibility();
+            })();
+            document.getElementById('btnSyncAlarmsToWatch') && document.getElementById('btnSyncAlarmsToWatch').addEventListener('click', function () {
+                if (!sendChar) { log('Not connected.'); return; }
+                const ten = new Array(10).fill(null);
+                if (Array.isArray(alarmList)) {
+                    for (let i = 0; i < alarmList.length && i < 10; i++) {
+                        const a = alarmList[i];
+                        if (a && typeof a.slot === 'number' && a.slot >= 0 && a.slot < 10) {
+                            ten[a.slot] = { ...a, slot: a.slot };
+                        }
+                    }
+                }
+                sendSetAlarmsV3(ten);
+                const nonNull = ten.filter(a => a && a.enabled);
+                const msg = nonNull.length
+                    ? ('Syncing ' + nonNull.length + ' enabled alarm(s) to watch (v3 cmd 0x0E, 10 slots, multi-packet frame).')
+                    : 'Syncing empty alarm table to watch (v3 cmd 0x0E, clears all alarms).';
+                event_log(msg);
+            });
+            document.getElementById('btnClearAlarmList') && document.getElementById('btnClearAlarmList').addEventListener('click', function () {
+                alarmList = new Array(10).fill(null);
+                renderAlarmList();
+            });
+            (function initAlarmRepeatCustom() {
+                const sel = document.getElementById('alarm_repeat');
+                const span = document.getElementById('alarm_repeat_hex_span');
+                if (sel && span) {
+                    sel.addEventListener('change', function () { span.style.display = sel.value === 'custom' ? 'inline' : 'none'; });
+                    span.style.display = sel.value === 'custom' ? 'inline' : 'none';
+                }
+            })();
+            (function initNotice5bForm() {
+                ['notice_notify_switch', 'notice_notify_itme1', 'notice_notify_itme2', 'notice_call_switch', 'notice_call_delay'].forEach(function(id) {
+                    var el = document.getElementById(id);
+                    if (el) el.addEventListener('input', updateNotice5bHexPreview);
+                });
+                var presetOn = document.getElementById('btnNotice5bPresetOn');
+                var presetOff = document.getElementById('btnNotice5bPresetOff');
+                if (presetOn) presetOn.addEventListener('click', function () {
+                    document.getElementById('notice_notify_switch').value = 1;
+                    document.getElementById('notice_notify_itme1').value = 0;
+                    document.getElementById('notice_notify_itme2').value = 0;
+                    document.getElementById('notice_call_switch').value = 1;
+                    document.getElementById('notice_call_delay').value = 3;
+                    updateNotice5bHexPreview();
+                });
+                if (presetOff) presetOff.addEventListener('click', function () {
+                    document.getElementById('notice_notify_switch').value = 0;
+                    document.getElementById('notice_notify_itme1').value = 0;
+                    document.getElementById('notice_notify_itme2').value = 0;
+                    document.getElementById('notice_call_switch').value = 0;
+                    document.getElementById('notice_call_delay').value = 0;
+                    updateNotice5bHexPreview();
+                });
+                updateNotice5bHexPreview();
+            })();
+        })();
+    </script>
+</body>
+</html>

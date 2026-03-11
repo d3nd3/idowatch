@@ -55,7 +55,7 @@
     <button id="send_notif_btn" onclick="sendTestNotification()" title="Send a test notification to the watch using the selected format and the text/sender fields. Use Mi Band style for a call alert; firmware formats use chunked 16-byte payloads.">Send to watch</button>
     <button id="call_status_btn" onclick="sendCallStatus()" title="Tell the watch the call ended (or other status). Sends 0x05 0x02 + status. Use 1 to end call (angelfit).">Call status (0x05 0x02)</button>
     <select id="call_status_value" aria-label="Status"><option value="1" selected>1=end/stop call (angelfit)</option><option value="0">0</option><option value="2">2</option></select>
-    <button id="get_notice_status_btn" onclick="sendGetNoticeStatus()" title="Legacy angelfit notice-status query. Sends GET 0x02 0x10; this was not used in new_setup.json, where VeryFit instead sent GET 0x30 and also received spontaneous 0x03 0x30 status notifications.">Get notice status (legacy)</button>
+    <button id="get_notice_status_btn" onclick="sendGetNoticeStatus()" title="Legacy angelfit notice-status query. Sends GET 0x02 0x10; this was not used in new_setup.json, where VeryFit instead sent GET 0x30 and also received spontaneous 0x03 0x30 status notifications.">Get notice status (02 10)</button>
     <span id="send_notif_hint" style="color:#666;"> (connect with Pair + Get Activity first)</span>
     <br>
     <strong>Brute force:</strong> Try all type bytes for a given prefix. First byte
@@ -69,83 +69,85 @@
     <h3>Angelfit protocol commands</h3>
     <p style="font-size:0.9em;">Same protocol as your watch (angelfit/orangebrush). All send to 0x0AF6; replies on 0x0AF7.</p>
     <strong>GET (cmd 0x02):</strong>
-    <button type="button" onclick="sendProtocolGet(0x02, 0x01)" title="Request device info (firmware, battery, platform, etc.). Reply used internally to then request activity.">Device info</button>
-    <button type="button" onclick="sendProtocolGet(0x02, 0x02)" title="Request the function table: device capabilities (sport types, notifications, find phone, etc.). Result is shown in the box below.">Func table</button>
+    <button type="button" onclick="sendProtocolGet(0x02, 0x01)" title="Request device info (firmware, battery, platform, etc.). Reply used internally to then request activity.">Device info (02 01)</button>
+    <button type="button" onclick="sendProtocolGet(0x02, 0x02)" title="Request the function table (VBUS_EVT_APP_GET_FUNC_TABLE): device capabilities (sport types, notifications, find phone, etc.). Result is shown in the box below.">Func table (02 02)</button>
     <span id="functable_hint" style="color:#666; font-size:0.9em;"> → result below when received</span>
     <div id="functable_output" style="margin:8px 0; padding:8px; background:#f5f5f5; border:1px solid #ddd; font-family:monospace; font-size:12px; white-space:pre-wrap; max-height:320px; overflow:auto;"></div>
-    <button type="button" onclick="sendProtocolGet(0x02, 0x03)" title="Request the watch’s current date and time. Reply is logged as [Device time].">Device time</button>
-    <button type="button" onclick="sendProtocolGet(0x02, 0x04)" title="Request the watch MAC address. Reply is logged as [MAC].">MAC</button>
-    <button type="button" onclick="sendProtocolGet(0x02, 0x05)" title="Request battery voltage, status, and level (%). Reply is logged as [Battery].">Battery</button>
-    <button type="button" onclick="sendProtocolGet(0x02, 0x06)" title="Request serial number / SN info (GET 0x02 0x06). Reply format is device-specific.">SN info</button>
-    <button type="button" onclick="sendProtocolGet(0x02, 0x07)" title="VeryFit sends this before activity (new_setup.json). Reply logged as [GET 0x07].">GET 0x07 (VeryFit)</button>
-    <button type="button" onclick="sendProtocolGet(0x02, 0xF0)" title="VeryFit sends this before activity (new_setup.json). Reply logged as [GET 0xF0].">GET 0xF0 (VeryFit)</button>
-    <button type="button" onclick="sendProtocolGet(0x02, 0x08)" title="Continuous HR readback: app sends 02:08 four times in both hr_cont_enabled.json (end of log) and healthdata_toggles.json (when continuous HR was toggled on then off). Reply on 0x0AF7 logged as [GET 0x08].">GET 0x08 (continuous HR readback?)</button>
-    <button type="button" onclick="sendProtocolGet(0x02, 0x30)" title="VeryFit sends GET 0x02 0x30 during setup. Reply in new_setup.json looks like a 23:00-07:00 schedule/config block; it is distinct from legacy GET 0x10 notice status.">GET 0x30 (VeryFit)</button>
-    <button type="button" onclick="sendProtocolGet(0x02, 0xA0)" title="Request a live snapshot: steps, calories, distance, active time, heart rate. Watch usually sends 1–2 packets then stops.">Live data (0x02 0xA0)</button>
-    <button type="button" onclick="sendProtocolGet(0x08, 0xA0)" title="Some firmware use HEALTH_DATA 0x08 0xA0 for live data. Try if 0x02 0xA0 always returns HR=0.">Live data (0x08 0xA0)</button>
-    <button type="button" onclick="sendProtocolGet(0x02, 0x20)" title="Debug: request HR sensor params (rate, led_select). Reply on 0x0AF7.">Get HR sensor param (0x20)</button>
-    <button type="button" onclick="sendProtocolGet(0x02, 0x21)" title="Debug: request G-sensor params (rate, range, threshold). Reply on 0x0AF7.">Get G-sensor param (0x21)</button>
+    <button type="button" onclick="sendProtocolGet(0x02, 0x03)" title="Request the watch’s current date and time. Reply is logged as [Device time].">Device time (02 03)</button>
+    <button type="button" onclick="sendProtocolGet(0x02, 0x04)" title="Request the watch MAC address. Reply is logged as [MAC].">MAC (02 04)</button>
+    <button type="button" onclick="sendProtocolGet(0x02, 0x05)" title="Request battery voltage, status, and level (%). Reply is logged as [Battery].">Battery (02 05)</button>
+    <button type="button" onclick="sendProtocolGet(0x02, 0x06)" title="Request serial number / SN info (GET 0x02 0x06). Reply format is device-specific.">SN info (02 06)</button>
+    <button type="button" onclick="sendProtocolGet(0x02, 0x07)" title="Extended function table (VBUS_EVT_APP_GET_FUNC_TABLE_EX). VeryFit sends 02 07 after 02 02 in app_fresh_launch.txt. Reply logged as [Func table ex].">Func table ex (02 07)</button>
+    <button type="button" onclick="sendProtocolGet(0x02, 0xF0)" title="MTU info (VBUS_EVT_APP_GET_MTU_INFO). VeryFit sends 02 F0 after func tables; reply gives tx/rx MTU (e.g. 137). app_fresh_launch.txt.">MTU info (02 F0)</button>
+    <button type="button" onclick="sendProtocolGet(0x02, 0x08)" title="Evt 422 (base VBUS_EVT_BASE_APP_GET). Logcat: api sysEvtSet intput evt base:VBUS_EVT_BASE_APP_GET evt:422 → TX 02 08 (ui_watch_face_write_json.txt). App sends 02:08 four times after continuous HR toggle. Reply on 0x0AF7 logged as [GET 0x08].">GET 0x08 (02 08)</button>
+    <button type="button" onclick="sendProtocolGet(0x02, 0x30)" title="VBUS_EVT_APP_GET_DO_NOT_DISTURB (evt 326). Reply byte 2 = DND state (0x55=off, 0xAA=on).">GET 0x30 (02 30)</button>
+    <button type="button" onclick="sendProtocolGet(0x02, 0xA0)" title="Request a live snapshot: steps, calories, distance, active time, heart rate. Watch usually sends 1–2 packets then stops.">Live data (02 A0)</button>
+    <button type="button" onclick="sendProtocolGet(0x02, 0x20)" title="Debug: request HR sensor params (rate, led_select). Reply on 0x0AF7.">Get HR sensor param (02 20)</button>
+    <button type="button" onclick="sendProtocolGet(0x02, 0x21)" title="Debug: request G-sensor params (rate, range, threshold). Reply on 0x0AF7.">Get G-sensor param (02 21)</button>
     (Get notice status is above.)
     <br>
     <strong>Control (cmd 0x06):</strong>
-    <button type="button" onclick="sendProtocolControl(0x01, 0x00)" title="Start music control mode on the watch (e.g. play).">Music start</button>
-    <button type="button" onclick="sendProtocolControl(0x01, 0x01)" title="Stop music control mode on the watch (e.g. pause).">Music stop</button>
-    <button type="button" onclick="sendProtocolControl(0x02, 0x00)" title="Start camera/photo remote trigger on the watch.">Photo start</button>
-    <button type="button" onclick="sendProtocolControl(0x02, 0x01)" title="Stop camera/photo remote trigger.">Photo stop</button>
-    <button type="button" onclick="sendProtocolControl(0x04, 0x00)" title="Make the watch vibrate/ring to help you find it.">Find device start</button>
-    <button type="button" onclick="sendProtocolControl(0x04, 0x01)" title="Stop find-device vibration/ring.">Find device stop</button>
-    <button type="button" onclick="sendProtocolControl(0x03, 0x00)" title="Start single sport mode on the watch (Control 0x06 0x03 0x00). Only if func table single_sport is set.">Single sport start</button>
-    <button type="button" onclick="sendProtocolControl(0x03, 0x01)" title="Stop single sport mode (Control 0x06 0x03 0x01).">Single sport stop</button>
-    <button type="button" onclick="sendProtocolCmd(0x06, 0x30)" title="Open ANCS (Apple Notification Center Service) on the watch for iOS notifications.">Open ANCS</button>
-    <button type="button" onclick="sendProtocolCmd(0x06, 0x31)" title="Close ANCS on the watch.">Close ANCS</button>
+    <button type="button" onclick="sendProtocolControl(0x01, 0x00)" title="Start music control mode on the watch (e.g. play).">Music start (06 01 00)</button>
+    <button type="button" onclick="sendProtocolControl(0x01, 0x01)" title="Stop music control mode on the watch (e.g. pause).">Music stop (06 01 01)</button>
+    <button type="button" onclick="sendProtocolControl(0x02, 0x00)" title="Start camera/photo remote trigger on the watch.">Photo start (06 02 00)</button>
+    <button type="button" onclick="sendProtocolControl(0x02, 0x01)" title="Stop camera/photo remote trigger.">Photo stop (06 02 01)</button>
+    <button type="button" onclick="sendProtocolControl(0x04, 0x00)" title="Make the watch vibrate/ring to help you find it.">Find device start (06 04 00)</button>
+    <button type="button" onclick="sendProtocolControl(0x04, 0x01)" title="Stop find-device vibration/ring.">Find device stop (06 04 01)</button>
+    <button type="button" onclick="sendProtocolControl(0x03, 0x00)" title="Start single sport mode on the watch (Control 0x06 0x03 0x00). Only if func table single_sport is set.">Single sport start (06 03 00)</button>
+    <button type="button" onclick="sendProtocolControl(0x03, 0x01)" title="Stop single sport mode (Control 0x06 0x03 0x01).">Single sport stop (06 03 01)</button>
+    <button type="button" onclick="sendProtocolCmd(0x06, 0x30)" title="Open ANCS (Apple Notification Center Service) on the watch for iOS notifications.">Open ANCS (06 30)</button>
+    <button type="button" onclick="sendProtocolCmd(0x06, 0x31)" title="Close ANCS on the watch.">Close ANCS (06 31)</button>
     <br>
     <strong>Set (cmd 0x03):</strong>
-    <button type="button" onclick="sendFindPhone(1, 10)" title="Trigger find-phone on the watch; the phone will ring for 10 seconds so you can locate it.">Find phone (10s)</button>
-    <button type="button" onclick="sendFindPhone(0, 0)" title="Stop find-phone ringing on the phone.">Find phone stop</button>
-    <button type="button" onclick="sendSetHand(0)" title="Set watch to worn on left wrist (affects UI orientation).">Hand: left</button>
-    <button type="button" onclick="sendSetHand(1)" title="Set watch to worn on right wrist.">Hand: right</button>
-    <button type="button" onclick="sendSetMusicOnOff(1)" title="Enable music control on the watch (SET 0x03 0x2A 0xAA).">Music on</button>
-    <button type="button" onclick="sendSetMusicOnOff(0)" title="Disable music control on the watch (SET 0x03 0x2A 0x55).">Music off</button>
+    <button type="button" onclick="sendFindPhone(1, 10)" title="Trigger find-phone on the watch; the phone will ring for 10 seconds so you can locate it.">Find phone (10s) (05 01)</button>
+    <button type="button" onclick="sendFindPhone(0, 0)" title="Stop find-phone ringing on the phone.">Find phone stop (05 00)</button>
+    <button type="button" onclick="sendSetHand(0)" title="Set watch to worn on left wrist (affects UI orientation).">Hand: left (03 22 00)</button>
+    <button type="button" onclick="sendSetHand(1)" title="Set watch to worn on right wrist.">Hand: right (03 22 01)</button>
+    <button type="button" onclick="sendSetMusicOnOff(1)" title="Enable music control on the watch (SET 0x03 0x2A 0xAA).">Music on (03 2A AA)</button>
+    <button type="button" onclick="sendSetMusicOnOff(0)" title="Disable music control on the watch (SET 0x03 0x2A 0x55).">Music off (03 2A 55)</button>
     <span style="color:#666; font-size:0.9em;"> If the watch says “please connect to App”: stay connected with this page, tap <strong>Music on</strong> first, then open Music on the watch.</span>
-    <button type="button" onclick="sendDoNotDisturb(1, 22, 0, 7, 0)" title="Enable do-not-disturb from 22:00 to 07:00. Notifications are muted during this window.">Do not disturb on (22:00–07:00)</button>
-    <button type="button" onclick="sendDoNotDisturb(0, 0, 0, 0, 0)" title="Turn off do-not-disturb so notifications are allowed at any time.">Do not disturb off</button>
-    <button type="button" onclick="sendSetNoticeVeryFitOn()" title="Capture-backed VeryFit notice-enable payload from new_setup.json. Sends 03 30 88 00 00 AA + zero padding (20 bytes); the watch replied 03 30 88 01 00 in the trace.">Enable call alert (capture 0x30)</button>
-    <button type="button" onclick="sendSetNotice()" title="Legacy angelfit 5-byte notice struct: 03 30 01 00 00 01 03. This is not what VeryFit sent in new_setup.json and can reset state on some watches.">Enable call alert (legacy 0x30)</button>
-    <button type="button" onclick="sendSetNoticeOff()" title="Legacy angelfit disable payload 03 30 00 00 00 00 00. Capture did not show a matching VeryFit 'off' write.">Disable call alert (legacy off)</button>
-    <button type="button" onclick="sendSetDeviceTime()" title="Set the watch date and time to the current phone time (SET 0x03 0x01).">Set time to now</button>
-    <button type="button" onclick="sendSetUpHandGesture(1)" title="Enable raise-to-wake / up-hand gesture (SET 0x03 0x28).">Up hand: on</button>
-    <button type="button" onclick="sendSetUpHandGesture(0)" title="Disable raise-to-wake (SET 0x03 0x28).">Up hand: off</button>
-    <button type="button" onclick="sendSetOnekeySos(0xAA)" title="Enable one-key SOS / emergency call (SET 0x03 0x2C). 0xAA = on.">One-key SOS: on</button>
-    <button type="button" onclick="sendSetOnekeySos(0x55)" title="Disable one-key SOS (SET 0x03 0x2C). 0x55 = off.">One-key SOS: off</button>
-    <button type="button" onclick="sendSetWeatherSwitch(1)" title="Enable weather on the watch (SET 0x03 0x2D). Only if func table reports weather.">Weather: on</button>
-    <button type="button" onclick="sendSetWeatherSwitch(0)" title="Disable weather (SET 0x03 0x2D).">Weather: off</button>
+    <button type="button" onclick="sendDoNotDisturb(1, 22, 0, 7, 0)" title="Enable do-not-disturb from 22:00 to 07:00. Notifications are muted during this window.">Do not disturb on (03 29)</button>
+    <button type="button" onclick="sendDoNotDisturb(0, 0, 0, 0, 0)" title="Turn off do-not-disturb so notifications are allowed at any time.">Do not disturb off (03 29)</button>
+    <button type="button" onclick="sendSetNoticeVeryFitOn()" title="Capture-backed VeryFit notice-enable payload from new_setup.json. Sends 03 30 88 00 00 AA + zero padding (20 bytes); the watch replied 03 30 88 01 00 in the trace.">Enable call alert (03 30)</button>
+    <button type="button" onclick="sendSetNoticeVeryFitOff()" title="VeryFit-style 20-byte disable: 03 30 88 00 00 55 + padding (0x55=off, same as Music/DND).">Disable call alert (03 30)</button>
+    <button type="button" onclick="sendSetNoticeVeryFitOff55()" title="Alternative disable: 03 30 88 00 00 00 + padding. Try if 0x55 variant does nothing.">Disable call alert 0x00 (03 30)</button>
+    <button type="button" onclick="sendSetNotice()" title="Legacy angelfit 5-byte notice struct: 03 30 01 00 00 01 03. This is not what VeryFit sent in new_setup.json and can reset state on some watches.">Enable call alert legacy (03 30)</button>
+    <button type="button" onclick="sendSetNoticeOff()" title="Legacy angelfit disable payload 03 30 00 00 00 00 00. Capture did not show a matching VeryFit 'off' write.">Disable call alert legacy (03 30)</button>
+    <span style="color:#666; font-size:0.85em;"> Use <strong>Get notice status (legacy)</strong> below to read current state. If enable/disable have no effect: pair with VeryFit once to set call alert, then use Mi Band style in «Send test notification» and avoid sending SET 0x30 (it can reset state on some devices).</span>
+    <button type="button" onclick="sendSetDeviceTime()" title="Set the watch date and time to the current phone time (SET 0x03 0x01).">Set time to now (03 01)</button>
+    <button type="button" onclick="sendSetUpHandGesture(1)" title="Enable raise-to-wake / up-hand gesture (SET 0x03 0x28).">Up hand: on (03 28)</button>
+    <button type="button" onclick="sendSetUpHandGesture(0)" title="Disable raise-to-wake (SET 0x03 0x28).">Up hand: off (03 28)</button>
+    <button type="button" onclick="sendSetOnekeySos(0xAA)" title="Enable one-key SOS / emergency call (SET 0x03 0x2C). 0xAA = on.">One-key SOS: on (03 2C)</button>
+    <button type="button" onclick="sendSetOnekeySos(0x55)" title="Disable one-key SOS (SET 0x03 0x2C). 0x55 = off.">One-key SOS: off (03 2C)</button>
+    <button type="button" onclick="sendSetWeatherSwitch(1)" title="Enable weather on the watch (SET 0x03 0x2D). Only if func table reports weather.">Weather: on (03 2D)</button>
+    <button type="button" onclick="sendSetWeatherSwitch(0)" title="Disable weather (SET 0x03 0x2D).">Weather: off (03 2D)</button>
     <br>
     <strong>Health/reminder (capture-backed):</strong>
-    <button type="button" onclick="sendSetDrinkReminderCapture(1)" title="Exact ON payload from healthdata_toggles.json: SET 0x03 0x60 with raw bytes 01 09 00 12 00 3F 1E 00 01 00 00 00 00 00. Likely the drink-water reminder.">Drink reminder: on</button>
-    <button type="button" onclick="sendSetDrinkReminderCapture(0)" title="Exact OFF payload from healthdata_toggles.json for the same 0x60 config.">Drink reminder: off</button>
-    <button type="button" onclick="sendSetWalkReminderCapture(1)" title="Exact ON payload from healthdata_toggles.json: SET 0x03 0x47. Likely the walk-around / sedentary reminder.">Walk reminder: on</button>
-    <button type="button" onclick="sendSetWalkReminderCapture(0)" title="Exact OFF payload from healthdata_toggles.json for the same 0x47 config.">Walk reminder: off</button>
+    <button type="button" onclick="sendSetDrinkReminderCapture(1)" title="Exact ON payload from healthdata_toggles.json: SET 0x03 0x60 with raw bytes 01 09 00 12 00 3F 1E 00 01 00 00 00 00 00. Likely the drink-water reminder.">Drink reminder: on (03 60)</button>
+    <button type="button" onclick="sendSetDrinkReminderCapture(0)" title="Exact OFF payload from healthdata_toggles.json for the same 0x60 config.">Drink reminder: off (03 60)</button>
+    <button type="button" onclick="sendSetWalkReminderCapture(1)" title="Exact ON payload from healthdata_toggles.json: SET 0x03 0x47. Likely the walk-around / sedentary reminder.">Walk reminder: on (03 47)</button>
+    <button type="button" onclick="sendSetWalkReminderCapture(0)" title="Exact OFF payload from healthdata_toggles.json for the same 0x47 config.">Walk reminder: off (03 47)</button>
     <p style="font-size:0.85em; color:#666;">User toggled in order: (1) Continuous HR on→off, (2) Stress on→off, (3) Drinking on→off, (4) Walk around on→off, (5) Menstrual on→off. Commands in <code>healthdata_toggles.json</code>: <strong>#1 0x45</strong>, <strong>#2 none</strong> (Stress; app-only or shares 0x45), <strong>#3 0x60</strong>, <strong>#4 0x47</strong>, <strong>#5 0x41+0x42</strong>. After 0x45 the app sends GET 0x08 (×4). <code>hr_cont_enabled.json</code> confirms 0x45 + GET 0x08. See TOOBUR.md.</p>
     <strong>Experimental (healthdata_toggles.json):</strong>
-    <button type="button" onclick="sendSetContinuousHealthCapture(1)" title="0x45 ON from capture. Likely Continuous HR and/or Stress (only key that toggles for those features).">0x45 continuous: on</button>
-    <button type="button" onclick="sendSetContinuousHealthCapture(0)" title="0x45 OFF from capture: 03:45:55:09:00:12:00:55:3f:3c:00:50:00:01:00:1e.">0x45 continuous: off</button>
-    <button type="button" onclick="sendSetWomensHealthCapture(0)" title="0x41+0x42 default/reset from capture: 03:41:55:00:00:00:00:00:00:00:00:00:00:55 then 03:42:00:00:00:00:00:00:00.">0x41/0x42: default</button>
-    <button type="button" onclick="sendSetWomensHealthCapture(1)" title="0x41+0x42 enabled from capture: 03:41:aa:07:1c:ea:07:03:07:0e:05:04:00:55 then 03:42:03:03:08:00:03:03:03.">0x41/0x42: enabled</button>
+    <button type="button" onclick="sendSetContinuousHealthCapture(1)" title="0x45 ON from capture. Likely Continuous HR and/or Stress (only key that toggles for those features).">0x45 continuous: on (03 45)</button>
+    <button type="button" onclick="sendSetContinuousHealthCapture(0)" title="0x45 OFF from capture: 03:45:55:09:00:12:00:55:3f:3c:00:50:00:01:00:1e.">0x45 continuous: off (03 45)</button>
+    <button type="button" onclick="sendSetWomensHealthCapture(0)" title="0x41+0x42 default/reset from capture: 03:41:55:00:00:00:00:00:00:00:00:00:00:55 then 03:42:00:00:00:00:00:00:00.">0x41/0x42: default (03 41 42)</button>
+    <button type="button" onclick="sendSetWomensHealthCapture(1)" title="0x41+0x42 enabled from capture: 03:41:aa:07:1c:ea:07:03:07:0e:05:04:00:55 then 03:42:03:03:08:00:03:03:03.">0x41/0x42: enabled (03 41 42)</button>
     <br>
-    <button type="button" onclick="sendSetHeartRateMode(0x88)" title="Enable heart rate monitoring via the angelfit/legacy path (SET 0x03 0x25 0x88). healthdata_toggles.json did not show VeryFit using 0x25 for its continuous-health toggles on this watch.">Heart rate: on (auto 0x88)</button>
-    <button type="button" onclick="sendSetHeartRateMode(2)" title="Some firmware use IDO v2 mode byte: 2 = automatic. This is still a manual/legacy experiment; VeryFit's health toggle trace did not use 0x25 here.">Heart rate: on (v2 byte 2)</button>
-    <button type="button" onclick="sendSetHeartRateMode(3)" title="IDO v2/v3: 3 = continuous (5s). This is still a manual/legacy experiment; VeryFit's health toggle trace did not use 0x25 here.">Heart rate: on (v2 byte 3)</button>
-    <button type="button" onclick="sendSetHeartRateMode(0x55)" title="Disable heart rate monitoring via the angelfit/legacy path (SET 0x03 0x25 0x55).">Heart rate: off</button>
-    <button type="button" onclick="sendSetRealTimeSensor(0x55, 0x55)" title="Disable real-time G-sensor and HR stream (SET 0x03 0x52). 0x55=off.">Real-time sensors: off</button>
-    <button type="button" onclick="sendSetRealTimeSensor(0x55, 0xAA)" title="Enable real-time HR stream only (SET 0x03 0x52). G-sensor off, HR on (0xAA).">Real-time HR stream: on</button>
-    <button type="button" onclick="sendSetRealTimeSensor(0xAA, 0xAA)" title="Enable both real-time G-sensor and HR streams (SET 0x03 0x52). 0xAA=on.">Real-time sensors: both on</button>
+    <button type="button" onclick="sendSetHeartRateMode(0x88)" title="Enable heart rate monitoring via the angelfit/legacy path (SET 0x03 0x25 0x88). healthdata_toggles.json did not show VeryFit using 0x25 for its continuous-health toggles on this watch.">Heart rate: on (03 25)</button>
+    <button type="button" onclick="sendSetHeartRateMode(2)" title="Some firmware use IDO v2 mode byte: 2 = automatic. This is still a manual/legacy experiment; VeryFit's health toggle trace did not use 0x25 here.">Heart rate: on v2 (03 25)</button>
+    <button type="button" onclick="sendSetHeartRateMode(3)" title="IDO v2/v3: 3 = continuous (5s). This is still a manual/legacy experiment; VeryFit's health toggle trace did not use 0x25 here.">Heart rate: on v2 byte 3 (03 25)</button>
+    <button type="button" onclick="sendSetHeartRateMode(0x55)" title="Disable heart rate monitoring via the angelfit/legacy path (SET 0x03 0x25 0x55).">Heart rate: off (03 25)</button>
+    <button type="button" onclick="sendSetRealTimeSensor(0x55, 0x55)" title="Disable real-time G-sensor and HR stream (SET 0x03 0x52). 0x55=off.">Real-time sensors: off (03 52)</button>
+    <button type="button" onclick="sendSetRealTimeSensor(0x55, 0xAA)" title="Enable real-time HR stream only (SET 0x03 0x52). G-sensor off, HR on (0xAA).">Real-time HR stream: on (03 52)</button>
+    <button type="button" onclick="sendSetRealTimeSensor(0xAA, 0xAA)" title="Enable both real-time G-sensor and HR streams (SET 0x03 0x52). 0xAA=on.">Real-time sensors: both on (03 52)</button>
     <br>
     <strong>Test continuous heart rate:</strong>
     <span id="live_hr_display" style="font-weight:bold; margin-left:8px;">Live HR: --</span>
     <button type="button" onclick="startContinuousHR()" title="Full sequence: interval → mode (0x88) → real-time HR on; 600ms delays; then poll Live every 5s.">Start continuous HR</button>
     <button type="button" onclick="startContinuousHROrderB()" title="Alternative order: real-time HR on first, then interval, then mode. Use if normal sequence does not enable auto HR.">Alternative order</button>
     <button type="button" onclick="stopContinuousHR()" title="Disable HR and real-time stream; stop polling.">Stop continuous HR</button>
-    <button type="button" onclick="sendSetHeartRateInterval(135, 96, 160)" title="Set HR alert thresholds (burn_fat=135, aerobic=96, limit=160 bpm). Try this before HR on if the watch ignores 0x25 alone.">Set HR interval (defaults)</button>
+    <button type="button" onclick="sendSetHeartRateInterval(135, 96, 160)" title="Set HR alert thresholds (burn_fat=135, aerobic=96, limit=160 bpm). Try this before HR on if the watch ignores 0x25 alone.">Set HR interval (03 24)</button>
     <span style="color:#666; font-size:0.9em;"> If auto HR does not activate: check Func table (main heart_rate(5), Other2 heart_rate_monitor(3)); try «Alternative order», «v2 byte 2», or «v2 byte 3». Do not treat every <code>0x03</code> packet as HR: in <code>new_setup.json</code>, <code>03 30 55 01 00</code> is notice status, not 85 bpm. Also note that <code>healthdata_toggles.json</code> did <strong>not</strong> show VeryFit using legacy <code>0x25</code> when its app-side continuous HR / stress toggles changed; the only candidate there is a newer <code>0x45</code> health-config family.</span>
     <button type="button" onclick="sendSetDefaultConfig()" title="Restore factory default config on the watch (SET 0x03 0x27). Only supported if func table reports configDefault. May unbind or reset settings.">Factory defaults (0x03 0x27)</button>
     <br>
@@ -170,7 +172,7 @@
     </select>
     <span id="alarm_repeat_hex_span" style="display:none;"><input type="text" id="alarm_repeat_hex" value="FF" size="2" maxlength="2" placeholder="FF"></span>
     Snooze <input type="number" id="alarm_snooze" min="0" max="30" value="5" size="2" title="Snooze duration in minutes."> min
-    <button type="button" onclick="sendSetAlarmFromForm()" title="Send SET 0x03 0x02 with current form values.">Set this alarm</button>
+    <button type="button" onclick="sendSetAlarmFromForm()" title="Send SET 0x03 0x02 with current form values.">Set this alarm (03 02)</button>
     <br>
     <strong>Full alarm sync:</strong> Build a list, then send all to the watch (one packet per alarm, 300 ms apart).
     <button type="button" onclick="addAlarmToList()" title="Add current form values to the sync list.">Add to list</button>
@@ -184,7 +186,7 @@
     <strong>Sleep goal (target duration):</strong>
     <label>Hours <input type="number" id="sleep_goal_hour" min="0" max="12" value="8" size="2"></label>
     <label>Minutes <input type="number" id="sleep_goal_minute" min="0" max="59" value="0" size="2"></label>
-    <button type="button" onclick="sendSetSleepGoal()" title="SET 0x03 0x04: set target sleep duration (hour, minute).">Set sleep goal</button>
+    <button type="button" onclick="sendSetSleepGoal()" title="SET 0x03 0x04: set target sleep duration (hour, minute).">Set sleep goal (03 04)</button>
     <br>
     <strong>Request sleep data:</strong> Watch may stream today’s or history sleep (stages: awake, light, deep, REM). Replies on 0x0AF7; may be multi-packet.
     <button type="button" onclick="sendRequestSleepData(true)" title="Request today’s sleep data (HEALTH_DATA 0x08 0x04 0x01).">Get today’s sleep</button>
@@ -201,7 +203,7 @@
     <br>
     <strong>HEALTH_DATA (cmd 0x08) key probe:</strong> Request sync start with key
     <input type="text" id="health_key_hex" value="04" size="2" maxlength="2" placeholder="04" title="Hex key: 04=today sleep, 06=history sleep, A0=live (some firmware)."> (hex)
-    <button type="button" onclick="sendHealthDataKeyProbe()" title="Send 0x08 [key] 0x01 to request health sync. Replies on 0x0AF7; enable Debug log to see raw packets.">Request 0x08 key</button>
+    <button type="button" onclick="sendHealthDataKeyProbe()" title="Send 0x08 [key] 0x01 to request health sync. Replies on 0x0AF7; enable Debug log to see raw packets.">Request 0x08 key (08 [key] 01)</button>
     <span style="color:#666; font-size:0.85em;"> Known: 04=today sleep, 06=history sleep, A0=live (some). Try 41, 42, 45, etc. to discover more.</span>
 
     <br><br>
@@ -216,58 +218,58 @@
     <h2>Confirmed features (logcat dumps)</h2>
     <p style="font-size:0.9em;">Each button sends the <strong>exact TX</strong> from the named logcat dump (VeryFit app, no pollution). Connect with Pair + Get Activity first. Dumps in <code>logcat_dumps/</code>.</p>
     <p style="font-size:0.85em; color:#666;"><strong>GET:</strong></p>
-    <button type="button" onclick="sendDumpTx('02 01', 'get_device_info')" title="logcat_dumps/get_device_info.txt">Device info</button>
-    <button type="button" onclick="sendDumpTx('02 A7', 'get_flashbin_info')" title="logcat_dumps/get_flashbin_info.txt">Flashbin info</button>
-    <button type="button" onclick="sendDumpTx('33 DA AD DA AD 01 0C 00 0F 00 24 01 00 28 18', 'get_alarm')" title="logcat_dumps/get_alarm.txt">Get alarm (v3)</button>
-    <button type="button" onclick="sendProtocolGet(0x02, 0x08)" title="get_hr_cont_state.txt shows v3 reply; GET 0x02 0x08 is legacy readback.">HR cont state (GET 0x08)</button>
+    <button type="button" onclick="sendDumpTx('02 01', 'get_device_info')" title="logcat_dumps/get_device_info.txt">Device info (02 01)</button>
+    <button type="button" onclick="sendDumpTx('02 A7', 'get_flashbin_info')" title="logcat_dumps/get_flashbin_info.txt">Flashbin info (02 A7)</button>
+    <button type="button" onclick="sendDumpTx('33 DA AD DA AD 01 0C 00 0F 00 24 01 00 28 18', 'get_alarm')" title="logcat_dumps/get_alarm.txt">Get alarm v3 (33 DA AD…)</button>
+    <button type="button" onclick="sendProtocolGet(0x02, 0x08)" title="get_hr_cont_state.txt shows v3 reply; GET 0x02 0x08 is legacy readback.">HR cont state (02 08)</button>
     <br>
     <p style="font-size:0.85em; color:#666; margin-top:8px;"><strong>Do not disturb:</strong></p>
-    <button type="button" onclick="sendDumpTx('03 29 AA 17 00 07 00 02 FE 55 17 00 07 00 00 00', 'set_dnd_on')">DND on</button>
-    <button type="button" onclick="sendDumpTx('03 29 55 17 00 07 00 02 FE 55 17 00 07 00 00 00', 'set_dnd_off')">DND off</button>
+    <button type="button" onclick="sendDumpTx('03 29 AA 17 00 07 00 02 FE 55 17 00 07 00 00 00', 'set_dnd_on')">DND on (03 29 AA)</button>
+    <button type="button" onclick="sendDumpTx('03 29 55 17 00 07 00 02 FE 55 17 00 07 00 00 00', 'set_dnd_off')">DND off (03 29 55)</button>
     <br>
     <p style="font-size:0.85em; color:#666; margin-top:8px;"><strong>Screen brightness:</strong></p>
-    <button type="button" onclick="sendDumpTx('03 32 28 01 00 01 13 00 06 00 00 05', 'set_auto_brightness_off')">Auto brightness off</button>
-    <button type="button" onclick="sendDumpTx('03 32 28 01 00 03 13 00 06 00 00 05', 'set_auto_brightness_on_19pm_6am')">Auto brightness on (19:00–06:00)</button>
+    <button type="button" onclick="sendDumpTx('03 32 28 01 00 01 13 00 06 00 00 05', 'set_auto_brightness_off')">Auto brightness off (03 32)</button>
+    <button type="button" onclick="sendDumpTx('03 32 28 01 00 03 13 00 06 00 00 05', 'set_auto_brightness_on_19pm_6am')">Auto brightness on (03 32)</button>
     <br>
     <p style="font-size:0.85em; color:#666; margin-top:8px;"><strong>Auto sport detect:</strong></p>
-    <button type="button" onclick="sendDumpTx('03 49 00 00 00 00 00 00 00 00 00', 'set_auto_sport_detect_off')">Auto sport off</button>
-    <button type="button" onclick="sendDumpTx('03 49 01 01 00 00 00 00 00 00 00', 'set_auto_sport_detect_on_walk_run')">Auto sport on (walk &amp; run)</button>
+    <button type="button" onclick="sendDumpTx('03 49 00 00 00 00 00 00 00 00 00', 'set_auto_sport_detect_off')">Auto sport off (03 49)</button>
+    <button type="button" onclick="sendDumpTx('03 49 01 01 00 00 00 00 00 00 00', 'set_auto_sport_detect_on_walk_run')">Auto sport on (03 49)</button>
     <br>
     <p style="font-size:0.85em; color:#666; margin-top:8px;"><strong>Drinking reminder:</strong></p>
-    <button type="button" onclick="sendDumpTx('03 60 00 09 00 12 00 3E 1E 00 01 00 00 00 00 00', 'set_drinking_cont_off')">Drinking off</button>
-    <button type="button" onclick="sendDumpTx('03 60 01 09 00 12 00 3F 1E 00 01 00 00 00 00 00', 'set_drinking_cont_on')">Drinking on (9–18h, 30min, weekdays)</button>
+    <button type="button" onclick="sendDumpTx('03 60 00 09 00 12 00 3E 1E 00 01 00 00 00 00 00', 'set_drinking_cont_off')">Drinking off (03 60)</button>
+    <button type="button" onclick="sendDumpTx('03 60 01 09 00 12 00 3F 1E 00 01 00 00 00 00 00', 'set_drinking_cont_on')">Drinking on (03 60)</button>
     <br>
     <p style="font-size:0.85em; color:#666; margin-top:8px;"><strong>Hand gesture wake:</strong></p>
-    <button type="button" onclick="sendDumpTx('03 28 55 05 01 00 00 17 3B', 'set_hand_gesture_wake_off')">Hand gesture off</button>
-    <button type="button" onclick="sendDumpTx('03 28 AA 05 01 00 00 17 3B', 'set_hand_gesture_wake_on')">Hand gesture on</button>
+    <button type="button" onclick="sendDumpTx('03 28 55 05 01 00 00 17 3B', 'set_hand_gesture_wake_off')">Hand gesture off (03 28)</button>
+    <button type="button" onclick="sendDumpTx('03 28 AA 05 01 00 00 17 3B', 'set_hand_gesture_wake_on')">Hand gesture on (03 28)</button>
     <br>
     <p style="font-size:0.85em; color:#666; margin-top:8px;"><strong>HR continuous:</strong></p>
-    <button type="button" onclick="sendDumpTx('33 DA AD DA AD 01 17 00 09 00 14 01 BA AD AC 69 99 00 00 00 00 00 2C 01 56 BE', 'set_hr_cont_state_off')">HR cont off</button>
-    <button type="button" onclick="sendDumpTxSequence(['33 DA AD DA AD 01 17 00 09 00 17 01 D8 AD AC 69 99 00 00 00 00 00 2C 01 56 08', '33 DA AD DA AD 01 17 00 09 00 18 01 00 00 00 00 00 01 00 00 17 3B 00 00 E5 CD'], 'set_hr_cont_state_on')">HR cont on</button>
+    <button type="button" onclick="sendDumpTx('33 DA AD DA AD 01 17 00 09 00 14 01 BA AD AC 69 99 00 00 00 00 00 2C 01 56 BE', 'set_hr_cont_state_off')">HR cont off (v3 17 09 14)</button>
+    <button type="button" onclick="sendDumpTxSequence(['33 DA AD DA AD 01 17 00 09 00 17 01 D8 AD AC 69 99 00 00 00 00 00 2C 01 56 08', '33 DA AD DA AD 01 17 00 09 00 18 01 00 00 00 00 00 01 00 00 17 3B 00 00 E5 CD'], 'set_hr_cont_state_on')">HR cont on (v3 17 09)</button>
     <br>
     <p style="font-size:0.85em; color:#666; margin-top:8px;"><strong>Music:</strong></p>
-    <button type="button" onclick="sendDumpTx('03 2A 55 55', 'set_music_off')">Music off</button>
-    <button type="button" onclick="sendDumpTx('03 2A AA 55', 'set_music_on')">Music on</button>
+    <button type="button" onclick="sendDumpTx('03 2A 55 55', 'set_music_off')">Music off (03 2A)</button>
+    <button type="button" onclick="sendDumpTx('03 2A AA 55', 'set_music_on')">Music on (03 2A)</button>
     <br>
     <p style="font-size:0.85em; color:#666; margin-top:8px;"><strong>Push weather:</strong></p>
-    <button type="button" onclick="sendDumpTx('03 2D 55 00 00 00', 'set_push_weather_off')">Weather off</button>
-    <button type="button" onclick="sendDumpTx('03 2D AA 00 00 00', 'set_push_weather_on')">Weather on</button>
+    <button type="button" onclick="sendDumpTx('03 2D 55 00 00 00', 'set_push_weather_off')">Weather off (03 2D)</button>
+    <button type="button" onclick="sendDumpTx('03 2D AA 00 00 00', 'set_push_weather_on')">Weather on (03 2D)</button>
     <br>
     <p style="font-size:0.85em; color:#666; margin-top:8px;"><strong>Stress continuous:</strong></p>
-    <button type="button" onclick="sendDumpTx('03 45 55 09 00 12 00 55 3F 3C 00 50 00 01 00 1E', 'set_stress_cont_off')">Stress off</button>
-    <button type="button" onclick="sendDumpTx('03 45 AA 09 00 12 00 55 3F 3C 00 50 00 01 00 1E', 'set_stress_cont_on')">Stress on</button>
+    <button type="button" onclick="sendDumpTx('03 45 55 09 00 12 00 55 3F 3C 00 50 00 01 00 1E', 'set_stress_cont_off')">Stress off (03 45)</button>
+    <button type="button" onclick="sendDumpTx('03 45 AA 09 00 12 00 55 3F 3C 00 50 00 01 00 1E', 'set_stress_cont_on')">Stress on (03 45)</button>
     <br>
     <p style="font-size:0.85em; color:#666; margin-top:8px;"><strong>Walk-around reminder:</strong></p>
-    <button type="button" onclick="sendDumpTx('03 47 00 64 00 09 00 15 00 FE 00 00 73 00 00 00 01', 'set_walkaround_cont_off')">Walk reminder off</button>
-    <button type="button" onclick="sendDumpTx('03 47 01 64 00 09 00 15 00 FE 00 00 73 00 00 00 01', 'set_walkaround_cont_on')">Walk reminder on (9–21h, goal 100)</button>
+    <button type="button" onclick="sendDumpTx('03 47 00 64 00 09 00 15 00 FE 00 00 73 00 00 00 01', 'set_walkaround_cont_off')">Walk reminder off (03 47)</button>
+    <button type="button" onclick="sendDumpTx('03 47 01 64 00 09 00 15 00 FE 00 00 73 00 00 00 01', 'set_walkaround_cont_on')">Walk reminder on (03 47)</button>
     <br>
     <p style="font-size:0.85em; color:#666; margin-top:8px;"><strong>Woman health remind:</strong></p>
-    <button type="button" onclick="sendDumpTx('03 42 03 03 08 00 03 03 03', 'set_woman_health_remind_off')">Woman health off</button>
-    <button type="button" onclick="sendDumpTx('03 42 03 03 08 00 03 03 03', 'set_woman_health_remind_on')">Woman health on</button>
+    <button type="button" onclick="sendDumpTx('03 42 03 03 08 00 03 03 03', 'set_woman_health_remind_off')">Woman health off (03 42)</button>
+    <button type="button" onclick="sendDumpTx('03 42 03 03 08 00 03 03 03', 'set_woman_health_remind_on')">Woman health on (03 42)</button>
     <br>
     <p style="font-size:0.85em; color:#666; margin-top:8px;"><strong>UI watch face:</strong></p>
-    <button type="button" onclick="sendDumpTx('33 DA AD DA AD 01 0B 00 06 00 4E 01 4A F5', 'ui_select_watch_face')">Select watch face (v3)</button>
-    <button type="button" onclick="sendDumpTx('33 DA AD DA AD 01 0B 00 07 00 50 01 82 A3', 'ui_watch_face_write_json')">Watch face write JSON (v3)</button>
+    <button type="button" onclick="sendDumpTx('33 DA AD DA AD 01 0B 00 06 00 4E 01 4A F5', 'ui_select_watch_face')">Select watch face (v3 0B 06)</button>
+    <button type="button" onclick="sendDumpTx('33 DA AD DA AD 01 0B 00 07 00 50 01 82 A3', 'ui_watch_face_write_json')">Watch face write JSON (v3 0B 07)</button>
     <p style="font-size:0.8em; color:#999;">Drinking off dump also sends v3 0x09 after; stress/walk/woman dumps may send v3 0x09 sync. Buttons above send only the first TX from each dump. For full sequences see raw dumps.</p>
     <ul style="column-count:2; column-gap:2em; font-size:0.9em; margin-top:8px;">
         <li><a href="../logcat_dumps/get_device_info.txt">get_device_info.txt</a></li>
@@ -350,7 +352,7 @@
                         if (send_char) sendProtocolGet(0x02, 0xA0);
                     }, 5000);
                     event_log("Alternative-order HR: real-time → interval → mode sent. Check watch and Live data.");
-                    setTimeout(function() { if (send_char) { sendProtocolGet(0x02, 0xA0); sendProtocolGet(0x08, 0xA0); event_log("Live re-request (3s) 0x02 0xA0 + 0x08 0xA0."); } }, 3000);
+                    setTimeout(function() { if (send_char) { sendProtocolGet(0x02, 0xA0); event_log("Live re-request (3s) 0x02 0xA0."); } }, 3000);
                     setTimeout(function() { if (send_char) { sendProtocolGet(0x02, 0xA0); event_log("Live re-request (8s)."); } }, 8000);
                 }, 600);
             }, 600);
@@ -649,20 +651,7 @@
                 event_log("[Sleep data] DATA_END (0x08 0xEE) – sync complete");
                 finishSleepSync();
             }
-            if (header === 0x08 && key === 0xA0 && arr.length >= 3) {
-                var step = 0, cal = 0, dist = 0, active = 0, hr = 0;
-                if (arr.length >= 19) {
-                    step = (arr[2]|(arr[3]<<8)|(arr[4]<<16)|(arr[5]<<24))>>>0;
-                    cal = (arr[6]|(arr[7]<<8)|(arr[8]<<16)|(arr[9]<<24))>>>0;
-                    dist = (arr[10]|(arr[11]<<8)|(arr[12]<<16)|(arr[13]<<24))>>>0;
-                    active = (arr[14]|(arr[15]<<8)|(arr[16]<<16)|(arr[17]<<24))>>>0;
-                    hr = arr[18];
-                }
-                event_log("[Live data 0x08 0xA0] len=" + arr.length + " steps=" + step + " HR=" + hr + " raw=" + Array.from(arr).map(function(b){ return ("0" + b.toString(16)).slice(-2); }).join(" "));
-                if (typeof updateLiveHRDisplay === 'function') updateLiveHRDisplay(hr);
-                logDataParsing({ Steps: step, kcal: cal, BPM: hr, Sleep: "—", SPO2: "—", Relax: "—", "Blood sugar": "—", Hydration: "—", Battery: "—", Sports: "—" });
-            }
-            if (header === 0x08 && key !== 0x04 && key !== 0x06 && key !== 0xEE && key !== 0xA0) {
+            if (header === 0x08 && key !== 0x04 && key !== 0x06 && key !== 0xEE) {
                 var hex = Array.from(arr).map(function(b){ return ("0" + b.toString(16)).slice(-2); }).join(" ");
                 event_log("[HEALTH_DATA 0x08 0x" + key.toString(16) + "] len=" + arr.length + " " + (hex.length > 100 ? hex.slice(0, 100) + "…" : hex));
             }
@@ -706,14 +695,24 @@
                     event_log("[G-sensor param] rate=" + rate + " range=" + range + " threshold=" + thresh);
                 } else if (key === 0x30) {
                     var hex = Array.from(arr.slice(2)).map(function(b){ return ("0" + b.toString(16)).slice(-2); }).join(" ");
-                    event_log("[GET 0x30] len=" + (arr.length - 2) + " " + hex + " (VeryFit setup uses this; payload looks like a schedule/config block, not legacy GET 0x10 notice status)");
+                    event_log("[DND GET 0x30 (VBUS_EVT_APP_GET_DO_NOT_DISTURB)] len=" + (arr.length - 2) + " " + hex + " (evt 326; byte 2 = DND state 0x55/0xAA)");
                 } else if (key === 0x07 || key === 0xF0 || key === 0x08) {
                     var hex = Array.from(arr.slice(2)).map(function(b){ return ("0" + b.toString(16)).slice(-2); }).join(" ");
-                    event_log("[GET 0x" + key.toString(16) + "] len=" + (arr.length - 2) + " " + (hex.length > 80 ? hex.slice(0, 80) + "…" : hex));
+                    var label = (key === 0x07 ? "Func table ex" : key === 0xF0 ? "MTU info" : "GET 0x08");
+                    if (key === 0xF0 && arr.length >= 10) {
+                        var txMtu = arr[3], rxMtu = arr[5], word = arr[7] | (arr[8] << 8), b9 = arr[9];
+                        event_log("[" + label + "] tx_mtu=" + txMtu + " rx_mtu=" + rxMtu + " (137=0x89) | " + word + " (u16) " + b9 + " | " + (hex.length > 50 ? hex.slice(0, 50) + "…" : hex));
+                    } else {
+                        event_log("[" + label + "] len=" + (arr.length - 2) + " " + (hex.length > 80 ? hex.slice(0, 80) + "…" : hex));
+                    }
                 } else if (key === 0x02 && arr.length >= 17) {
                     var out = document.getElementById("functable_output");
                     if (out) out.textContent = formatFuncTable(arr);
                     event_log("Func table received (see above).");
+                } else if (key === 0x07 && arr.length >= 4) {
+                    var out = document.getElementById("functable_output");
+                    if (out) out.textContent = formatFuncTableEx(arr);
+                    event_log("Func table ex received (see above).");
                 } else {
                     var hex = Array.from(arr.slice(2)).map(function(b){ return ("0" + b.toString(16)).slice(-2); }).join(" ");
                     event_log("[GET 0x" + key.toString(16) + "] len=" + (arr.length - 2) + " " + (hex.length > 80 ? hex.slice(0, 80) + "…" : hex));
@@ -992,28 +991,60 @@
 
         function formatFuncTable(arr) {
             if (arr.length < 17 || arr[0] !== 0x02 || arr[1] !== 0x02) return "";
-            var main_ = arr[2], alarmNum = arr[3], alarmType = arr[4], control = arr[5], call_ = arr[6], msg_ = arr[7], other = arr[8], msgConfig = arr[9], msg2_ = arr[10], other2 = arr[11], s1 = arr[12], s2 = arr[13], s3 = arr[14], s4 = arr[15], main1_ = arr[16];
+            var payload = Array.from(arr.slice(2));
             var lines = [];
-            function flags(byte, names) { var list = []; for (var i = 0; i < names.length; i++) if (byte & (1 << i)) list.push(names[i]); return list.length ? list.join(", ") : "-"; }
+            function flagsFromSpec(byte, spec) {
+                var list = [];
+                for (var i = 0; i < spec.length; i++) if (byte & (1 << spec[i][0])) list.push(spec[i][1]);
+                return list.length ? list.join(", ") : "-";
+            }
             lines.push("====== Func table (device capabilities) ======");
             lines.push("");
-            lines.push("Main:        " + flags(main_, ["sport", "sleep", "single_sport", "live_data", "OTA", "heart_rate", "ANCS", "timeline"]));
-            lines.push("Alarms:      count = " + alarmNum);
-            lines.push("Alarm types: " + flags(alarmType, ["wake_up", "sleep", "sport", "medicine", "dating", "party", "meeting", "custom"]));
-            lines.push("Control:     " + flags(control, ["photo", "music"]));
-            lines.push("Call:        " + flags(call_, ["incoming", "contacts", "id"]));
-            lines.push("Notify:      " + flags(msg_, ["SMS", "mail", "QQ", "WeChat", "Weibo", "Facebook", "Twitter"]));
-            lines.push("Notify2:     " + flags(msg2_, ["WhatsApp", "Messenger", "Instagram", "LinkedIn", "calendar", "Skype", "alarm_clock", "Pokeman"]));
-            lines.push("SMS config:  " + flags(msgConfig, ["show_contacts", "show_id", "show_content"]));
-            lines.push("Other:       " + flags(other, ["long_sit", "lost_find", "one_key_SOS", "find_phone", "find_device", "config_default", "up_hand_gesture", "weather"]));
-            lines.push("Other2:      " + flags(other2, ["static_HR", "do_not_disturb", "display_mode", "heart_rate_monitor", "bilateral_antilost", "all_app_notice", "flip_screen", "reserved"]));
-            lines.push("Sport set 1: " + flags(s1, ["walk", "run", "bike", "on_foot", "swim", "mountain_climbing", "badminton", "other"]));
-            lines.push("Sport set 2: " + flags(s2, ["fitness", "spinning", "ellipsoid", "treadmill", "sit_up", "push_up", "dumbbell", "weightlifting"]));
-            lines.push("Sport set 3: " + flags(s3, ["bodybuilding", "yoga", "rope_skipping", "table_tennis", "basketball", "football", "volleyball", "tennis"]));
-            lines.push("Sport set 4: " + flags(s4, ["golf", "baseball", "skiing", "roller_skating", "dance", "walk"]));
-            lines.push("Main1:       " + flags(main1_, ["log_in"]));
+            // Byte 0: step(0), sleep(1), heart_rate(2)
+            if (payload.length > 0) lines.push("Byte 0:  " + flagsFromSpec(payload[0], [[0, "step"], [1, "sleep"], [2, "heart_rate"]]));
+            // Byte 1: alarm count (numeric)
+            if (payload.length > 1) lines.push("Byte 1:  alarm count = " + payload[1]);
+            // Byte 2: alarm(3), sedentary(7)
+            if (payload.length > 2) lines.push("Byte 2:  " + flagsFromSpec(payload[2], [[3, "alarm"], [7, "sedentary"]]));
+            // Byte 3
+            if (payload.length > 3) lines.push("Byte 3:  0x" + payload[3].toString(16));
+            // Byte 4: find_phone(0), find_device(1)
+            if (payload.length > 4) lines.push("Byte 4:  " + flagsFromSpec(payload[4], [[0, "find_phone"], [1, "find_device"]]));
+            // Bytes 5–11
+            for (var b = 5; b <= 11 && b < payload.length; b++) lines.push("Byte " + b + ":  0x" + payload[b].toString(16));
+            // Byte 12: display_mode(3), weather(4)
+            if (payload.length > 12) lines.push("Byte 12: " + flagsFromSpec(payload[12], [[3, "display_mode"], [4, "weather"]]));
+            // Bytes 13–14
+            for (var b = 13; b <= 14 && b < payload.length; b++) lines.push("Byte " + b + ":  0x" + payload[b].toString(16));
+            // Byte 15: gps(0), music(5)
+            if (payload.length > 15) lines.push("Byte 15: " + flagsFromSpec(payload[15], [[0, "gps"], [5, "music"]]));
             lines.push("");
-            lines.push("Raw: " + Array.from(arr.slice(2, 17)).map(function(b){ return ("0" + b.toString(16)).slice(-2); }).join(" "));
+            lines.push("Raw: " + payload.map(function(b){ return ("0" + b.toString(16)).slice(-2); }).join(" "));
+            return lines.join("\n");
+        }
+
+        function formatFuncTableEx(arr) {
+            if (arr.length < 4 || arr[0] !== 0x02 || arr[1] !== 0x07) return "";
+            var payload = Array.from(arr.slice(2));
+            var lines = [];
+            function flagsFromSpec(byte, spec) {
+                var list = [];
+                for (var i = 0; i < spec.length; i++) if (byte & (1 << spec[i][0])) list.push(spec[i][1]);
+                return list.length ? list.join(", ") : "-";
+            }
+            lines.push("====== Func table ex (extended capabilities) ======");
+            lines.push("");
+            // Byte 0: alexa(0), bt_call(1), v3_notice(2)
+            if (payload.length > 0) lines.push("Byte 0: " + flagsFromSpec(payload[0], [[0, "alexa"], [1, "bt_call"], [2, "v3_notice"]]));
+            // Byte 1: spo2(0), pressure(1), menstrual(4)
+            if (payload.length > 1) lines.push("Byte 1: " + flagsFromSpec(payload[1], [[0, "spo2"], [1, "pressure"], [4, "menstrual"]]));
+            // Byte 2: wallpaper(3), dial_market(5)
+            if (payload.length > 2) lines.push("Byte 2: " + flagsFromSpec(payload[2], [[3, "wallpaper"], [5, "dial_market"]]));
+            // Byte 3: world_clock(2), noise(6)
+            if (payload.length > 3) lines.push("Byte 3: " + flagsFromSpec(payload[3], [[2, "world_clock"], [6, "noise"]]));
+            for (var b = 4; b < payload.length; b++) lines.push("Byte " + b + ": 0x" + payload[b].toString(16));
+            lines.push("");
+            lines.push("Raw: " + payload.map(function(b){ return ("0" + b.toString(16)).slice(-2); }).join(" "));
             return lines.join("\n");
         }
 
@@ -1030,7 +1061,7 @@
 
         function sendProtocolGet(cmd, key) {
             if (!send_char) { event_log("Not connected."); return; }
-            var names = { 0x01: "device info", 0x02: "func table", 0x03: "device time", 0x04: "MAC", 0x05: "battery", 0x06: "SN info", 0x07: "GET 0x07", 0x08: "GET 0x08", 0x10: "notice status", 0x20: "HR sensor param", 0x21: "G-sensor param", 0x30: "GET 0x30", 0xA0: "live data", 0xA7: "GET 0xA7", 0xB1: "GET 0xB1" };
+            var names = { 0x01: "device info", 0x02: "func table", 0x03: "device time", 0x04: "MAC", 0x05: "battery", 0x06: "SN info", 0x07: "func table ex", 0x08: "GET 0x08 (evt 422)", 0x10: "notice status", 0x20: "HR sensor param", 0x21: "G-sensor param", 0x30: "DND (VBUS_EVT_APP_GET_DO_NOT_DISTURB)", 0xA0: "live data", 0xA7: "flashbin info", 0xB1: "weather switch (GET_WEATHER_SWITCH)", 0xF0: "MTU info" };
             var buf = [cmd, key];
             send_char.writeValue(new Uint8Array(buf));
             event_log("GET " + (names[key] || "0x" + key.toString(16)) + " 0x" + cmd.toString(16) + " 0x" + key.toString(16));
@@ -1091,6 +1122,22 @@
             var buf = [0x03, 0x30, 0x88, 0x00, 0x00, 0xAA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
             send_char.writeValue(new Uint8Array(buf));
             event_log("Sent capture-backed VeryFit notice enable 0x03 0x30 88 00 00 AA + padding. Expected reply in new_setup.json: 03 30 88 01 00.");
+            console.log("Sent to 0x0AF6:", hexDump(buf));
+        }
+
+        function sendSetNoticeVeryFitOff() {
+            if (!send_char) { event_log("Not connected."); return; }
+            var buf = [0x03, 0x30, 0x88, 0x00, 0x00, 0x55, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
+            send_char.writeValue(new Uint8Array(buf));
+            event_log("Sent VeryFit-style notice disable 0x03 0x30 88 00 00 55 + padding (0x55=off, same as Music/DND).");
+            console.log("Sent to 0x0AF6:", hexDump(buf));
+        }
+
+        function sendSetNoticeVeryFitOff55() {
+            if (!send_char) { event_log("Not connected."); return; }
+            var buf = [0x03, 0x30, 0x88, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
+            send_char.writeValue(new Uint8Array(buf));
+            event_log("Sent VeryFit-style notice disable 0x03 0x30 88 00 00 00 + padding (alternative; try if 0x55 does nothing).");
             console.log("Sent to 0x0AF6:", hexDump(buf));
         }
 

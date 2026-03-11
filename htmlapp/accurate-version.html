@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IDO Function Table – Accurate Hex Map</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 1rem 1.25rem 2.5rem;
+            background: #0b1020;
+            color: #f5f5f5;
+        }
+        h1 {
+            font-size: 1.4rem;
+            margin: 0 0 0.5rem;
+        }
+        p {
+            margin: 0 0 0.75rem;
+            font-size: 0.9rem;
+            color: #c7ccd9;
+        }
+        code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.85em;
+            background: rgba(255,255,255,0.04);
+            padding: 0.1em 0.3em;
+            border-radius: 3px;
+        }
+        a {
+            color: #7fb5ff;
+        }
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.1rem 0.45rem;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            background: rgba(255,255,255,0.05);
+            color: #d0d5ff;
+            border: 1px solid rgba(255,255,255,0.12);
+            margin-right: 0.4rem;
+        }
+        .section {
+            background: radial-gradient(circle at top left, rgba(127,181,255,0.2), transparent 55%),
+                        radial-gradient(circle at bottom right, rgba(255,127,181,0.12), transparent 55%),
+                        #11162a;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 0.85rem 1rem 0.9rem;
+            margin-top: 0.75rem;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.65);
+        }
+        .section h2 {
+            font-size: 0.9rem;
+            margin: 0 0 0.35rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #a9b3ff;
+        }
+        .section small {
+            display: block;
+            color: #9aa2c4;
+            font-size: 0.8rem;
+            margin-bottom: 0.35rem;
+        }
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem 1rem;
+            align-items: center;
+        }
+        button {
+            padding: 0.4rem 0.75rem;
+            font-size: 0.8rem;
+            border-radius: 999px;
+            border: 1px solid rgba(127,181,255,0.8);
+            background: linear-gradient(135deg, #21376b, #3558a8);
+            color: #f5f7ff;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        button span.btn-sub {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            opacity: 0.85;
+        }
+        button.secondary {
+            border-color: rgba(255,255,255,0.35);
+            background: rgba(16,20,36,0.9);
+        }
+        button:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+        button:hover:not(:disabled) {
+            filter: brightness(1.07);
+        }
+        label {
+            font-size: 0.8rem;
+            color: #c7ccd9;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        input[type="checkbox"] {
+            width: 14px;
+            height: 14px;
+        }
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            resize: vertical;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.78rem;
+            padding: 0.45rem 0.5rem;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: #050713;
+            color: #f5f5f5;
+        }
+        #load_status {
+            font-size: 0.8rem;
+            margin-left: 0.5rem;
+        }
+        #load_status.ok {
+            color: #7ee0a6;
+        }
+        #load_status.err {
+            color: #ff9ea5;
+        }
+        #summary {
+            font-size: 0.8rem;
+            color: #d0d5ff;
+        }
+        #summary strong {
+            color: #ffffff;
+        }
+        .summary-chip {
+            display: inline-block;
+            padding: 0.15rem 0.45rem;
+            margin-right: 0.4rem;
+            margin-bottom: 0.2rem;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.15);
+            font-size: 0.78rem;
+            background: rgba(5,7,19,0.9);
+        }
+        .summary-chip span.label {
+            color: #9aa2c4;
+            margin-right: 0.2rem;
+        }
+        .summary-chip span.value {
+            color: #fefefe;
+            font-weight: 600;
+        }
+        .summary-chip span.muted {
+            color: #858daf;
+            margin-left: 0.15rem;
+        }
+        .table-wrapper {
+            margin-top: 0.75rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: #050713;
+            overflow: hidden;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.78rem;
+            table-layout: fixed;
+        }
+        thead {
+            background: linear-gradient(90deg, #151a32, #12192d);
+        }
+        th, td {
+            padding: 0.38rem 0.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        th {
+            text-align: left;
+            font-weight: 600;
+            color: #d0d5ff;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+        th.sortable {
+            cursor: pointer;
+        }
+        th.sortable:hover {
+            background: rgba(255,255,255,0.04);
+        }
+        th .sort-indicator {
+            font-size: 0.65rem;
+            opacity: 0.7;
+            margin-left: 0.2rem;
+        }
+        tbody tr:nth-child(odd) {
+            background: #050713;
+        }
+        tbody tr:nth-child(even) {
+            background: #070a17;
+        }
+        tbody tr:hover {
+            background: #11162a;
+        }
+        td {
+            color: #d9deef;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        td.mono {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+        td.center {
+            text-align: center;
+        }
+        td.small {
+            font-size: 0.74rem;
+        }
+        .tag {
+            display: inline-block;
+            padding: 0.05rem 0.45rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            border: 1px solid rgba(255,255,255,0.18);
+            background: rgba(255,255,255,0.04);
+            color: #f5f5f5;
+        }
+        .tag.enabled {
+            border-color: rgba(126, 224, 166, 0.9);
+            background: rgba(62, 177, 120, 0.1);
+            color: #9df3c3;
+        }
+        .tag.disabled {
+            border-color: rgba(200, 120, 120, 0.9);
+            background: rgba(200, 80, 80, 0.1);
+            color: #ffc1c7;
+        }
+        .tag.numeric {
+            border-color: rgba(255, 198, 109, 0.9);
+            background: rgba(255, 198, 109, 0.08);
+            color: #ffe1a8;
+        }
+        .tag.cmd-get {
+            border-color: rgba(127,181,255,0.9);
+            background: rgba(127,181,255,0.12);
+            color: #c9e0ff;
+        }
+        .tag.cmd-set {
+            border-color: rgba(255,188,122,0.9);
+            background: rgba(255,188,122,0.12);
+            color: #ffe0b8;
+        }
+        .tag.cmd-v3 {
+            border-color: rgba(178,133,255,0.9);
+            background: rgba(178,133,255,0.12);
+            color: #e2ceff;
+        }
+        .tag.cmd-health {
+            border-color: rgba(122,222,255,0.9);
+            background: rgba(122,222,255,0.12);
+            color: #c7f3ff;
+        }
+        .tag.cmd-msg {
+            border-color: rgba(255,138,188,0.9);
+            background: rgba(255,138,188,0.12);
+            color: #ffd4e5;
+        }
+        .tag.cmd-other {
+            border-color: rgba(180,180,220,0.9);
+            background: rgba(180,180,220,0.12);
+            color: #e0e0ff;
+        }
+        .muted {
+            color: #8a90aa;
+        }
+        .note {
+            font-size: 0.78rem;
+            color: #97a0c4;
+        }
+        #parser_report {
+            margin-top: 0.45rem;
+            font-size: 0.78rem;
+            color: #9aa2c4;
+        }
+        #parser_report strong {
+            color: #e8ecff;
+        }
+        #missing_list {
+            margin-top: 0.25rem;
+            max-height: 80px;
+            overflow-y: auto;
+            padding: 0.25rem 0.35rem;
+            border-radius: 4px;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.08);
+            font-size: 0.75rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+        #missing_list span {
+            display: inline-block;
+            margin: 0.05rem 0.35rem 0.05rem 0;
+            color: #c7d0ff;
+        }
+        @media (max-width: 800px) {
+            body {
+                padding: 0.9rem 0.75rem 1.75rem;
+            }
+            .section {
+                padding: 0.7rem 0.8rem 0.85rem;
+            }
+            th, td {
+                padding: 0.3rem 0.35rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.5rem; margin-bottom:0.35rem;">
+        <div>
+            <span class="pill">Function table ground truth</span>
+            <h1>IDO function table – accurate hex view</h1>
+            <p>
+                This page turns <code>function_table.json</code> (VeryFit/IDO SDK export) into a searchable map of
+                <strong>enabled capabilities → hex commands</strong>. Use it to look up the correct command bytes for each
+                feature and to sanity-check your function table parsing.
+            </p>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Load function_table.json</h2>
+        <small>Tries common locations automatically; if that fails, paste the JSON below.</small>
+        <div class="row" style="margin-bottom:0.45rem;">
+            <button id="btnLoad">
+                Load <code>function_table.json</code>
+                <span class="btn-sub">auto</span>
+            </button>
+            <span id="load_status" class="muted">Not loaded yet.</span>
+        </div>
+        <div style="margin-top:0.35rem;">
+            <label for="json_input" style="margin-bottom:0.15rem; display:block;">Or paste JSON manually (full contents of <code>function_table.json</code>):</label>
+            <textarea id="json_input" placeholder='[ { "enabled": true, "funcCode": "func_table.main.stepCalculation" }, … ]'></textarea>
+            <div class="row" style="margin-top:0.35rem; justify-content:space-between;">
+                <button id="btnParsePasted" class="secondary">
+                    Use pasted JSON
+                    <span class="btn-sub">offline</span>
+                </button>
+                <span class="note">
+                    If you run <code>python3 -m http.server</code> from the repo root, loading from <code>../function_table.json</code> will work directly.
+                    When serving from <code>htmlapp/</code>, paste the JSON here instead.
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section" id="section_view" style="display:none;">
+        <h2>Enabled features &amp; hex commands</h2>
+        <div class="row" style="margin-bottom:0.35rem;">
+            <div id="summary"></div>
+        </div>
+        <div class="row" style="margin-bottom:0.25rem; justify-content:space-between;">
+            <div class="row">
+                <label>
+                    <input type="checkbox" id="chkEnabledOnly" checked>
+                    Show enabled entries only
+                </label>
+                <label>
+                    <input type="checkbox" id="chkWithHexOnly">
+                    Only entries with hex suffix
+                </label>
+            </div>
+            <span class="note">
+                Hex is parsed from trailing <code>_03_30</code>, <code>_33_3A</code>, etc in <code>funcCode</code>.
+                First byte classifies the command (GET/SET/V3/HEALTH…).
+            </span>
+        </div>
+
+        <div class="table-wrapper" style="max-height:460px; overflow:auto;">
+            <table id="result_table" aria-label="Function table entries">
+                <thead>
+                    <tr>
+                        <th class="sortable" data-sort="namespace">Namespace<span class="sort-indicator"></span></th>
+                        <th class="sortable" data-sort="name">Name<span class="sort-indicator"></span></th>
+                        <th class="sortable" data-sort="enabled">Enabled<span class="sort-indicator"></span></th>
+                        <th class="sortable" data-sort="hex">Hex from name<span class="sort-indicator"></span></th>
+                        <th class="sortable" data-sort="cmdFamily">Command family<span class="sort-indicator"></span></th>
+                        <th>funcCode</th>
+                    </tr>
+                </thead>
+                <tbody id="result_tbody">
+                </tbody>
+            </table>
+        </div>
+
+        <div id="parser_report">
+            <strong>Note:</strong> this view is read-only and does not talk to the watch. Use it as a ground-truth reference for
+            which capabilities are enabled and which hex prefixes (e.g. <code>03 60</code>, <code>33 3A</code>) the SDK associates
+            with each feature.
+        </div>
+    </div>
+
+    <script>
+    (function () {
+        /** @typedef {{enabled:any, funcCode:string}} RawEntry */
+        /** @typedef {{
+         *   index:number,
+         *   rawEnabled:any,
+         *   enabled:boolean,
+         *   namespace:string,
+         *   name:string,
+         *   funcCode:string,
+         *   hexBytes:string[],
+         *   hexString:string,
+         *   cmdFamily:string,
+         *   cmdTagClass:string
+         * }} Entry
+         */
+
+        /** @type {Entry[]} */
+        let entries = [];
+        let currentSort = { key: 'namespace', asc: true };
+
+        // Captured base func-table payload from device (GET 0x02 0x02, 18 bytes).
+        // Used to infer byte order of func_table.* by matching combined values.
+        const BASE_FUNC_BYTES = [
+            0xFB, 0x0A, 0xFF, 0x4A, 0x3F, 0x6F, 0xE8, 0x15,
+            0x3F, 0x0A, 0x08, 0x01, 0x02, 0x00, 0x51, 0xCF, 0x0E, 0x7E
+        ];
+
+        const btnLoad = document.getElementById('btnLoad');
+        const btnParsePasted = document.getElementById('btnParsePasted');
+        const loadStatus = document.getElementById('load_status');
+        const jsonInput = document.getElementById('json_input');
+        const sectionView = document.getElementById('section_view');
+        const summaryEl = document.getElementById('summary');
+        const tbody = document.getElementById('result_tbody');
+        const chkEnabledOnly = document.getElementById('chkEnabledOnly');
+        const chkWithHexOnly = document.getElementById('chkWithHexOnly');
+        const table = document.getElementById('result_table');
+
+        function setStatus(text, ok) {
+            loadStatus.textContent = text;
+            loadStatus.classList.remove('ok', 'err');
+            if (ok === true) loadStatus.classList.add('ok');
+            else if (ok === false) loadStatus.classList.add('err');
+        }
+
+        function normalizeWhitespace(str) {
+            return (str || '').replace(/\s+/g, ' ').trim();
+        }
+
+        /**
+         * Extract namespace and simple name from funcCode
+         * Examples:
+         *   "func_table.main.stepCalculation"          -> { ns: "main", name: "stepCalculation" }
+         *   "func_table.ex_table_main7.photo_wallpaper" -> { ns: "ex_table_main7", name: "photo_wallpaper" }
+         *   "func_table.v3_function_table->table1.support_scientific_sleep_33_04_07"
+         *        -> { ns: "v3_function_table->table1", name: "support_scientific_sleep_33_04_07" }
+         */
+        function splitFuncCode(funcCode) {
+            const s = String(funcCode || '');
+            if (!s.startsWith('func_table.')) {
+                return { ns: '', name: s };
+            }
+            const rest = s.slice('func_table.'.length);
+            const arrowIdx = rest.indexOf('->');
+            if (arrowIdx !== -1) {
+                const ns = rest.slice(0, arrowIdx + 7); // include "->tabl.." prefix for grouping
+                const after = rest.slice(arrowIdx + 7);
+                const dotIdx = after.indexOf('.');
+                const name = dotIdx === -1 ? after : after.slice(dotIdx + 1);
+                return { ns: ns, name: name || after };
+            }
+            const parts = rest.split('.');
+            if (parts.length >= 2) {
+                return { ns: parts[0], name: parts.slice(1).join('.') };
+            }
+            // Single segment (e.g. func_table.alarm_count) → namespace and name both that key
+            return { ns: rest, name: rest };
+        }
+
+        /**
+         * Extract trailing _HH[_HH...] hex bytes from funcCode.
+         * Returns {hexBytes, hexString, cmdFamily, cmdTagClass}
+         */
+        function extractHexFromFuncCode(funcCode) {
+            const s = String(funcCode || '');
+            const m = s.match(/(_[0-9A-Fa-f]{2})+$/);
+            if (!m) {
+                return { hexBytes: [], hexString: '', cmdFamily: '', cmdTagClass: '' };
+            }
+            const parts = m[0].split('_').filter(Boolean);
+            const hexBytes = parts.map(function (p) { return p.toUpperCase(); });
+            const hexString = hexBytes.join(' ');
+            let family = '';
+            let tagClass = '';
+            if (hexBytes.length > 0) {
+                const first = hexBytes[0];
+                switch (first) {
+                    case '02':
+                        family = 'GET (0x02)';
+                        tagClass = 'cmd-get';
+                        break;
+                    case '03':
+                        family = 'SET (0x03)';
+                        tagClass = 'cmd-set';
+                        break;
+                    case '04':
+                        family = 'BIND (0x04)';
+                        tagClass = 'cmd-other';
+                        break;
+                    case '05':
+                        family = 'MSG (0x05)';
+                        tagClass = 'cmd-msg';
+                        break;
+                    case '06':
+                        family = 'CTRL (0x06)';
+                        tagClass = 'cmd-other';
+                        break;
+                    case '08':
+                        family = 'HEALTH_DATA (0x08)';
+                        tagClass = 'cmd-health';
+                        break;
+                    case '0A':
+                        family = 'WEATHER (0x0A)';
+                        tagClass = 'cmd-health';
+                        break;
+                    case '33':
+                        family = 'V3 (0x33 …)';
+                        tagClass = 'cmd-v3';
+                        break;
+                    default:
+                        family = 'Other (0x' + first + ')';
+                        tagClass = 'cmd-other';
+                        break;
+                }
+            }
+            return { hexBytes: hexBytes, hexString: hexString, cmdFamily: family, cmdTagClass: tagClass };
+        }
+
+        /**
+         * Parse raw JSON array into internal entries.
+         * @param {any} data
+         */
+        function ingestData(data) {
+            if (!Array.isArray(data)) {
+                throw new Error('Expected top-level JSON array.');
+            }
+            entries = data.map(function (item, idx) {
+                /** @type {RawEntry} */
+                var e = item || {};
+                var fc = String(e.funcCode || '');
+                var enabledRaw = e.enabled;
+                var enabledBool = !!enabledRaw;
+                var nsName = splitFuncCode(fc);
+                var hexInfo = extractHexFromFuncCode(fc);
+                return {
+                    index: idx,
+                    rawEnabled: enabledRaw,
+                    enabled: enabledBool,
+                    namespace: nsName.ns || '—',
+                    name: nsName.name || '—',
+                    funcCode: fc,
+                    hexBytes: hexInfo.hexBytes,
+                    hexString: hexInfo.hexString,
+                    cmdFamily: hexInfo.cmdFamily,
+                    cmdTagClass: hexInfo.cmdTagClass
+                };
+            });
+            sectionView.style.display = entries.length ? 'block' : 'none';
+            renderSummary();
+            renderTable();
+        }
+
+        function renderSummary() {
+            if (!entries.length) {
+                summaryEl.textContent = '';
+                return;
+            }
+            var total = entries.length;
+            var enabledCount = entries.filter(function (e) { return e.enabled; }).length;
+            var disabledCount = total - enabledCount;
+            var withHex = entries.filter(function (e) { return e.hexBytes.length; }).length;
+            var withHexEnabled = entries.filter(function (e) { return e.enabled && e.hexBytes.length; }).length;
+
+            var uniqueNamespaces = {};
+            entries.forEach(function (e) {
+                uniqueNamespaces[e.namespace] = true;
+            });
+            var nsCount = Object.keys(uniqueNamespaces).length;
+
+            var html = [
+                '<span class="summary-chip"><span class="label">Entries</span><span class="value">' + total +
+                    '</span><span class="muted">total</span></span>',
+                '<span class="summary-chip"><span class="label">Enabled</span><span class="value">' + enabledCount +
+                    '</span><span class="muted">/ ' + total + '</span></span>',
+                '<span class="summary-chip"><span class="label">Disabled</span><span class="value">' + disabledCount +
+                    '</span></span>',
+                '<span class="summary-chip"><span class="label">With hex</span><span class="value">' + withHex +
+                    '</span><span class="muted">(' + withHexEnabled + ' enabled)</span></span>',
+                '<span class="summary-chip"><span class="label">Namespaces</span><span class="value">' + nsCount +
+                    '</span></span>'
+            ].join(' ');
+
+            // Try to infer base func-table byte order using captured payload.
+            var baseOrder = computeBaseFuncTableOrder();
+            if (baseOrder && baseOrder.length) {
+                html += '<br><br><span class="summary-chip"><span class="label">Base func table</span><span class="value">byte order (heuristic)</span></span>';
+                html += '<br><code style="font-size:0.75rem; white-space:pre;">' +
+                    baseOrder.map(function (row) {
+                        var idxStr = row.byteIndex >= 0 ? ('Byte ' + row.byteIndex.toString().padStart(2, ' ')) : 'Byte  ?';
+                        var valStr = '0x' + row.byteValue.toString(16).padStart(2, '0');
+                        var nsStr = row.namespace || '—';
+                        var dirStr = row.direction || '';
+                        return idxStr + ' = ' + valStr + '  →  ' + nsStr + (dirStr ? ' (' + dirStr + ')' : '');
+                    }).join('\n') +
+                    '</code>';
+            }
+
+            summaryEl.innerHTML = html;
+        }
+
+        /**
+         * Compute combined 1-byte value for a namespace from enabled/disabled flags.
+         * Single-entry table (1 row) → one byte as value: number if enabled is number, else 1/0.
+         * Multi-entry table → LSB bitfield from first 8 entries.
+         */
+        function computeNamespaceByte(ns) {
+            var rows = entries.filter(function (e) { return e.namespace === ns; });
+            if (!rows.length) return null;
+
+            if (rows.length === 1) {
+                var r = rows[0];
+                var v = typeof r.rawEnabled === 'number' && !Number.isNaN(r.rawEnabled)
+                    ? (r.rawEnabled | 0)
+                    : (r.enabled ? 1 : 0);
+                return { value: v & 0xFF, kind: 'numeric' };
+            }
+
+            rows.sort(function (a, b) { return a.index - b.index; });
+            var width = Math.min(rows.length, 8);
+            var v = 0;
+            for (var i = 0; i < width; i++) {
+                if (rows[i].enabled) v |= (1 << i);
+            }
+            return { value: v & 0xFF, kind: 'bits' };
+        }
+
+        /**
+         * Infer which func_table.* namespaces correspond to which bytes in the
+         * captured base func-table payload by matching computed values to payload bytes.
+         * alarm_count is pinned to byte 1 (known from SDK/wire); others are inferred.
+         */
+        function computeBaseFuncTableOrder() {
+            if (!BASE_FUNC_BYTES || !BASE_FUNC_BYTES.length || !entries.length) return [];
+
+            var nsSet = {};
+            entries.forEach(function (e) {
+                if (!e.namespace) return;
+                if (e.namespace.indexOf('ex_') === 0) return;
+                if (e.namespace.indexOf('v3_function_table->') === 0) return;
+                nsSet[e.namespace] = true;
+            });
+            var namespaces = Object.keys(nsSet);
+            if (!namespaces.length) return [];
+
+            var usedBytes = {};
+            var rows = [];
+
+            // Known mapping: alarm_count is always byte 1.
+            if (nsSet['alarm_count']) {
+                var byte1 = 1;
+                if (byte1 < BASE_FUNC_BYTES.length) {
+                    rows.push({
+                        namespace: 'alarm_count',
+                        byteIndex: byte1,
+                        byteValue: BASE_FUNC_BYTES[byte1] & 0xFF,
+                        direction: 'value'
+                    });
+                    usedBytes[byte1] = true;
+                }
+            }
+
+            var numericFirst = [];
+            var bitfieldSecond = [];
+            namespaces.forEach(function (ns) {
+                if (ns === 'alarm_count') return;
+                var info = computeNamespaceByte(ns);
+                if (!info) return;
+                if (info.kind === 'numeric') {
+                    numericFirst.push(ns);
+                } else {
+                    bitfieldSecond.push(ns);
+                }
+            });
+            var orderedNamespaces = numericFirst.concat(bitfieldSecond);
+
+            orderedNamespaces.forEach(function (ns) {
+                var info = computeNamespaceByte(ns);
+                if (!info) return;
+                var v = info.value & 0xFF;
+                var matchIdx = -1;
+                for (var i = 0; i < BASE_FUNC_BYTES.length; i++) {
+                    if (usedBytes[i]) continue;
+                    if (BASE_FUNC_BYTES[i] === v) {
+                        matchIdx = i;
+                        usedBytes[i] = true;
+                        break;
+                    }
+                }
+                rows.push({
+                    namespace: ns,
+                    byteIndex: matchIdx,
+                    byteValue: v,
+                    direction: info.kind === 'numeric' ? 'value' : 'lsb'
+                });
+            });
+
+            rows.sort(function (a, b) {
+                if (a.byteIndex < 0 && b.byteIndex < 0) return a.namespace.localeCompare(b.namespace);
+                if (a.byteIndex < 0) return 1;
+                if (b.byteIndex < 0) return -1;
+                return a.byteIndex - b.byteIndex;
+            });
+
+            console.log('[FUNC TABLE] Inferred base-byte order from payload', BASE_FUNC_BYTES, rows);
+            return rows;
+        }
+
+        function compareValues(a, b) {
+            if (a === b) return 0;
+            if (a == null) return -1;
+            if (b == null) return 1;
+            if (typeof a === 'number' && typeof b === 'number') {
+                return a - b;
+            }
+            return String(a).localeCompare(String(b));
+        }
+
+        function renderTable() {
+            tbody.innerHTML = '';
+            if (!entries.length) return;
+
+            var enabledOnly = chkEnabledOnly.checked;
+            var hexOnly = chkWithHexOnly.checked;
+
+            var filtered = entries.filter(function (e) {
+                if (enabledOnly && !e.enabled) return false;
+                if (hexOnly && !e.hexBytes.length) return false;
+                return true;
+            });
+
+            var key = currentSort.key;
+            var asc = currentSort.asc;
+            filtered.sort(function (a, b) {
+                var va, vb;
+                if (key === 'namespace') {
+                    va = a.namespace;
+                    vb = b.namespace;
+                } else if (key === 'name') {
+                    va = a.name;
+                    vb = b.name;
+                } else if (key === 'enabled') {
+                    va = a.enabled ? 1 : 0;
+                    vb = b.enabled ? 1 : 0;
+                } else if (key === 'hex') {
+                    va = a.hexString || '';
+                    vb = b.hexString || '';
+                } else if (key === 'cmdFamily') {
+                    va = a.cmdFamily || '';
+                    vb = b.cmdFamily || '';
+                } else {
+                    va = a.index;
+                    vb = b.index;
+                }
+                var cmp = compareValues(va, vb);
+                return asc ? cmp : -cmp;
+            });
+
+            var frag = document.createDocumentFragment();
+            filtered.forEach(function (e) {
+                var tr = document.createElement('tr');
+
+                var tdNs = document.createElement('td');
+                tdNs.textContent = e.namespace;
+                tdNs.className = 'small';
+                tr.appendChild(tdNs);
+
+                var tdName = document.createElement('td');
+                tdName.textContent = e.name;
+                tdName.className = 'small';
+                tr.appendChild(tdName);
+
+                var tdEnabled = document.createElement('td');
+                tdEnabled.className = 'center small';
+                var tag = document.createElement('span');
+                var raw = e.rawEnabled;
+                var isNumeric = typeof raw === 'number' && !Number.isNaN(raw);
+                if (isNumeric) {
+                    tag.className = 'tag numeric';
+                    tag.textContent = String(raw);
+                } else if (e.enabled) {
+                    tag.className = 'tag enabled';
+                    tag.textContent = 'true';
+                } else {
+                    tag.className = 'tag disabled';
+                    tag.textContent = 'false';
+                }
+                tdEnabled.appendChild(tag);
+                tr.appendChild(tdEnabled);
+
+                var tdHex = document.createElement('td');
+                tdHex.className = 'mono small';
+                tdHex.textContent = e.hexString || '—';
+                tr.appendChild(tdHex);
+
+                var tdCmd = document.createElement('td');
+                tdCmd.className = 'small center';
+                if (e.cmdFamily) {
+                    var tagCmd = document.createElement('span');
+                    tagCmd.className = 'tag small ' + (e.cmdTagClass || 'cmd-other');
+                    tagCmd.textContent = e.cmdFamily;
+                    tdCmd.appendChild(tagCmd);
+                } else {
+                    tdCmd.innerHTML = '<span class="muted">—</span>';
+                }
+                tr.appendChild(tdCmd);
+
+                var tdCode = document.createElement('td');
+                tdCode.className = 'mono small';
+                tdCode.title = e.funcCode;
+                tdCode.textContent = e.funcCode;
+                tr.appendChild(tdCode);
+
+                frag.appendChild(tr);
+            });
+
+            tbody.appendChild(frag);
+            updateSortIndicators();
+        }
+
+        function updateSortIndicators() {
+            var ths = table.querySelectorAll('th.sortable');
+            ths.forEach(function (th) {
+                var key = th.getAttribute('data-sort');
+                var span = th.querySelector('.sort-indicator');
+                if (!span) return;
+                if (key === currentSort.key) {
+                    span.textContent = currentSort.asc ? '▲' : '▼';
+                } else {
+                    span.textContent = '';
+                }
+            });
+        }
+
+        function parsePasted() {
+            var text = normalizeWhitespace(jsonInput.value);
+            if (!text) {
+                setStatus('Paste JSON first.', false);
+                return;
+            }
+            try {
+                var data = JSON.parse(text);
+                ingestData(data);
+                setStatus('Loaded from pasted JSON (' + entries.length + ' entries).', true);
+            } catch (err) {
+                console.error(err);
+                setStatus('Failed to parse pasted JSON: ' + err.message, false);
+            }
+        }
+
+        function attemptFetch() {
+            setStatus('Loading…', null);
+            var urls = [
+                '../function_table.json',   // when server root is repo root
+                'function_table.json'      // if copied into htmlapp/
+            ];
+            var idx = 0;
+
+            function next() {
+                if (idx >= urls.length) {
+                    setStatus('Could not load function_table.json from known locations. Paste it below.', false);
+                    return;
+                }
+                var url = urls[idx++];
+                fetch(url, { cache: 'no-store' }).then(function (resp) {
+                    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                    return resp.json();
+                }).then(function (data) {
+                    ingestData(data);
+                    setStatus('Loaded ' + entries.length + ' entries from ' + url + '.', true);
+                }).catch(function (err) {
+                    console.warn('Failed to load from', url, err);
+                    next();
+                });
+            }
+            next();
+        }
+
+        btnLoad.addEventListener('click', function () {
+            attemptFetch();
+        });
+
+        btnParsePasted.addEventListener('click', function () {
+            parsePasted();
+        });
+
+        chkEnabledOnly.addEventListener('change', function () {
+            renderTable();
+        });
+
+        chkWithHexOnly.addEventListener('change', function () {
+            renderTable();
+        });
+
+        table.querySelectorAll('th.sortable').forEach(function (th) {
+            th.addEventListener('click', function () {
+                var key = th.getAttribute('data-sort');
+                if (!key) return;
+                if (currentSort.key === key) {
+                    currentSort.asc = !currentSort.asc;
+                } else {
+                    currentSort.key = key;
+                    currentSort.asc = true;
+                }
+                renderTable();
+            });
+        });
+    })();
+    </script>
+</body>
+</html>
+

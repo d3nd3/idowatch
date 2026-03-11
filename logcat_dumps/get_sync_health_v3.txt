@@ -1,0 +1,66 @@
+03-08 01:22:50.777  5334  5334 I DEBUG LOG: [03-08 01:22:50.777] [jni_protocol.cpp] [Java_com_veryfit_multi_nativeprotocol_Protocol_WriteJsonData] [line 612] app send protocol evt:107(VBUS_EVT_APP_SET_USER_INFO)
+03-08 01:22:50.777  5334  5334 I DEBUG LOG: [03-08 01:22:50.777] [protocol_write.c] [protocol_write_data_add] [line 236] add queue to send evt:107(VBUS_EVT_APP_SET_USER_INFO)
+03-08 01:22:50.777  5334  5334 I DEBUG LOG: [03-08 01:22:50.777] [protocol_write.c] [protocol_write_process] [line 108] mem_pop is success
+03-08 01:22:50.777  5334  5334 I DEBUG LOG: [03-08 01:22:50.777] [protocol.c] [protocol_write_data] [line 235]   TX : 03 10 B4 40 1F 00 D6 07 03 01 
+03-08 01:22:50.777  5334  5334 I DEBUG LOG: [03-08 01:22:50.777] [jni_protocol.cpp] [jni_notice_app_tx_data] [line 345] jni send tx data to app data len:10
+03-08 01:22:50.849  5334  5334 I DEBUG LOG: [03-08 01:22:50.849] [jni_protocol.cpp] [Java_com_veryfit_multi_nativeprotocol_Protocol_WriteJsonData] [line 612] app send protocol evt:157(VBUS_EVT_APP_SET_CONN_PARAM)
+03-08 01:22:50.850  5334  5334 I DEBUG LOG: [03-08 01:22:50.850] [protocol_write.c] [protocol_write_data_add] [line 236] add queue to send evt:157(VBUS_EVT_APP_SET_CONN_PARAM)
+03-08 01:22:50.850  5334  5334 I DEBUG LOG: [03-08 01:22:50.850] [protocol_write.c] [protocol_write_process] [line 102] warn:queue cmd 0x3 0x10 not reply yet add queue to send failed,queue list size:1
+03-08 01:22:50.854  5334  5334 I DEBUG LOG: [03-08 01:22:50.854] [jni_protocol.cpp] [Java_com_veryfit_multi_nativeprotocol_Protocol_WriteJsonData] [line 612] app send protocol evt:108(VBUS_EVT_APP_SET_UINT)
+03-08 01:22:50.854  5334  5334 I DEBUG LOG: [03-08 01:22:50.854] [protocol_write.c] [protocol_write_data_add] [line 236] add queue to send evt:108(VBUS_EVT_APP_SET_UINT)
+03-08 01:22:50.854  5334  5334 I DEBUG LOG: [03-08 01:22:50.854] [protocol_write.c] [protocol_write_process] [line 102] warn:queue cmd 0x3 0x10 not reply yet add queue to send failed,queue list size:2
+03-08 01:22:51.543  5334  5352 I DEBUG LOG: [03-08 01:22:51.543] [protocol.c] [protocol_receive_data] [line 469] RX : 03 10 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+03-08 01:22:51.543  5334  5352 I DEBUG LOG: [03-08 01:22:51.543] [protocol_write.c] [protocol_write_vbus_control] [line 1293] stop resend evt:107(VBUS_EVT_APP_SET_USER_INFO)
+03-08 01:22:51.543  5334  5352 I DEBUG LOG: [03-08 01:22:51.543] [protocol_write.c] [protocol_write_process] [line 108] mem_pop is success
+03-08 01:22:51.543  5334  5352 I DEBUG LOG: [03-08 01:22:51.543] [protocol.c] [protocol_write_data] [line 235]   TX : 03 35 01 00 00 00 00 00 00 00 00 00 
+03-08 01:22:51.543  5334  5352 I DEBUG LOG: [03-08 01:22:51.543] [jni_protocol.cpp] [jni_notice_app_tx_data] [line 345] jni send tx data to app data len:12
+03-08 01:22:51.543  5334  5352 I DEBUG LOG: [03-08 01:22:51.543] [jni_protocol.cpp] [jni_notice_app_evt] [line 436] jni send evt notice to app evt type:107
+03-08 01:22:51.869  5334  5352 I DEBUG LOG: [03-08 01:22:51.869] [protocol.c] [protocol_receive_data] [line 469] RX : 03 35 02 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+03-08 01:22:51.869  5334  5352 I DEBUG LOG: [03-08 01:22:51.869] [protocol_write.c] [protocol_write_vbus_control] [line 1293] stop resend evt:157(VBUS_EVT_APP_SET_CONN_PARAM)
+03-08 01:22:51.869  5334  5352 I DEBUG LOG: [03-08 01:22:51.869] [protocol_write.c] [protocol_write_process] [line 108] mem_pop is success
+03-08 01:22:51.869  5334  5352 I DEBUG LOG: [03-08 01:22:51.869] [protocol.c] [protocol_write_data] [line 235]   TX : 03 11 01 01 01 00 02 01 00 00 00 01 01 01 01 00 00 
+03-08 01:22:51.869  5334  5352 I DEBUG LOG: [03-08 01:22:51.869] [jni_protocol.cpp] [jni_notice_app_tx_data] [line 345] jni send tx data to app data len:17
+03-08 01:22:51.869  5334  5352 I DEBUG LOG: [03-08 01:22:51.869] [jni_protocol.cpp] [jni_notice_app_evt] [line 436] jni send evt notice to app evt type:157
+03-08 01:22:52.184  5334  5676 I DEBUG LOG: [03-08 01:22:52.184] [protocol.c] [protocol_receive_data] [line 469] RX : 03 11 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+03-08 01:22:52.184  5334  5676 I DEBUG LOG: [03-08 01:22:52.184] [protocol_write.c] [protocol_write_vbus_control] [line 1293] stop resend evt:108(VBUS_EVT_APP_SET_UINT)
+03-08 01:22:52.184  5334  5676 I DEBUG LOG: [03-08 01:22:52.184] [jni_protocol.cpp] [jni_notice_app_evt] [line 436] jni send evt notice to app evt type:108
+03-08 01:22:52.942  5334  5334 I DEBUG LOG: [03-08 01:22:52.942] [jni_protocol.cpp] [Java_com_veryfit_multi_nativeprotocol_Protocol_SysEvtSet] [line 266] api sysEvtSet,intput evt base:VBUS_EVT_BASE_APP_SET evt:VBUS_EVT_FUNC_START_SYNC_V3_HEALTH
+03-08 01:22:52.942  5334  5334 I DEBUG LOG: [03-08 01:22:52.942] [protocol_write.c] [protocol_write_vbus_control] [line 949] warn:protocol write invalid evt:5002
+03-08 01:22:52.942  5334  5334 I DEBUG LOG: [03-08 01:22:52.942] [protocol_v3_health_client.c] [protocol_v3_health_client_sync_start] [line 1095] MANUAL SYNC
+03-08 01:22:53.194  5334  5435 I DEBUG LOG: [03-08 01:22:53.194] [protocol_sync_config.c] [get_m_is_v3_table_sync_states] [line 1115] m_is_v3_table_sync:1
+03-08 01:22:53.194  5334  5435 I DEBUG LOG: [03-08 01:22:53.194] [protocol_v3_health_client.c] [protocol_v3_health_base_client_sync_start] [line 1011] start sync v3 health info mtu:137
+03-08 01:22:53.205  5334  5431 I DEBUG LOG: [03-08 01:22:53.205] [protocol_v3_health_client.c] [sync_timer_handles] [line 1180] v3 health sync type:0x01(PROTOCOL_V3_HEALTH_DATA_TYPE_SPO2) [day data,save data offset:0] 
+03-08 01:22:53.205  5334  5431 I DEBUG LOG: [03-08 01:22:53.205] [protocol_v3_health_client.c] [sync_timer_handles] [line 1180] v3 health sync type:0x02(PROTOCOL_V3_HEALTH_DATA_TYPE_PRESSURE) [day data,save data offset:1] 
+03-08 01:22:53.205  5334  5431 I DEBUG LOG: [03-08 01:22:53.205] [protocol_v3_health_client.c] [sync_timer_handles] [line 1184] v3 health sync type:0x04(PROTOCOL_V3_HEALTH_DATA_TYPE_ACTIVITY) [count data]
+03-08 01:22:53.205  5334  5431 I DEBUG LOG: [03-08 01:22:53.205] [protocol_v3_health_client.c] [sync_timer_handles] [line 1184] v3 health sync type:0x06(PROTOCOL_V3_HEALTH_DATA_TYPE_SWIM) [count data]
+03-08 01:22:53.205  5334  5431 I DEBUG LOG: [03-08 01:22:53.205] [protocol_v3_health_client.c] [sync_timer_handles] [line 1184] v3 health sync type:0x07(PROTOCOL_V3_HEALTH_DATA_TYPE_SLEEP) [count data]
+03-08 01:22:53.205  5334  5431 I DEBUG LOG: [03-08 01:22:53.205] [protocol_v3_health_client.c] [sync_timer_handles] [line 1180] v3 health sync type:0x08(PROTOCOL_V3_HEALTH_DATA_TYPE_SPORT) [day data,save data offset:6] 
+03-08 01:22:53.206  5334  5431 I DEBUG LOG: [03-08 01:22:53.205] [protocol_v3_health_client.c] [sync_timer_handles] [line 1180] v3 health sync type:0x03(PROTOCOL_V3_HEALTH_CMD_TYPE_HR) [day data,save data offset:0] 
+03-08 01:22:53.206  5334  5431 I DEBUG LOG: [03-08 01:22:53.206] [protocol_v3_queue.c] [protocol_v3_queue_write_ex] [line 360] free ptr:tmp & queue_data
+03-08 01:22:53.206  5334  5431 I DEBUG LOG: [03-08 01:22:53.206] [protocol_v3_queue.c] [protocol_v3_queue_write_ex] [line 362] v3 protocol add queue cmd id=0x5 nseq=0x55 send queue cout=1
+03-08 01:22:53.207  5334  5431 I DEBUG LOG: [03-08 01:22:53.207] [protocol_v3_queue.c] [send_packet] [line 193] v3 protocol send packet cmd id=0x5 nseq=0x55
+03-08 01:22:53.207  5334  5431 I DEBUG LOG: [03-08 01:22:53.207] [protocol_v3.c] [process_tx_buff] [line 88] v3 protocol write complete
+03-08 01:22:53.207  5334  5431 I DEBUG LOG: [03-08 01:22:53.207] [protocol_v3.c] [process_tx_buff] [line 102] send data buff length:138,offset:0
+03-08 01:22:53.207  5334  5431 I DEBUG LOG: [03-08 01:22:53.207] [protocol.c] [protocol_write_data] [line 235]   TX : 33 DA AD DA AD 01 88 00 05 00 55 00 01 00 00 00 00 02 01 00 00 00 08 06 00 00 00 03 [00 x 109]
+03-08 01:22:53.207  5334  5431 I DEBUG LOG: [03-08 01:22:53.207] [jni_protocol.cpp] [jni_notice_app_tx_data] [line 345] jni send tx data to app data len:137
+03-08 01:22:53.209  5334  5431 I DEBUG LOG: [03-08 01:22:53.209] [protocol_v3_queue.c] [send_packet] [line 208] v3 write data rel:0,free send buff
+03-08 01:22:53.209  5334  5431 I DEBUG LOG: [03-08 01:22:53.209] [protocol_v3_queue.c] [process_queue] [line 265] free queue_data
+03-08 01:22:53.465  5334  5676 I DEBUG LOG: [03-08 01:22:53.465] [protocol.c] [protocol_receive_data] [line 469] RX : 33 DA AD DA AD 01 10 00 05 00 55 00 2F 01 00 00 00 36 9A 
+03-08 01:22:53.466  5334  5676 I DEBUG LOG: [03-08 01:22:53.465] [protocol_v3.c] [protocol_v3_exec] [line 394] rec v3 protocol cmd id:0x5,nseq:0x55,total length:16(+2Bytes CRC),cur get data length:18
+03-08 01:22:53.466  5334  5676 I DEBUG LOG: [03-08 01:22:53.466] [protocol_v3_queue.c] [protocol_v3_rx_data_cb_handle] [line 109] rec v3 protocol cmd id:0x5 nseq:0x55 vserion: 0x1 complete,length:16(+2Bytes CRC)
+03-08 01:22:53.466  5334  5676 I DEBUG LOG: [03-08 01:22:53.466] [protocol_v3_queue.c] [cmd_reply_process] [line 86] cmd 0x5,nseq = 85,is reply
+03-08 01:22:53.466  5334  5676 I DEBUG LOG: [03-08 01:22:53.466] [protocol_v3_queue.c] [process_queue] [line 269] warn: queue is busy  queue is empty
+03-08 01:22:53.466  5334  5676 I DEBUG LOG: [03-08 01:22:53.466] [protocol_v3_health_client.c] [protocol_v3_queue_get_health_size_handle] [line 820] sync all size = 303
+03-08 01:22:53.466  5334  5676 I DEBUG LOG: [03-08 01:22:53.466] [protocol_v3_health_client.c] [count_all_pack] [line 791] all_package = 3, all_delay = 2
+03-08 01:22:53.466  5334  5676 I DEBUG LOG: [03-08 01:22:53.466] [jni_protocol.cpp] [jni_notice_app_evt] [line 436] jni send evt notice to app evt type:5027
+03-08 01:22:53.469  5334  5676 I DEBUG LOG: [03-08 01:22:53.469] [protocol_v3_health_client.c] [get_sync_offset] [line 431] get_sync_offset index = 1,pressure
+03-08 01:22:53.469  5334  5676 I DEBUG LOG: [03-08 01:22:53.469] [protocol_v3_health_client.c] [client_sync] [line 944] sync v3 health data type:1(PROTOCOL_V3_HEALTH_DATA_TYPE_SPO2) operate:0(start) offset:0
+03-08 01:22:53.470  5334  5676 I DEBUG LOG: [03-08 01:22:53.470] [protocol_v3_queue.c] [protocol_v3_queue_write_ex] [line 360] free ptr:tmp & queue_data
+03-08 01:22:53.470  5334  5676 I DEBUG LOG: [03-08 01:22:53.470] [protocol_v3_queue.c] [protocol_v3_queue_write_ex] [line 362] v3 protocol add queue cmd id=0x4 nseq=0x56 send queue cout=1
+03-08 01:22:53.471  5334  5676 I DEBUG LOG: [03-08 01:22:53.471] [protocol_v3_queue.c] [process_queue] [line 269] warn: queue is busy  
+03-08 01:22:53.473  5334  5676 I DEBUG LOG: [03-08 01:22:53.473] [protocol_v3.c] [process_tx_buff] [line 102] send data buff length:138,offset:136
+03-08 01:22:53.473  5334  5676 I DEBUG LOG: [03-08 01:22:53.473] [protocol.c] [protocol_write_data] [line 235]   TX : 33 62 EB 
+03-08 01:22:53.474  5334  5676 I DEBUG LOG: [03-08 01:22:53.474] [jni_protocol.cpp] [jni_notice_app_tx_data] [line 345] jni send tx data to app data len:3
+03-08 01:22:53.780  5334  5676 I DEBUG LOG: [03-08 01:22:53.780] [protocol_v3.c] [process_tx_buff] [line 102] send data buff length:138,offset:138
+03-08 01:22:53.780  5334  5676 I DEBUG LOG: [03-08 01:22:53.780] [protocol_v3.c] [send_end] [line 67] protocol cmd id:0x5 nseq:0x55 send end
+03-08 01:22:53.780  5334  5676 I DEBUG LOG: [03-08 01:22:53.780] [protocol_v3_queue.c] [protocol_v3_tx_complete_evt_handle] [line 292] out_queue,send queue count:1

@@ -1,0 +1,72 @@
+# set_alarms_and_sports.txt — VBUS_EVT_FUNC_V3_SPORT_SORT (evt 5017), v3 cmd 0x0E
+# Single v3 packet (355 B) that sets alarms and sport order. Payload after v3 header:
+#   0A = alarm count (10 alarms). Then per-alarm block: [id] [on/off] [hour] [minute] ...
+#   Example: 01 55 00 04 19 = alarm 1, off (0x55), time 04:19; 02 AA 00 00 00 = alarm 2, on (0xAA), time 00:00.
+#   So bytes "04 19" in the hex are the time 4:19 AM for that alarm. Up to 10 alarms (0x0A).
+#
+03-08 04:23:59.083 24183 24183 I DEBUG LOG: [03-08 04:23:59.083] [jni_protocol.cpp] [Java_com_veryfit_multi_nativeprotocol_Protocol_WriteJsonData] [line 612] app send protocol evt:5017(VBUS_EVT_FUNC_V3_SPORT_SORT)
+03-08 04:23:59.098 24183 24183 I DEBUG LOG: [03-08 04:23:59.098] [protocol_v3_queue.c] [protocol_v3_queue_write_ex] [line 360] free ptr:tmp & queue_data
+03-08 04:23:59.098 24183 24183 I DEBUG LOG: [03-08 04:23:59.098] [protocol_v3_queue.c] [protocol_v3_queue_write_ex] [line 362] v3 protocol add queue cmd id=0xE nseq=0x29 send queue cout=1
+03-08 04:23:59.099 24183 24183 I DEBUG LOG: [03-08 04:23:59.099] [protocol_v3_queue.c] [send_packet] [line 193] v3 protocol send packet cmd id=0xE nseq=0x29
+03-08 04:23:59.099 24183 24183 I DEBUG LOG: [03-08 04:23:59.099] [protocol_v3.c] [process_tx_buff] [line 88] v3 protocol write complete
+03-08 04:23:59.099 24183 24183 I DEBUG LOG: [03-08 04:23:59.099] [protocol_v3.c] [process_tx_buff] [line 102] send data buff length:355,offset:0
+03-08 04:23:59.099 24183 24183 I DEBUG LOG: [03-08 04:23:59.099] [protocol.c] [protocol_write_data] [line 235]   TX : 33 DA AD DA AD 01 61 01 0E 00 29 00 00 0A 01 55 00 04 19 01 00 0A 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 AA 00 00 00 00 00 0A 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 03 AA 00 00 00 00 00 0A 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 04 AA
+
+
+---
+
+In the example below  ,7 alarms are defined
+alarm 1 - enabled (03:05) Do Not Repeat (Nameless)
+alarm 2 - disabled (03:05) Do Not Repeat (Nameless)
+alarm 3 - enabled (03:05) Do Not Repeat (Nameless)
+alarm 4 - disabled (03:05) Do Not Repeat (Nameless)
+alarm 5 - enabled (03:05) Do Not Repeat (Nameless)
+alarm 6 - disabled (03:05) Do Not Repeat (Nameless)
+alarm 7 - enabled (03:05) Do Not Repeat (Nameless)
+
+```
+03-10 03:10:15.328 22109 22109 I DEBUG LOG: [03-10 03:10:15.328] [protocol.c] [protocol_write_data] [line 235]   TX : 33 DA AD DA AD 01 61 01 0E 00 5B 00 00 0A 01 55 00 03 05 01 00 0A 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 55 00 03 05 00 00 0A 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 03 55 00 03 05 01 00 0A 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 04 55 00 03 05 00 00 0A 00 01 00 00 00 00 00 00 00 00 00 00 00 
+03-10 03:10:15.328 22109 22109 I DEBUG LOG: [03-10 03:10:15.328] [jni_protocol.cpp] [jni_notice_app_tx_data] [line 345] jni send tx data to app data len:137
+03-10 03:10:15.328 22109 22109 I DEBUG LOG: [03-10 03:10:15.328] [jni_timer.cpp] [jni_timer_start] [line 91] jni timer statr id = 29 ms = 1500
+03-10 03:10:15.329 22109 22109 I DEBUG LOG: [03-10 03:10:15.328] [protocol_v3_queue.c] [send_packet] [line 208] v3 write data rel:0,free send buff
+03-10 03:10:15.329 22109 22109 I DEBUG LOG: [03-10 03:10:15.329] [jni_timer.cpp] [jni_timer_stop] [line 127] jni timer stop id = 30
+03-10 03:10:15.329 22109 22109 I DEBUG LOG: [03-10 03:10:15.329] [jni_timer.cpp] [jni_timer_start] [line 91] jni timer statr id = 30 ms = 5000
+03-10 03:10:15.329 22109 22109 I DEBUG LOG: [03-10 03:10:15.329] [protocol_v3_queue.c] [process_queue] [line 265] free queue_data
+03-10 03:10:15.569 22109 22542 I DEBUG LOG: [03-10 03:10:15.569] [jni_timer.cpp] [jni_timer_stop] [line 127] jni timer stop id = 29
+03-10 03:10:15.569 22109 22542 I DEBUG LOG: [03-10 03:10:15.569] [protocol_v3.c] [process_tx_buff] [line 88] v3 protocol write complete
+03-10 03:10:15.569 22109 22542 I DEBUG LOG: [03-10 03:10:15.569] [protocol_v3.c] [process_tx_buff] [line 102] send data buff length:355,offset:136
+03-10 03:10:15.569 22109 22542 I DEBUG LOG: [03-10 03:10:15.569] [protocol.c] [protocol_write_data] [line 235]   TX : 33 00 00 00 00 00 00 00 00 00 00 00 00 00 05 55 00 03 05 01 00 0A 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 06 55 00 03 05 00 00 0A 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 07 55 00 03 05 01 00 0A 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 08 AA 00 00 00 00 00 0A 00 01 00 00 00 00 00 00 00 00 00 00 00 
+```
+
+Notice the 0x0A = MaxAlarms
+[16bit MaxAlarms][AlarmIndex],0x55,[AlarmHour],[AlarmMinute],RepeatAndEnabledBits(Sun)1(Sat)0(Fri)0(Thur)0(Wed)0(Tue)0(Mon)1(Enabled)1,[16bit Int SnoozeMinutes],[16bit Int SnoozeFreq],[24Bytes char alarmName]...[NextAlarmIndex] 
+
+The above is the format.
+But you have to set all alarms which involves multiple packets. Here is an example of the app sending multiple packets for all 10 alarms.
+
+
+`TX : 33 DA AD DA AD 01 61 01 0E 00 5E 00 00 0A 01 55 00 03 05 81 00 0A 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 55 00 03 05 03 00 0A 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 03 55 00 03 05 83 00 0A 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 04 AA 00 00 00 00 00 0A 00 01 00 00 00 00 00 00 00 00 00 00 00 
+03-10 03:15:59.460 22109 22109 I DEBUG LOG: [03-10 03:15:59.459] [jni_protocol.cpp] [jni_notice_app_tx_data] [line 345] jni send tx data to app data len:137
+03-10 03:15:59.460 22109 22109 I DEBUG LOG: [03-10 03:15:59.460] [jni_timer.cpp] [jni_timer_start] [line 91] jni timer statr id = 29 ms = 1500
+03-10 03:15:59.460 22109 22109 I DEBUG LOG: [03-10 03:15:59.460] [protocol_v3_queue.c] [send_packet] [line 208] v3 write data rel:0,free send buff
+03-10 03:15:59.460 22109 22109 I DEBUG LOG: [03-10 03:15:59.460] [jni_timer.cpp] [jni_timer_stop] [line 127] jni timer stop id = 30
+03-10 03:15:59.460 22109 22109 I DEBUG LOG: [03-10 03:15:59.460] [jni_timer.cpp] [jni_timer_start] [line 91] jni timer statr id = 30 ms = 5000
+03-10 03:15:59.460 22109 22109 I DEBUG LOG: [03-10 03:15:59.460] [protocol_v3_queue.c] [process_queue] [line 265] free queue_data
+03-10 03:15:59.659 22109 22109 I DEBUG LOG: [03-10 03:15:59.659] [jni_protocol.cpp] [Java_com_veryfit_multi_nativeprotocol_Protocol_WriteJsonData] [line 612] app send protocol evt:5018(VBUS_EVT_FUNC_V3_GET_ALARM)
+03-10 03:15:59.660 22109 22109 I DEBUG LOG: [03-10 03:15:59.660] [protocol_v3_queue.c] [protocol_v3_queue_write_ex] [line 360] free ptr:tmp & queue_data
+03-10 03:15:59.660 22109 22109 I DEBUG LOG: [03-10 03:15:59.660] [protocol_v3_queue.c] [protocol_v3_queue_write_ex] [line 362] v3 protocol add queue cmd id=0xF nseq=0x5F send queue cout=1
+03-10 03:15:59.660 22109 22109 I DEBUG LOG: [03-10 03:15:59.660] [protocol_v3_queue.c] [process_queue] [line 269] warn: queue is busy cmd is not reply 
+03-10 03:15:59.660 22109 22109 I DEBUG LOG: [03-10 03:15:59.660] [protocol_v3_queue.c] [process_queue] [line 269] warn: queue is busy  
+03-10 03:16:00.699 22109 22542 I DEBUG LOG: [03-10 03:16:00.699] [jni_timer.cpp] [jni_timer_stop] [line 127] jni timer stop id = 29
+03-10 03:16:00.700 22109 22542 I DEBUG LOG: [03-10 03:16:00.700] [protocol_v3.c] [process_tx_buff] [line 102] send data buff length:355,offset:136
+03-10 03:16:00.700 22109 22542 I DEBUG LOG: [03-10 03:16:00.700] [protocol.c] [protocol_write_data] [line 235]   TX : 33 00 00 00 00 00 00 00 00 00 00 00 00 00 05 AA 00 00 00 00 00 0A 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 06 AA 00 00 00 00 00 0A 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 07 AA 00 00 00 00 00 0A 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 08 AA 00 00 00 00 00 0A 00 01 00 00 00 00 00 00 00 00 00 00 00 
+03-10 03:16:00.700 22109 22542 I DEBUG LOG: [03-10 03:16:00.700] [jni_protocol.cpp] [jni_notice_app_tx_data] [line 345] jni send tx data to app data len:137
+03-10 03:16:00.700 22109 22542 I DEBUG LOG: [03-10 03:16:00.700] [jni_timer.cpp] [jni_timer_start] [line 91] jni timer statr id = 29 ms = 1500
+03-10 03:16:00.700 22109 22542 I DEBUG LOG: [03-10 03:16:00.700] [voice_file_tran_to_ble.c] [clean_state] [line 138] clean alexa voice tran state
+03-10 03:16:00.700 22109 22542 I DEBUG LOG: [03-10 03:16:00.700] [jni_timer.cpp] [jni_timer_stop] [line 127] jni timer stop id = 10
+03-10 03:16:00.700 22109 22542 I DEBUG LOG: [03-10 03:16:00.700] [jni_timer.cpp] [jni_timer_stop] [line 127] jni timer stop id = 11
+03-10 03:16:01.013 22109 22542 I DEBUG LOG: [03-10 03:16:01.013] [jni_timer.cpp] [jni_timer_stop] [line 127] jni timer stop id = 29
+03-10 03:16:01.014 22109 22542 I DEBUG LOG: [03-10 03:16:01.013] [protocol_v3.c] [process_tx_buff] [line 102] send data buff length:355,offset:272
+03-10 03:16:01.014 22109 22542 I DEBUG LOG: [03-10 03:16:01.014] [protocol.c] [protocol_write_data] [line 235]   TX : 33 00 00 00 00 00 00 00 00 00 00 00 00 00 09 AA 00 00 00 00 00 0A 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 0A AA 00 00 00 00 00 0A 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 7D C2`
+
+Notice how when it ends with the checksum , then thats the end. Meaning a command can span over many packets!. This is important information for the v3 protocol.

@@ -1,0 +1,1786 @@
+[
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.main.stepCalculation"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.main.sleepMonitor"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.main.singleSport"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.main.realtimeData"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.main.deviceUpdate"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.main.heartRate"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.main.Ancs"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.main.timeLine"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.alarm_count"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.type.wakeUp"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.type.sleep"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.type.sport"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.type.medicine"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.type.dating"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.type.party"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.type.metting"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.type.custom"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.control.takePhoto"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.control.music"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.control.HIDPhoto"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.control.FiveHRInterval"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.control.BindAuth"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.control.fastSync"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.control.exFuncTable"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.control.BindCodeAuth"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.call.calling"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.call.callingContact"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.call.callingNum"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.call.v3_get_health_size_by_offset"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.call.support_fahrenheit_03_11"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.call.v3_function_table_33_1a"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.call.support_set_screen_bright_interval"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.call.support_encrypted_code_resend_04_05"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.notify.message"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.notify.email"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.notify.qq"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.notify.weixin"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.notify.sinaWeibo"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.notify.facebook"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.notify.twitter"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ontify2.whatsapp"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ontify2.messengre"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ontify2.instagram"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ontify2.linked_in"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ontify2.calendar"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ontify2.skype"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ontify2.alarmClock"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ontify2.other"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ontify3.VKontakte"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ontify3.Line"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ontify3.Viber"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ontify3.KakaoTalk"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ontify3.Gmail"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ontify3.Outlook"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ontify3.Snapchat"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ontify3.telegram"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.other.sedentariness"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.other.antilost"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.other.onetouchCalling"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.other.findPhone"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.other.findDevice"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.other.configDefault"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.other.upHandGesture"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.other.weather"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.other2.staticHR"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.other2.doNotDisturb"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.other2.displayMode"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.other2.heartRateMonitor"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.other2.bilateralAntiLost"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.other2.allAppNotice"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.other2.flipScreen"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.other2.noShowHRInterval"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.sms.tipInfoContact"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.sms.tipInfoNum"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.sms.tipInfoContent"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.sms.weather_city"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.sms.support_set_v3_heart_interval"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.sms.temp_data"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.sms.agps_online"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.sms.agps_offline"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.sport_type0.walk"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.sport_type0.run"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.sport_type0.by_bike"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.sport_type0.on_foot"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.sport_type0.swim"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.sport_type0.mountain_climbing"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.sport_type0.badminton"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.sport_type0.other"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.sport_type1.fitness"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.sport_type1.spinning"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.sport_type1.ellipsoid"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.sport_type1.treadmill"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.sport_type1.sit_up"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.sport_type1.push_up"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.sport_type1.dumbbell"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.sport_type1.weightlifting"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.sport_type2.bodybuilding_exercise"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.sport_type2.yoga"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.sport_type2.rope_skipping"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.sport_type2.table_tennis"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.sport_type2.basketball"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.sport_type2.footballl"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.sport_type2.volleyball"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.sport_type2.tennis"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.sport_type3.golf"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.sport_type3.baseball"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.sport_type3.skiing"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.sport_type3.roller_skating"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.sport_type3.dance"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.sport_type3.strength_training"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.sport_type3.core_training"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.sport_type3.tidy_up_relax"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.main1.logIn"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.main1.hidPhoto"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.main1.WatchDial"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.main1.shortcut"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.main1.unitSet"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.main1.BloodPressure"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.main1.wechatSport"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.main1.fineTimeControl"
+	},
+	{
+		"enabled" : 14,
+		"funcCode" : "func_table.sport_show_num"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.lang_support.ch"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.lang_support.eng"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.lang_support.french"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.lang_support.german"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.lang_support.italian"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.lang_support.spanish"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.lang_support.japanese"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.lang_support.czech"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.version_info"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_lang_support1.romanian"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_lang_support1.lithuanian"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_lang_support1.dutch"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_lang_support1.slovenian"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_lang_support1.hungarian"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_lang_support1.polish"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_lang_support1.russian"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_lang_support1.ukrainian"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_main2.gps"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_main2.sleep_period"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_main2.screen_brightness"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_main2.id107_l_dial"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_main2.dh_new_app_notice"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_main2.noitice_128byte"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_main2.activity_time_sync"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_main2.v3_log"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_lang_support2.slovak"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_lang_support2.danish"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_lang_support2.croatian"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_lang_support2.indonesian"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_lang_support2.korean"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_lang_support2.hindi"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_lang_support2.portuguese"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_lang_support2.turkish"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_main3.menstruation"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_main3.calorie_goal"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_main3.distance_goal"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_main3.v3_spo2_data"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_main3.v3_pressure_data"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_main3.get_do_not_disturb"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_main3.sport_mode_sort"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_main3.notice_250byte"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_notify4.chatwork"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_notify4.slack"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_notify4.yahoo_mail"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_notify4.tumblr"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_notify4.youtube"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_notify4.pinterest_yahoo"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_notify4.keep"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_notify4.stepper"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main4.ios_auto_pair"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_table_main4.ios_no_disconnect_pair"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_table_main4.v3_hr_data"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_table_main4.v3_swim"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main4.v3_activity_data"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main4.v3_gps_data"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_table_main4.drink_water_reminder"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_table_main5.level5_hr_interval"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_table_main5.walk_reminder"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main5.breathe_train"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main5.screen_brightness_5_level"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_table_main5.activity_switch"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main5.disturb_have_rang_repeat"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_table_main5.night_auto_brightness"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_table_main5.long_mtu"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_sport_type4.outdoor_run"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_sport_type4.indoor_run"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_sport_type4.outdoor_cycle"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_sport_type4.indoor_cycle"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_sport_type4.outdoor_walk"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_sport_type4.indoor_walk"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_sport_type4.pool_swim"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_sport_type4.open_water_swim"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_sport_type5.elliptical"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_sport_type5.rower"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_sport_type5.HIIT"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_sport_type5.cricket"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_sport_type5.pilates"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_sport_type5.outdoor_fun"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_sport_type5.other_activity"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_sport_type5.zumba"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main6.factory_reset"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main6.lifting_wrist_backlight"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main6.multi_activity_no_use_app"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_table_main6.multi_dial"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main6.medium_to_high_active_duration"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main6.default_sport_type"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main6.download_language"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main6.flash_log"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_lang_support3.thai"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_lang_support3.vietnamese"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_lang_support3.burmese"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_lang_support3.filipino"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_lang_support3.traditional_chinese"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_lang_support3.greek"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_lang_support3.arabic"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_lang_support3.sweden"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main7.charging_time"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main7.menu_list"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_table_main7.photo_wallpaper"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main7.voice_transmission"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main7.utc_time_zone"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main7.choice_use"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main7.heart_rate_interval"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_table_main7.v3_sports_type"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_table_main8.v3_sync_alarm"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main8.ublox_model"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_table_main8.v3_sync_activity_custom_made"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main8.v3_get_heat_log"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_table_main8.v3_spo2_off_change"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main8.screen_brightness_3_level"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main8.encrypted_auth"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_table_main8.v3_sleep"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_table_main9.restore_factory"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_table_main9.get_screen_brightness"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_table_main9.get_up_hand_gesture"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main9.is_watch"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main9.fast_msg_data"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main9.get_device_update_state"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_table_main9.v3_sports"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_table_main9.v3_activity_exchange_data"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main10.v3_get_lang_library"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_table_main10.set_phone_voice"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_table_main10.v3_notify_msg"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main10.get_watch_id"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main10.hand_washing_reminder"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main10.clear_ble_cache"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main10.v3_voice_support_alexa"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main10.get_dev_name"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_notify5.TikTok"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_notify5.Redbus"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_notify5.Dailyhunt"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_notify5.Hotstar"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_notify5.Inshorts"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_notify5.Paytm"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_notify5.Amazon"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_notify5.Flipkart"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_notify6.Prime"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_notify6.Netflix"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_notify6.Gpay"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_notify6.Phonpe"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_notify6.Swiggy"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_notify6.Zomato"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_notify6.Make_My_Trip"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_notify6.Jio_Tv"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main11.taking_medicine"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main11.use_aes_encode"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_table_main11.support_cloud_dial"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main11.v3_activity_gps_exchange"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_table_main11.pressure_high_threshold_reminder"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.ex_table_main11.not_support_heart_rate_high_alarm"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main11.alarm_other_is_no_label"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main11.alarm_other_is_no_label"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.ex_table_main11.exFuncTable2"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table1.support_scientific_sleep_33_04_07"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table1.get_battery_log_33_30"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table1.support_data_tran_continue_d1_0x"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table1.get_watch_list_new_0x33_0x31"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table1.alexa_time_new_0x11_0x02"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table1.get_menu_list_02_A8"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.v3_function_table->table1.automatic_sync_v3_health_data_33_04"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table1.get_dev_log_state_02_b5"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->alexa_table1.v3_alexa_set_weather_33_1b"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->alexa_table1.alexa_set_jump_sport_ui_12_01"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->alexa_table1.alexa_set_jump_ui_12_22"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->alexa_table1.alexa_set_easy_operate_12_21"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->alexa_table1.alexa_set_get_alexa_alarm_33_17"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->alexa_table1.alexa_set_set_on_off_type_12_24"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->notify_table7.support_microsoft_03_30"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->notify_table7.support_WhatsApp_Business_03_30"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->notify_table7.support_niosefit_03_30"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->notify_table7.support_missed_calls_03_30"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->notify_table7.support_YTmusic_03_30"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->notify_table7.support_Uber_03_30"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->notify_table7.support_Ola_03_30"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->notify_table7.support_matters_remind_03_30"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table3.set_sharking_grade_03_62"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table3.Veryfit_not_support_photo_wallpaper"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table3.support_calorie_unit"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table3.support_swim_pool_unit"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table3.support_v3_get_sport_sort_field"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table3.support_get_alexa_default_language_12_23"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table3.support_wear_flag_33_04_08"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table3.v3_set_wallpaper_dial_33_32"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table4.set_mid_high_time_goal_03_43"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table4.set_walk_reminder_goal_time_03_47"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table4.support_v3_exchange_data_reply_add_real_time_speed_pace_33_12"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table4.dev_support_pair_each_connect"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table4.support_app_send_voice_to_ble_13"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table4.support_set_spo2_all_day_on_off_03_44"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table4.support_set_smart_heart_rate_03_63"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table4.sync_v3_activity_add_param_33_04_04"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table5_unit.support_cycling_unit_03_11"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table5_unit.support_walking_running_unit_03_11"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table6.v3_sync_noise_03_04_09"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table49.noice_support_set_overwarning_03_E5"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table49.noice_support_set_notify_flag_03_E5"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table6.v3_health_sync_temperature_03_04_10"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table6.set_100_sport_sort_33_33"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table6.set_20_base_sport_param_sort_33_34"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table6.set_main_ui_sort_33_35"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table6.schedule_reminder_33_36"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table6.auto_activity_switch_add_03_49"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table6.get_calorie_distance_goal_02_43"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table7.get_walk_reminder_02_47"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table7.support_set_v3_music_name_33_0a"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table7.support_recover_time_and_vo2max"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table7.support_set_spo2_low_value_remind_03_44"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table7.alexa_reminder_add_sec_33_18"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table7.support_get_main_sport_goal_02_43"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table7.support_get_walk_reminder_02_47"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table7.support_v3_long_city_name_33_37"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table8.support_v3_notify_icon_adaptive"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table8.support_set_scientific_sleep_switch_03_e6"
+	},
+	{
+		"enabled" : true,
+		"funcCode" : "func_table.v3_function_table->table8.pressure_add_notify_flag_and_mode_03_45"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table8.spo2_add_notify_flag_03_44"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table8.menstrual_add_notify_flag_03_41"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table8.drink_water_add_notify_flag_03_60"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table8.support_get_health_switch_state_02_b6"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table8.support_set_temperature_switch_03_e7"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table9.walk_reminder_add_notify_flag_03_47"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table9.support_set_fitness_guidance_03_e8"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table9.support_sync_contact_33_39"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table9.support_set_weatcher_sun_time_0a_06"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table9.support_set_v3_weatcher_33_3A"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table9.support_set_v3_world_time_33_3B"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table9.support_set_v3_notify_add_app_name_33_60"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table9.support_v3_ble_music_33_400x"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->v2_alarm.v2_alarm_add_dinner_type_03_02"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->v2_alarm.v2_alarm_add_brush_teeth_type_03_02"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->v2_alarm.v2_alarm_add_rest_type_03_02"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->v2_alarm.v2_alarm_add_course_type_03_02"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->v2_alarm.v2_alarm_add_bath_type_03_02"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->v2_alarm.v2_alarm_add_learn_type_03_02"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->v2_alarm.v2_alarm_add_play_time_type_03_02"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->v2_alarm.v2_alarm_add_dinner_type_03_02"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->ble_to_app.support_ble_to_app_dail_change_33_5000"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->ble_to_app.support_ble_control_photograph_07_12"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->ble_to_app.v2_set_alexa_operation_12_24_100brightness"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->ble_to_app.v2_set_notification_status_03_EB"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->ble_to_app.v3_fast_msg_data_33_11"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->ble_to_app.v2_get_bt_addr_02_04"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table12.v3_watch_dail_set_add_size_33_08"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table12.support_get_activity_switch_02_EA"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table12.v3_33_0A_music_control_02_add_singer_name"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table12.v2_03_42_menstrual_remind_02_add_pregnancy"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table12.v3_33_3D_historical_menstruation_01_create"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table12.v2_02_EB_firmware_bt_version_01_create"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table12.ui_controll_sports_12_01"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table12.v2_set_unread_app_reminder_03_EA"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table13.v2_set_stress_calibration_03_EC"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table13.v2_send_calibration_threshold_03_45"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table13.V3_support_watch_capacity_size_display_33_31"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table13.V3_support_watch_photo_position_move_33_32"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table13.V3_support_sync_over_high_low_heart_data_33_04_03"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table13.v2_set_notice_missed_call_05_02"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table13.v2_send_notice_call_time_05_05"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table13.V3_support_swimming_data_exhibit_33_04_06"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table14.V3_set_watch_dial_sort_33_3E"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table14.sport_type_traditional_strength_training"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table14.support_per_minute_one_33_04_0B"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table14.V3_support_show_detection_time_33_09"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table14.v3_schedule_reminder_phase_two_33_36"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table14.suppport_ping_ios"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table14.v3_support_data_tran_get_new_error_code"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table14.v3_support_per_bp_33_04_0C"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->notify_table8.support_Google_meet_03_30"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->notify_table8.v3_support_set_v3_weatcher_add_sunrise_33_3A"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->notify_table8.v3_support_set_v3_weatcher_add_air_grade_33_3A"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->notify_table8.v2_support_get_all_contact_02_34"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->notify_table8.support_Mormaii_Smartwatch_03_30"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->notify_table8.support_Technos_Connect_03_30"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->notify_table8.support_Magalu_03_30"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->notify_table8.support_Americanas_03_30"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->sport16.v3_skateboard"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->sport16.mountaineering"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->sport16.squat"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->sport16.surfing"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->sport16.footvolley"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->sport16.standing_water_skiing"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table17.v3_heart_set_rate_mode_custom_33_09"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table17.support_send_original_size_D1_08"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table17.support_over_find_phone_06_07"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table17.v2_support_disable_func_06_33"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table17.v2_support_add_night_level_03_32"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table17.support_smart_competitor"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table17.support_set_menstrual_reminder_on_off_03_41"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table17.support_set_voice_assistant_status"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table18.v2_send_set_smart_heart_time_03_63"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table18.v2_surport_bp_set_or_measurement"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table18.v3_surport_sport_medium_icon_33_33"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table18.choose_other_ota_mode"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table18.surpport_new_retain_data"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table18.support_walk_goal_steps_03_03"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table18.v2_support_set_time_zone_float_03_01"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table18.v3_support_set_v3_add_48_hour_weather_data_33_3A"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table19.v2_surport_calling_delay_three_seconds"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table19.v3_set_get_alarm_specify_type_33_0f_or_0e"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table19.v2_surport_tran_flash_telink_log_21_21"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table19.v3_support_set_v3_weather_dynamic_config_33_3A"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table19.v3_support_get_watch_size_33_31"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table19.v3_support_sports_plan_33_7x"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table19.v2_support_set_bright_screen_time_03_32"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table19.v3_support_get_habit_data_33_75"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->notify_table9.support_Enjoei_03_30"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->notify_table9.support_Aliexpress_03_30"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->notify_table9.support_Shopee_03_30"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->notify_table9.support_Teams_03_30"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->notify_table9.support_99taxi_03_30"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->notify_table9.support_Uber_Eats_03_30"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->notify_table9.support_lfood_03_30"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->notify_table9.support_Rappi_03_30"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->notify_table10.support_Mercado_livre_03_30"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->notify_table10.support_Yahoo_03_30"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table20.v2_support_notice_icon_information_06_32"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table20.v2_support_wallpaper_watch_face_only_time_color"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table20.v2_v3_support_respiration_rate"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table20.v3_oxygen_data_support_grade"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table20.v3_fast_msg_support_calling_quick_reply_33_11"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->table20.v2_support_set_get_msg_all_switch"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->lang_support4.finland"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->lang_support4.persia"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->lang_support4.norwegian"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->lang_support4.malay"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.v3_function_table->lang_support4.brazilian_portuguese"
+	},
+	{
+		"enabled" : false,
+		"funcCode" : "func_table.is_need_sync_v2"
+	}
+]

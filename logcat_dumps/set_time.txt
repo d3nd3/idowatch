@@ -1,0 +1,3 @@
+03-08 01:17:24.594  5334  5334 I DEBUG LOG: [03-08 01:17:24.594] [jni_protocol.cpp] [Java_com_veryfit_multi_nativeprotocol_Protocol_WriteJsonData] [line 612] app send protocol evt:104(VBUS_EVT_APP_SET_TIME)
+03-08 01:17:24.594  5334  5334 I DEBUG LOG: [03-08 01:17:24.594] [protocol.c] [protocol_write_data] [line 235]   TX : 03 01 EA 07 03 08 01 11 18 06 00 00 00 00 00 00 
+03-08 01:17:24.594  5334  5334 I DEBUG LOG: [03-08 01:17:24.594] [jni_protocol.cpp] [jni_notice_app_tx_data] [line 345] jni send tx data to app data len:16
