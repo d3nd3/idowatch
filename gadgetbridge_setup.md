@@ -9,10 +9,24 @@ Instructions used to clone Gadgetbridge into this project, add TOOBUR device sup
 From the idowatch project root:
 
 ```bash
-git clone https://codeberg.org/Freeyourgadget/Gadgetbridge.git gadgetbridge
+git clone https://github.com/d3nd3/gadgetbridge-veryfit.git gadgetbridge
 ```
 
-This creates `gadgetbridge/` alongside `angelfit/`, `htmlapp/`, and `TOOBUR.md`.
+This creates `gadgetbridge/` as our working fork on GitHub.
+
+If you want to keep the original Codeberg repository as upstream:
+
+```bash
+cd gadgetbridge
+git remote add upstream https://codeberg.org/Freeyourgadget/Gadgetbridge.git
+git fetch upstream
+```
+
+Changes for this repo are expected in `origin` (the fork), and can be synced with:
+
+```bash
+git push origin master
+```
 
 ---
 

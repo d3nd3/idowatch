@@ -1,21 +1,21 @@
 # Root .gitignore: mirrors and scopes rules from sub-repos (angelfit, gadgetbridge)
 # so the same files are ignored when those directories are part of this tree.
 
-# ---- angelfit (no .gitignore in sub-repo; common Xcode/macOS ignores) ----
-angelfit/.DS_Store
-angelfit/**/.DS_Store
-angelfit/DerivedData/
-angelfit/**/DerivedData/
-angelfit/**/xcuserdata/
-angelfit/*.xcworkspace/xcuserdata/
-angelfit/*.xcodeproj/xcuserdata/
-angelfit/*.xcodeproj/project.xcworkspace/xcuserdata/
-angelfit/**/*.pbxuser
-angelfit/**/*.mode1v3
-angelfit/**/*.mode2v3
-angelfit/**/*.perspectivev3
-angelfit/**/*.moved-aside
-angelfit/**/xcshareddata/IDEWorkspaceChecks.plist
+# ---- research/repositories/angelfit (no .gitignore in sub-repo; common Xcode/macOS ignores) ----
+research/repositories/angelfit/.DS_Store
+research/repositories/angelfit/**/.DS_Store
+research/repositories/angelfit/DerivedData/
+research/repositories/angelfit/**/DerivedData/
+research/repositories/angelfit/**/xcuserdata/
+research/repositories/angelfit/*.xcworkspace/xcuserdata/
+research/repositories/angelfit/*.xcodeproj/xcuserdata/
+research/repositories/angelfit/*.xcodeproj/project.xcworkspace/xcuserdata/
+research/repositories/angelfit/**/*.pbxuser
+research/repositories/angelfit/**/*.mode1v3
+research/repositories/angelfit/**/*.mode2v3
+research/repositories/angelfit/**/*.perspectivev3
+research/repositories/angelfit/**/*.moved-aside
+research/repositories/angelfit/**/xcshareddata/IDEWorkspaceChecks.plist
 
 # ---- gadgetbridge (from gadgetbridge/.gitignore, scoped under gadgetbridge/) ----
 # Built application files
@@ -80,44 +80,44 @@ gadgetbridge/app/src/main/java/nodomain/freeyourgadget/gadgetbridge/util/small/
 gadgetbridge/app/src/main/java/nodomain/freeyourgadget/gadgetbridge/util/SmallHelper.java
 gadgetbridge/app/src/main/res/values-en
 
-# ---- IDOBlueProtocol (https://github.com/idoosmart/IDOBlueProtocol; no .gitignore upstream) ----
+# ---- research/repositories/IDOBlueProtocol (https://github.com/idoosmart/IDOBlueProtocol; no .gitignore upstream) ----
 # Swift Package Manager / Xcode
-IDOBlueProtocol/.swiftpm/xcode/xcuserdata/
-IDOBlueProtocol/.swiftpm/xcode/package.xcworkspace/xcuserdata/
-IDOBlueProtocol/.swiftpm/.build/
-IDOBlueProtocol/.build/
-IDOBlueProtocol/**/.build/
-IDOBlueProtocol/DerivedData/
-IDOBlueProtocol/**/DerivedData/
-IDOBlueProtocol/**/xcuserdata/
-IDOBlueProtocol/*.xcworkspace/xcuserdata/
-IDOBlueProtocol/*.xcodeproj/xcuserdata/
-IDOBlueProtocol/*.xcodeproj/project.xcworkspace/xcuserdata/
+research/repositories/IDOBlueProtocol/.swiftpm/xcode/xcuserdata/
+research/repositories/IDOBlueProtocol/.swiftpm/xcode/package.xcworkspace/xcuserdata/
+research/repositories/IDOBlueProtocol/.swiftpm/.build/
+research/repositories/IDOBlueProtocol/.build/
+research/repositories/IDOBlueProtocol/**/.build/
+research/repositories/IDOBlueProtocol/DerivedData/
+research/repositories/IDOBlueProtocol/**/DerivedData/
+research/repositories/IDOBlueProtocol/**/xcuserdata/
+research/repositories/IDOBlueProtocol/*.xcworkspace/xcuserdata/
+research/repositories/IDOBlueProtocol/*.xcodeproj/xcuserdata/
+research/repositories/IDOBlueProtocol/*.xcodeproj/project.xcworkspace/xcuserdata/
 # macOS
-IDOBlueProtocol/.DS_Store
-IDOBlueProtocol/**/.DS_Store
+research/repositories/IDOBlueProtocol/.DS_Store
+research/repositories/IDOBlueProtocol/**/.DS_Store
 # Xcode user state
-IDOBlueProtocol/**/*.xcuserstate
-IDOBlueProtocol/**/xcschememanagement.plist
+research/repositories/IDOBlueProtocol/**/*.xcuserstate
+research/repositories/IDOBlueProtocol/**/xcschememanagement.plist
 
-# ---- IDOGitBook (https://github.com/idoosmart/IDOGitBook; no .gitignore upstream) ----
+# ---- research/repositories/IDOGitBook (https://github.com/idoosmart/IDOGitBook; no .gitignore upstream) ----
 # Mirror style: scoped under IDOGitBook/; typical GitBook / static site ignores
-IDOGitBook/.DS_Store
-IDOGitBook/**/.DS_Store
-IDOGitBook/node_modules/
-IDOGitBook/**/node_modules/
-IDOGitBook/_book/
-IDOGitBook/**/_book/
-IDOGitBook/.gitbook/
-IDOGitBook/**/.gitbook/
-IDOGitBook/*.log
-IDOGitBook/**/*.log
-IDOGitBook/.cache/
-IDOGitBook/**/.cache/
-IDOGitBook/book/
-IDOGitBook/**/book/
+research/repositories/IDOGitBook/.DS_Store
+research/repositories/IDOGitBook/**/.DS_Store
+research/repositories/IDOGitBook/node_modules/
+research/repositories/IDOGitBook/**/node_modules/
+research/repositories/IDOGitBook/_book/
+research/repositories/IDOGitBook/**/_book/
+research/repositories/IDOGitBook/.gitbook/
+research/repositories/IDOGitBook/**/.gitbook/
+research/repositories/IDOGitBook/*.log
+research/repositories/IDOGitBook/**/*.log
+research/repositories/IDOGitBook/.cache/
+research/repositories/IDOGitBook/**/.cache/
+research/repositories/IDOGitBook/book/
+research/repositories/IDOGitBook/**/book/
 
-# ---- Flutter / Dart (for Flutter_GitBook and future Flutter tooling) ----
+# ---- Flutter / Dart (for research/repositories/Flutter_GitBook and future Flutter tooling) ----
 # Build outputs
 **/build/
 **/.dart_tool/
@@ -138,9 +138,9 @@ IDOGitBook/**/book/
 pubspec.lock
 analysis_options.yaml
 
-# ---- IDOAndroidBleSDK-_UPDATE (Android Gradle/IDE ignores) ----
-IDOAndroidBleSDK-_UPDATE/*.iml
-IDOAndroidBleSDK-_UPDATE/.gradle
-IDOAndroidBleSDK-_UPDATE/local.properties
-IDOAndroidBleSDK-_UPDATE/.idea/
-IDOAndroidBleSDK-_UPDATE/build
+# ---- research/repositories/IDOAndroidBleSDK-_UPDATE (Android Gradle/IDE ignores) ----
+research/repositories/IDOAndroidBleSDK-_UPDATE/*.iml
+research/repositories/IDOAndroidBleSDK-_UPDATE/.gradle
+research/repositories/IDOAndroidBleSDK-_UPDATE/local.properties
+research/repositories/IDOAndroidBleSDK-_UPDATE/.idea/
+research/repositories/IDOAndroidBleSDK-_UPDATE/build
