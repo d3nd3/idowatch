@@ -12,8 +12,8 @@ This repository is based on the public [idowatch reference](https://github.com/i
   External reference repos kept as gitlink placeholders here for offline reference.  
   Use `research/repositories/README.md` to fetch them after clone.
 - Root docs and scripts  
-  - `TOOBUR.md` – protocol command table, behavior notes, and device compatibility details.
-  - `gadgetbridge_setup.md` – cloning, build, and sync workflow for `gadgetbridge`.
+  - [`TOOBUR.md`](TOOBUR.md) – protocol command table, behavior notes, and device compatibility details.
+  - [`gadgetbridge_setup.md`](gadgetbridge_setup.md) – cloning, build, and install workflow to run your GadgetBridge mod.
 
 ## Watches using the same protocol
 
@@ -33,7 +33,7 @@ This repository is based on the public [idowatch reference](https://github.com/i
 The protocol details, BLE layout (`0x0AF6`, `0x0AF7`, `0x0AF1`, `0x0AF2`), command bytes, and many capture traces in this repo are derived from the public IDO ecosystem references.
 TOOBUR.md extends that with Toobur/Realtek hardware notes, firmware protocol details (including chunked `MSG 0x05`), watch face upload (`.iwf` / `.iwf.lz`), and notes for integrating angelfit-like devices into GadgetBridge.
 
-See `gadgetbridge_setup.md` for details on cloning/building GadgetBridge locally.
+See [`gadgetbridge_setup.md`](gadgetbridge_setup.md) for details on cloning, compiling, and installing the GadgetBridge mod.
 
 ## Other references
 

@@ -4,6 +4,25 @@ Instructions used to clone Gadgetbridge into this project, add TOOBUR device sup
 
 ---
 
+## 0. Compile and install the GadgetBridge mod
+
+From the project root, after cloning this repo and entering `gadgetbridge`:
+
+```bash
+cd gadgetbridge
+./gradlew assembleMainDebug
+./gradlew installMainDebug
+```
+
+If you also build the Bangle.js flavor:
+
+```bash
+./gradlew assembleBanglejsDebug
+./gradlew installBanglejsDebug
+```
+
+Make sure a device is connected with USB debugging enabled and trusted before running the install commands.
+
 ## 1. Clone Gadgetbridge
 
 From the idowatch project root:
